@@ -157,7 +157,7 @@ public class MainActivity extends Activity {
                 float x = event.getX(pointerIndex);
                 float y = event.getY(pointerIndex);
                 for (Piece p : pieceList) {
-                    if (p.intersect(x, y)) {
+                    if (p.intersect(x-frame.getPaddingLeft(), y-frame.getPaddingTop())) {
                         //Log.d(TAG, "intersect");
                         if (movingPiece!=null){
                             movingPiece.setSelected(false);
