@@ -5,17 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by nico on 21/01/15.
@@ -542,8 +535,8 @@ public class Piece extends View {
 //    }
 
 
-    public Border getBorder(Side side) {
-        switch (side) {
+    public Border getBorder(Direction direction) {
+        switch (direction) {
             case LEFT:
                 return borderLeft;
             case RIGHT:

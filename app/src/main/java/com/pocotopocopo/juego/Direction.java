@@ -1,8 +1,8 @@
 package com.pocotopocopo.juego;
 
-public enum Side {
-    LEFT, RIGHT, TOP, BOTTOM;
-    public Side getReverse(){
+public enum Direction {
+    RIGHT, LEFT, TOP, BOTTOM;
+    public Direction reverse(){
         switch (this){
             case LEFT:
                 return RIGHT;
@@ -16,7 +16,7 @@ public enum Side {
                 return null;
         }
     }
-    public Side getRotatedCW(){
+    public Direction rotatedCW(){
         switch (this){
             case LEFT:
                 return BOTTOM;
@@ -30,8 +30,8 @@ public enum Side {
                 return null;
         }
     }
-    public Side getRotatedCCW(){
-        return this.getRotatedCW().getReverse();
+    public Direction rotatedCCW(){
+        return this.rotatedCW().reverse();
     }
     public Orientation getOrientation(){
         switch (this){

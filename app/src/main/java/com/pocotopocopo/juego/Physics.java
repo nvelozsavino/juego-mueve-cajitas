@@ -49,7 +49,7 @@ public class Physics {
         this.pieceSet.add(piece);
     }
 
-    private void addConnection(Piece frontPiece, Piece collidedPiece, Side movingDirection){
+    private void addConnection(Piece frontPiece, Piece collidedPiece, Direction movingDirection){
         PieceConnection pieceConnection = new PieceConnection(frontPiece,collidedPiece,movingDirection);
 
         if (connectionSet.contains(pieceConnection)){
@@ -65,7 +65,7 @@ public class Physics {
         }
     }
 
-    private void deleteConnections(Piece piece, Side direction){
+    private void deleteConnections(Piece piece, Direction direction){
         List<PieceConnection> connectionsToRemove=new ArrayList<>();
         for (PieceConnection connection: connectionSet){
             try {
@@ -78,13 +78,13 @@ public class Physics {
         connectionSet.removeAll(connectionsToRemove);
     }
 
-    private void updatePerpendicularConnections(Piece piece, Side direction){
+    private void updatePerpendicularConnections(Piece piece, Direction direction){
         List<PieceConnection> connectionsToRemove=new ArrayList<>();
 
         for (PieceConnection connection: connectionSet){
             try {
-                Piece otherPiece =connection.isConnected(piece, direction.getRotatedCW());
-                boolean collisionDanger=checkCollisionDanger(piece,otherPiece,direction.getRotatedCW());
+                Piece otherPiece =connection.isConnected(piece, direction.rotatedCW());
+                boolean collisionDanger=checkCollisionDanger(piece,otherPiece,direction.rotatedCW());
                 if (!collisionDanger){
                     connectionsToRemove.add(connection);
                 }
@@ -97,14 +97,14 @@ public class Physics {
 
     }
 
-    private Set<Piece> getConnectedPieces(Piece fromPiece,Side movingDirection){
+    private Set<Piece> getConnectedPieces(Piece fromPiece,Direction movingDirection){
         Set<Piece> connectedPieces = new HashSet<>();
         return getConnectedPieces(fromPiece,movingDirection,connectedPieces);
 
     }
 
 
-    private Set<Piece> getConnectedPieces (Piece fromPiece, Side movingDirection, Set<Piece> connectedPieces){
+    private Set<Piece> getConnectedPieces (Piece fromPiece, Direction movingDirection, Set<Piece> connectedPieces){
         connectedPieces.add(fromPiece);
         for (PieceConnection connection: connectionSet){
             try {
@@ -119,7 +119,7 @@ public class Physics {
         return connectedPieces;
     }
 
-    private boolean movePieceSet(Set<Piece> pieceSet, Side direction, float delta){
+    private boolean movePieceSet(Set<Piece> pieceSet, Direction direction, float delta){
         boolean movable=true;
         for (Piece piece:pieceSet){
             movable&=piece.isMovable();
@@ -144,50 +144,56 @@ public class Physics {
 
     public void movePiece(Piece movingPiece, Orientation orientation, float delta){
         int sign=delta>0?1:-1;
-        Side movingDirection = orientation.direction(sign);
+        Direction movingDirection = orientation.direction(sign);
 
-        float movingDist=delta;
-        while (Math.abs(delta)>0){
+
+        if (Math.abs(delta)>0){
+            float movingDist=delta;
             List<Piece> pieceList = new ArrayList<>();
             pieceList.addAll(pieceSet);
             Set<Piece> connectedPieces = getConnectedPieces(movingPiece,movingDirection);
             pieceList.removeAll(connectedPieces);
             Collections.sort(pieceList,new PieceDistanceComparator(movingPiece,movingDirection,delta));
-            boolean collided=false;
+            //boolean collided=false;
             boolean moved=true;
             for (Piece freePiece: pieceList){
-                Tuple<Set<Piece>,Float> collision = checkCollision(movingPiece,freePiece,movingDirection,delta);
+                Tuple<Set<Piece>,Float> collision = checkCollision(connectedPieces,freePiece,movingDirection,delta);
                 if (collision.firstArgument.size()>0){
-                    movingDist=collision.secondArgument;
-                    moved=movePieceSet(connectedPieces,movingDirection,movingDist);
+                    float minDist=collision.secondArgument;
+                    //collided=true;
+
+                    moved=movePieceSet(connectedPieces,movingDirection,minDist);
                     if (moved){
 
                         for (Piece frontMovingPiece:collision.firstArgument){
                             addConnection(frontMovingPiece,freePiece,movingDirection);
+                            connectedPieces.add(freePiece);
                         }
+                        movingDist-=minDist;
+                    } else {
+                        movingDist=0;
+                        break;
                     }
-                    collided=true;
-                    break;
+
                 }
             }
-            if (!collided){
-                moved=movePieceSet(connectedPieces,movingDirection,movingDist);
+            if (Math.abs(movingDist)>0) {
+                moved |= movePieceSet(connectedPieces, movingDirection, movingDist);
             }
+
             if (moved){
-                deleteConnections(movingPiece,movingDirection.getReverse());
-                delta-=movingDist;
-            } else {
-                delta=0;
+                deleteConnections(movingPiece,movingDirection.reverse());
             }
+
         }
     }
 
-    private Tuple<Set<Piece>,Float> checkCollision (Piece movingPiece, Piece freePiece, Side direction, float delta){
+    private Tuple<Set<Piece>,Float> checkCollision (Set<Piece> frontPieces, Piece freePiece, Direction direction, float delta){
         List<Tuple<Piece,Float>> collisionList=new ArrayList<>();
 
-        Set<Piece> frontPieces = getConnectedPieces(movingPiece,direction);
+        //Set<Piece> frontPieces = getConnectedPieces(movingPiece, direction);
         if (frontPieces.contains(freePiece)){
-            throw new GameExceptions.SamePieceException(freePiece + " is connected to " +movingPiece);
+            throw new GameExceptions.ConnectionExistException(freePiece + " already exist");
         }
         float minDistance = delta;
         for (Piece frontPiece: frontPieces){
@@ -226,10 +232,10 @@ public class Physics {
 
     }
 
-    private boolean checkCollisionDanger(Piece movingPiece, Piece otherPiece, Side direction){
+    private boolean checkCollisionDanger(Piece movingPiece, Piece otherPiece, Direction direction){
         boolean result;
         Border movingBorder = movingPiece.getBorder(direction);
-        Border otherBorder = otherPiece.getBorder(direction.getReverse());
+        Border otherBorder = otherPiece.getBorder(direction.reverse());
         result  = movingBorder.getStart() >  otherBorder.getStart()  && movingBorder.getStart() <  otherBorder.getEnd();
         result |= movingBorder.getEnd()   >  otherBorder.getStart()  && movingBorder.getEnd()   <  otherBorder.getEnd();
         result |= otherBorder.getStart()  >  movingBorder.getStart() && otherBorder.getStart()  <  movingBorder.getEnd();
@@ -238,12 +244,12 @@ public class Physics {
         return result;
     }
 
-    private Tuple<Boolean,Float> getCollisionDistance(Piece movingPiece, Piece otherPiece, Side direction, float dist){
+    private Tuple<Boolean,Float> getCollisionDistance(Piece movingPiece, Piece otherPiece, Direction direction, float dist){
         Tuple<Boolean,Float> result= new Tuple(false,dist);
 
         if (checkCollisionDanger(movingPiece,otherPiece,direction)){
             Border movingBorder = movingPiece.getBorder(direction);
-            Border otherBorder = otherPiece.getBorder(direction.getReverse());
+            Border otherBorder = otherPiece.getBorder(direction.reverse());
 
             float a = movingBorder.getPos();
 
@@ -266,7 +272,7 @@ public class Physics {
         private Orientation orientation;
         int sign;
 
-        public PieceDistanceComparator(Piece from, Side direction, float dist) {
+        public PieceDistanceComparator(Piece from, Direction direction, float dist) {
             this.from = from;
             this.orientation = direction.getOrientation();
             this.sign = dist>0? +1:-1;

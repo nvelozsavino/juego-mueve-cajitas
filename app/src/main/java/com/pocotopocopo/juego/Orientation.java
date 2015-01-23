@@ -12,19 +12,19 @@ public enum Orientation {
             return X;
         }
     }
-    public Side direction(int sign) {
+    public Direction direction(int sign) {
         if (this.equals(X)) {
             if (sign >= 0) {
-                return Side.RIGHT;
+                return Direction.RIGHT;
             } else {
-                return Side.LEFT;
+                return Direction.LEFT;
             }
 
         } else {
             if (sign >= 0) {
-                return Side.BOTTOM;
+                return Direction.BOTTOM;
             } else {
-                return Side.TOP;
+                return Direction.TOP;
             }
         }
     }
