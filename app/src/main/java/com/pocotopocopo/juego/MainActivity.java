@@ -1,11 +1,8 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -13,25 +10,27 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 public class MainActivity extends Activity {
 
-    private static final int maxPieces=4;
+    private static final int maxPiecesW=4;
+    private static final int maxPiecesH=4;
+    private static final int maxPieces=15;
     private static final float pieceWidth=100.0f;
     private static final float pieceHeight=100.0f;
+    private static final float paddingLeft=20.0f;
+    private static final float paddingTop=20.0f;
+    private static final float paddingPieceX=1f;
+    private static final float paddingPieceY=1f;
 
     private static final String TAG="Juego";
 
     private RelativeLayout frame;
-    List<Piece> pieceList=new ArrayList<>();
+
+    List<Piece> pieceList= new ArrayList<>();
+    Physics physics=new Physics();
     private Piece movingPiece;
     private Float lastX,lastY;
     private Integer pointerId;
@@ -46,23 +45,70 @@ public class MainActivity extends Activity {
         Log.d(TAG, "frame height: " + displayHeight);
 
 
-        Piece leftBorder= new Piece(getApplicationContext(),0,0,(pieceWidth+50)*maxPieces,(pieceHeight+50)*maxPieces,true);
-        leftBorder.setMovable(false);
-        pieceList.add(leftBorder);
-        frame.addView(leftBorder);
+        //Piece leftBorder= new Piece(getApplicationContext(),0,0,(pieceWidth+50)*maxPieces,(pieceHeight+50)*maxPieces,true);
+        //leftBorder.setMovable(false);
+        //pieceList.add(leftBorder);
+        //frame.addView(leftBorder);
 
-        for (int i=0;i<maxPieces;i++){
-            float top,left;
-            top=i*(pieceHeight+20);
-            left=20;
-
-            Piece piece = new Piece(getApplicationContext(),top,left,pieceWidth,pieceHeight,i+1);
-            pieceList.add(piece);
-            frame.addView(piece);
-
-
-
+        for (int x=0;x<maxPiecesW;x++) {
+            for (int y = 0; y < maxPiecesH; y++) {
+                int i = x * maxPiecesH + y;
+                if (i < maxPieces) {
+                    float top, left;
+                    left = x * (pieceWidth+paddingPieceX)+ paddingLeft+paddingPieceX;
+                    top = y * (pieceHeight+paddingPieceY)+paddingTop+paddingPieceY;
+                    Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
+                    pieceList.add(piece);
+                    frame.addView(piece);
+                }
+            }
         }
+        float borderTop = 0 + paddingTop;
+        float borderLeft = 0 + paddingLeft;
+        float borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
+        float borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
+        for (int i=0;i<4;i++) {
+            float top=0, left=0, width=0, height=0;
+
+            switch (i) {
+                case 0://border left
+                    top = borderTop - paddingTop;
+                    left = borderLeft - paddingLeft;
+                    width = paddingLeft;
+                    height = borderBottom-top;
+                    break;
+                case 1://border top
+                    top = borderTop-paddingTop;
+                    left = borderLeft;
+                    width = borderRight;
+                    height = paddingTop;
+                    break;
+                case 2://border right
+                    top = borderTop;
+                    left = borderRight;
+                    width = paddingLeft;
+                    height = borderBottom;
+                    break;
+                case 3://border bottom
+                    top = borderBottom;
+                    left = borderLeft-paddingLeft;
+                    width = borderRight-left;
+                    height = paddingTop;
+                    break;
+            }
+
+            Piece border = new Piece(getApplicationContext(), top, left, width, height, false);
+            border.setMovable(false);
+            pieceList.add(border);
+            frame.addView(border);
+        }
+
+
+
+
+
+
+
         frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -71,13 +117,17 @@ public class MainActivity extends Activity {
             }
         });
 
+        physics.addPieces(pieceList);
+
+
         Piece p0=pieceList.get(0);
         Piece p1=pieceList.get(1);
         Piece p2=pieceList.get(2);
         Piece p3=pieceList.get(3);
         Piece p4=pieceList.get(4);
 
-        movePiece(p1,0,41);
+        physics.movePiece(p4,Orientation.X,30);
+        //movePiece(p1,0,41);
         //movePiece(p1,0,20);
 
 
@@ -217,8 +267,8 @@ public class MainActivity extends Activity {
 
     private void movePiece(Piece piece, float dx, float dy){
 
-        piece.checkAllCollisions(pieceList,dx,Orientation.VERTICAL);
-        piece.checkAllCollisions(pieceList,dy,Orientation.HORIZONTAL);
+        physics.movePiece(piece,Orientation.X,dx);
+        physics.movePiece(piece,Orientation.Y,dy);
 
     }
 
