@@ -13,12 +13,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class MainActivity extends Activity {
 
-    private static final int maxPiecesW=4;
-    private static final int maxPiecesH=4;
+    private static final int maxPiecesW=5;
+    private static final int maxPiecesH=5;
     private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
     private static final int pieceWidth=100;
     private static final int pieceHeight=100;
@@ -60,22 +61,31 @@ public class MainActivity extends Activity {
             for (int y = 0; y < maxPiecesH; y++) {
                 int i = x * maxPiecesH + y;
                 int top, left;
-                left = x * (pieceWidth+paddingPieceX)+ paddingLeft+paddingPieceX;
-                top = y * (pieceHeight+paddingPieceY)+paddingTop+paddingPieceY;
+                left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
+                top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
                 Integer[] pos = new Integer[2];
-                pos[0]=left;//-paddingLeft-paddingPieceX;
-                pos[1]=top;//-paddingTop-paddingPieceY;
+                pos[0] = left;//-paddingLeft-paddingPieceX;
+                pos[1] = top;//-paddingTop-paddingPieceY;
 
                 positions.add(pos);
-
-                if (i < maxPieces) {
-
-                    Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
-                    pieceList.add(piece);
-                    piece.setLastPos(positions.size()-1);
-                    frame.addView(piece);
-                }
             }
+        }
+        List<Integer[]> posRand = new ArrayList<>();
+        posRand.addAll(positions);
+        for (int i=0;i<maxPieces;i++){
+            Random rnd = new Random();
+            int posIndex = rnd.nextInt(posRand.size());
+            int left = posRand.get(posIndex)[0];
+            int top = posRand.get(posIndex)[1];
+            posRand.remove(posIndex);
+            if (i < maxPieces) {
+
+                Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
+                pieceList.add(piece);
+                piece.setLastPos(i);
+                frame.addView(piece);
+            }
+
         }
         int borderTop = 0 + paddingTop;
         int borderLeft = 0 + paddingLeft;
