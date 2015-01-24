@@ -18,8 +18,8 @@ import java.util.Random;
 
 public class MainActivity extends Activity {
 
-    private static final int maxPiecesW=5;
-    private static final int maxPiecesH=5;
+    private static final int maxPiecesW=4;
+    private static final int maxPiecesH=4;
     private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
     private static final int pieceWidth=100;
     private static final int pieceHeight=100;
