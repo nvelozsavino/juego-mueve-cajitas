@@ -8,34 +8,34 @@ import java.util.Set;
 
 public class Border {
     private static final String TAG = "Border";
-    private float x, y, size;
+    private int x, y, size;
     private Orientation orientation;
 
-    public Border(Orientation orientation, float x, float y, float size) {
+    public Border(Orientation orientation, int x, int y, int size) {
         update(orientation, x, y, size);
     }
 
-    public void update(Orientation orientation, float x, float y, float size) {
+    public void update(Orientation orientation, int x, int y, int size) {
         this.orientation = orientation;
         this.x = x;
         this.y = y;
         this.size = size;
     }
 
-//    public void update(float x, float y, float size) {
+//    public void update(int x, int y, int size) {
 //        this.x = x;
 //        this.y = y;
 //        this.size = size;
 //    }
 
-    public void update(float x, float y) {
+    public void update(int x, int y) {
         this.x = x;
         this.y = y;
 
     }
 
 
-    public float getStart() {
+    public int getStart() {
         if (orientation.equals(Orientation.X)) {
             return x;
         } else {
@@ -43,11 +43,13 @@ public class Border {
         }
     }
 
-    public float getEnd() {
+    public int getEnd() {
+
         return getStart() + size;
     }
 
-    public float getPos() {
+
+    public int getPos() {
         if (orientation.equals(Orientation.X)) {
             return y;
         } else {
@@ -71,7 +73,7 @@ public class Border {
 //        }
 //    }
 //
-////    private float getDelta(float dx, float dy) {
+////    private int getDelta(int dx, int dy) {
 ////        if (orientation.equals(Orientation.X)) {
 ////            return dy;
 ////        } else {
@@ -79,26 +81,26 @@ public class Border {
 ////        }
 ////    }
 ////
-////    public boolean checkCollision(Border border, float delta) {
-////        float a = this.getPos();
+////    public boolean checkCollision(Border border, int delta) {
+////        int a = this.getPos();
 ////
-////        float b = this.getPos() + delta;
-////        float c = border.getPos();
+////        int b = this.getPos() + delta;
+////        int c = border.getPos();
 ////        boolean result = (checkDanger(border) && ((c >= a && c <= b) || (c >= b && c <= a)));
 ////        //Log.d(TAG,"this.pos="+this.getPos() + " border.pos="+border.getPos() + " delta="+delta + " result="+result);
 ////        //Log.d(TAG,"this=("+this.x + ","+this.y + ") border=("+border.x + ","+border.y+")");
 ////        return result;
 ////    }
 ////
-////    private boolean checkExactCollision(Border border, float delta) {
+////    private boolean checkExactCollision(Border border, int delta) {
 ////        return (checkDanger(border) && border.getPos() == this.getPos() + delta);
 ////    }
 ////
-////    public float getDistance(Border border) {
+////    public int getDistance(Border border) {
 ////        return Math.abs(this.getPos() - border.getPos());
 ////    }
 //
-////    public List<Collision> collisionDetect(Set<Border> borders, float delta, Orientation orientation) {
+////    public List<Collision> collisionDetect(Set<Border> borders, int delta, Orientation orientation) {
 ////        List<Collision> collisions = new ArrayList<>();
 ////        if (!checkOrientation(orientation)) {
 ////            //Log.d(TAG, "orientation no coincide" );

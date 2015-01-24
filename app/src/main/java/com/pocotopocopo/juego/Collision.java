@@ -6,15 +6,15 @@ import java.util.Comparator;
 * Created by nico on 21/01/15.
 */
 public class Collision {
-    private float dist;
+    private int dist;
     private Border border;
 
-    public Collision(Border border, float dist){
+    public Collision(Border border, int dist){
         this.dist=dist;
         this.border=border;
     }
 
-    public float getDist() {
+    public int getDist() {
         return dist;
     }
 

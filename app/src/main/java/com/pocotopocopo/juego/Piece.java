@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class Piece extends View {
     private static final String TAG = "Piece";
-    private float top, left;
-    private float width, height;
+    private int top, left;
+    private int width, height;
     private int number;
     private boolean selected=false;
     public List<Piece> contactTop, contactLeft, contactRight, contactBottom;
@@ -44,7 +44,7 @@ public class Piece extends View {
         invalidate();
     }
 
-    public Piece(Context context, float top, float left, float width, float height,boolean border) {
+    public Piece(Context context, int top, int left, int width, int height,boolean border) {
         super(context);
         this.top = top;
         this.left = left;
@@ -70,7 +70,7 @@ public class Piece extends View {
         numerable=false;
 
     }
-    public Piece(Context context, float top, float left, float width, float height, int number) {
+    public Piece(Context context, int top, int left, int width, int height, int number) {
         this(context,top,left,width,height,false);
         numerable=true;
         movable=true;
@@ -99,20 +99,20 @@ public class Piece extends View {
     }
 
 
-    public float getTopPos() {
+    public int getTopPos() {
         return top;
     }
 
-    public float getLeftPos() {
+    public int getLeftPos() {
         return left;
     }
 
 
-//    public float getHeightMeasurement() {
+//    public int getHeightMeasurement() {
 //        return height;
 //    }
 //
-//    public float getWidthMeasurement() {
+//    public int getWidthMeasurement() {
 //        return width;
 //    }
 
@@ -145,7 +145,7 @@ public class Piece extends View {
 
     }
 
-    public synchronized boolean intersect(float x, float y) {
+    public synchronized boolean intersect(int x, int y) {
         if (border){
             return false;
         }
@@ -155,7 +155,7 @@ public class Piece extends View {
         return intersection;
     }
 
-    public void move(float dx, float dy) {
+    public void move(int dx, int dy) {
         //Log.d(TAG, "Moving " + number);
         left += dx;
         top += dy;
@@ -174,7 +174,7 @@ public class Piece extends View {
 //        }
 //    }
 
-//    public void removeContacts(Orientation orientation, float delta,boolean all){
+//    public void removeContacts(Orientation orientation, int delta,boolean all){
 //        //Log.d(TAG,"Contacts: *********** Removing Contacts ***********");
 //        if (orientation.equals(Orientation.Y)){
 //            //Log.d(TAG,"Contacts: Vertical");
@@ -306,12 +306,12 @@ public class Piece extends View {
 //    }
 
 
-//    private boolean move(Set<Piece> connectedPieces,float delta, Orientation orientation) {
+//    private boolean move(Set<Piece> connectedPieces,int delta, Orientation orientation) {
 //
 //            //Log.d(TAG,"Moving " + this.number);
 //        Side side;
-//        float dx = 0;
-//        float dy = 0;
+//        int dx = 0;
+//        int dy = 0;
 //
 //        if (orientation.equals(Orientation.Y)) {
 //            dx = delta;
@@ -349,7 +349,7 @@ public class Piece extends View {
 //    }
 
 
-//    public void checkAllCollisions(List<Piece> pieceList, float delta, Orientation orientation) {
+//    public void checkAllCollisions(List<Piece> pieceList, int delta, Orientation orientation) {
 //        //while there is some movement left:
 //        while (Math.abs(delta) > 0) {
 //            //Log.d(TAG, "Check Recursive piece: " + movingPiece.number + " delta =" + delta + " orientation " + orientation);
@@ -403,7 +403,7 @@ public class Piece extends View {
 //
 //
 //
-//            float dist = delta;
+//            int dist = delta;
 //            boolean collision = false;
 //            boolean moved = false;
 //
@@ -467,7 +467,7 @@ public class Piece extends View {
 //        }
 //    }
 
-//    public List<CollidedPiece> checkCollision(Map<Border,Piece> borderFront, Piece piece, float delta, Orientation orientation) {
+//    public List<CollidedPiece> checkCollision(Map<Border,Piece> borderFront, Piece piece, int delta, Orientation orientation) {
 //        //Log.d(TAG, "Checkin Collision between " + movingPiece.number + " and " + piece.number);
 //        List<CollidedPiece> collidedPieces = new ArrayList<>();
 //        Side side;
@@ -505,7 +505,7 @@ public class Piece extends View {
 //        if (collisions.size() > 0) {
 //            Collision collision = collisions.get(0);
 //            Border movingBorder = collision.getBorder();
-//            float minDist = collision.getDist();
+//            int minDist = collision.getDist();
 //            Piece movingPiece = borderFront.get(movingBorder);
 //            if (movingPiece!=piece){
 //                collidedPieces.add(new CollidedPiece(movingPiece, piece, minDist));
@@ -611,9 +611,9 @@ public class Piece extends View {
 //        private Piece movingPiece;
 //        private Piece collidedPiece;
 //
-//        private float dist;
+//        private int dist;
 //
-//        public CollidedPiece(Piece movingPiece, Piece collidedPiece, float dist) {
+//        public CollidedPiece(Piece movingPiece, Piece collidedPiece, int dist) {
 //            this.movingPiece = movingPiece;
 //            this.collidedPiece = collidedPiece;
 //            this.dist = dist;
@@ -627,7 +627,7 @@ public class Piece extends View {
 //            return collidedPiece;
 //        }
 //
-//        public float getDist() {
+//        public int getDist() {
 //            return dist;
 //        }
 //    }

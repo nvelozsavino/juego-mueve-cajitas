@@ -17,13 +17,13 @@ public class MainActivity extends Activity {
 
     private static final int maxPiecesW=4;
     private static final int maxPiecesH=4;
-    private static final int maxPieces=15;
-    private static final float pieceWidth=100.0f;
-    private static final float pieceHeight=100.0f;
-    private static final float paddingLeft=20.0f;
-    private static final float paddingTop=20.0f;
-    private static final float paddingPieceX=1f;
-    private static final float paddingPieceY=1f;
+    private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
+    private static final int pieceWidth=100;
+    private static final int pieceHeight=100;
+    private static final int paddingLeft=20;
+    private static final int paddingTop=20;
+    private static final int paddingPieceX=0;
+    private static final int paddingPieceY=0;
 
     private static final String TAG="Juego";
 
@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
     List<Piece> pieceList= new ArrayList<>();
     Physics physics=new Physics();
     private Piece movingPiece;
-    private Float lastX,lastY;
+    private Integer lastX,lastY;
     private Integer pointerId;
     private int displayWidth, displayHeight;
 
@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
             for (int y = 0; y < maxPiecesH; y++) {
                 int i = x * maxPiecesH + y;
                 if (i < maxPieces) {
-                    float top, left;
+                    int top, left;
                     left = x * (pieceWidth+paddingPieceX)+ paddingLeft+paddingPieceX;
                     top = y * (pieceHeight+paddingPieceY)+paddingTop+paddingPieceY;
                     Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
@@ -63,12 +63,12 @@ public class MainActivity extends Activity {
                 }
             }
         }
-        float borderTop = 0 + paddingTop;
-        float borderLeft = 0 + paddingLeft;
-        float borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
-        float borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
+        int borderTop = 0 + paddingTop;
+        int borderLeft = 0 + paddingLeft;
+        int borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
+        int borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
         for (int i=0;i<4;i++) {
-            float top=0, left=0, width=0, height=0;
+            int top=0, left=0, width=0, height=0;
 
             switch (i) {
                 case 0://border left
@@ -120,28 +120,29 @@ public class MainActivity extends Activity {
         physics.addPieces(pieceList);
 
 
-        Piece p0=pieceList.get(0);
-        Piece p1=pieceList.get(1);
-        Piece p2=pieceList.get(2);
-        Piece p3=pieceList.get(3);
-        Piece p4=pieceList.get(4);
+        Piece p1=pieceList.get(0);
+        Piece p2=pieceList.get(1);
+        Piece p3=pieceList.get(2);
+        Piece p4=pieceList.get(3);
+        Piece p5=pieceList.get(4);
+        Piece p6=pieceList.get(5);
+        Piece p7=pieceList.get(6);
+        Piece p8=pieceList.get(7);
+        Piece p9=pieceList.get(8);
+        Piece p10=pieceList.get(9);
 
-        physics.movePiece(p4,Orientation.X,30);
-        //movePiece(p1,0,41);
-        //movePiece(p1,0,20);
-
-
-
-
-
-
-/*
-        Piece topBorder= new Piece(getApplicationContext(),0,0,720,displayWidth);
-        topBorder.setMovable(false);
-        pieceList.add(topBorder);
-        frame.addView(topBorder);
-
-*/
+        Log.d(TAG,"Connections 0: \n" + physics);
+        physics.movePiece(p4,Orientation.X,210);
+//        Log.d(TAG,"Connections 1: \n" + physics);
+//        physics.movePiece(p7,Orientation.Y,50);
+//        Log.d(TAG,"Connections 2: \n" + physics);
+//
+//        physics.movePiece(p3,Orientation.X,110);
+//        Log.d(TAG,"Connections 3: \n" + physics);
+//
+//        physics.movePiece(p3,Orientation.Y,20);
+//        Log.d(TAG,"Connections 4: \n" + physics);
+//
 
     }
 
@@ -204,8 +205,8 @@ public class MainActivity extends Activity {
                 //Log.d(TAG, "pointer down");
                 int pointerIndex = event.getActionIndex();
                 pointerId = event.getPointerId(pointerIndex);
-                float x = event.getX(pointerIndex);
-                float y = event.getY(pointerIndex);
+                int x = (int)event.getX(pointerIndex);
+                int y = (int)event.getY(pointerIndex);
                 for (Piece p : pieceList) {
                     if (p.intersect(x-frame.getPaddingLeft(), y-frame.getPaddingTop())) {
                         //Log.d(TAG, "intersect");
@@ -224,10 +225,10 @@ public class MainActivity extends Activity {
             case MotionEvent.ACTION_MOVE: {
                 int pointerIndex = event.getActionIndex();
                 if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && movingPiece!=null) {
-                    float x = event.getX(pointerIndex);
-                    float y = event.getY(pointerIndex);
-                    float dx=x-lastX;
-                    float dy=y-lastY;
+                    int x = (int)event.getX(pointerIndex);
+                    int y = (int)event.getY(pointerIndex);
+                    int dx=x-lastX;
+                    int dy=y-lastY;
                     lastX=x;
                     lastY=y;
                     movePiece(movingPiece,dx,dy);
@@ -265,7 +266,7 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private void movePiece(Piece piece, float dx, float dy){
+    private void movePiece(Piece piece, int dx, int dy){
 
         physics.movePiece(piece,Orientation.X,dx);
         physics.movePiece(piece,Orientation.Y,dy);

@@ -1,23 +1,26 @@
 package com.pocotopocopo.juego;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by nico on 23/01/15.
  */
-public class LinkedSet<O>{
-    Set<LinkedSet<O>> setsR = new HashSet<LinkedSet<O>>();
-    Set<LinkedSet<O>> setsL = new HashSet<LinkedSet<O>>();
-    Set<LinkedSet<O>> setsT = new HashSet<LinkedSet<O>>();
-    Set<LinkedSet<O>> setsB = new HashSet<LinkedSet<O>>();
-    O object;
-    public LinkedSet(O object){
+public class LinkedSet<K>{
+    Set<LinkedSet<K>> setsR = new HashSet<LinkedSet<K>>();
+    Set<LinkedSet<K>> setsL = new HashSet<LinkedSet<K>>();
+    Set<LinkedSet<K>> setsT = new HashSet<LinkedSet<K>>();
+    Set<LinkedSet<K>> setsB = new HashSet<LinkedSet<K>>();
+    public K object;
+    public LinkedSet(K object){
         this.object=object;
     }
 
 
-    private Set<LinkedSet<O>> getSet(Direction dir){
+    private Set<LinkedSet<K>> getSet(Direction dir){
         switch (dir){
             case RIGHT:
                 return setsR;
@@ -30,42 +33,67 @@ public class LinkedSet<O>{
         }
         return null;
     }
-    public O getObject(){
+    /*public K getObject(){
         return object;
-    }
-    public Set<LinkedSet<O>> getObjects(Direction dir){
-        Set<LinkedSet<O>> objects=new HashSet<LinkedSet<O>>();
+    }*/
+    public Set<LinkedSet<K>> getObjects(Direction dir){
+        Set<LinkedSet<K>> objects=new HashSet<LinkedSet<K>>();
         return getObjects(objects,dir);
     }
 
-    private Set<LinkedSet<O>> getObjects(Set<LinkedSet<O>> objects,Direction dir){
+    private Set<LinkedSet<K>> getObjects(Set<LinkedSet<K>> objects,Direction dir){
         objects.add(this);
-        for (LinkedSet<O> linkedSet:getSet(dir)){
+        for (LinkedSet<K> linkedSet:getSet(dir)){
             objects=linkedSet.getObjects(objects,dir);
         }
         return objects;
     }
 
-    public void add(LinkedSet<O> linkedSet, Direction dir){
+    public void add(LinkedSet<K> linkedSet, Direction dir){
         this.getSet(dir).add(linkedSet);
         linkedSet.getSet(dir.reverse()).add(this);
     }
 
-    public void remove(LinkedSet<O> linkedSet, Direction dir){
+    public void remove(LinkedSet<K> linkedSet, Direction dir){
         this.getSet(dir).remove(linkedSet);
         linkedSet.getSet(dir.reverse()).remove(this);
     }
 
     public void move(Direction dir){
-        Set<LinkedSet<O>> cSet = getObjects(dir);
-        for (LinkedSet<O> c : cSet){
-            Set<LinkedSet<O>> aSet=c.getSet(dir.reverse());
-            for (LinkedSet<O> a: aSet){
+        Set<LinkedSet<K>> cSet = getObjects(dir);
+        List<Tuple<LinkedSet<K>,LinkedSet<K>>> toRemoveList=new ArrayList<>();
+        for (LinkedSet<K> c: cSet){
+            Set<LinkedSet<K>> aSet=c.getSet(dir.reverse());
+
+            for(LinkedSet<K> a: aSet){
+                if (!cSet.contains(a)) {
+                    toRemoveList.add(new Tuple<LinkedSet<K>, LinkedSet<K>>(a,c));
+                }
+            }
+
+        }
+        for (Tuple<LinkedSet<K>,LinkedSet<K>> toRemove: toRemoveList){
+            toRemove.firstArgument.getSet(dir).remove(toRemove.secondArgument);
+            toRemove.secondArgument.getSet(dir.reverse()).remove(toRemove.firstArgument);
+        }
+       /* Iterator<LinkedSet<K>> cIterator = cSet.iterator();
+        while (cIterator.hasNext()){
+            LinkedSet<K> c=cIterator.next();
+
+            Set<LinkedSet<K>> aSet=c.getSet(dir.reverse());
+            Iterator<LinkedSet<K>> aIterator = aSet.iterator();
+
+            while (aIterator.hasNext()){
+                LinkedSet<K> a= aIterator.next();
+
                 if (!cSet.contains(a)){
+                    a.getSet(dir).remove()
+
+
                     c.remove(a,dir.reverse());
                 }
             }
-        }
+        }*/
     }
 
     @Override
@@ -73,11 +101,24 @@ public class LinkedSet<O>{
         String str="";
         for (Direction dir: Direction.values()) {
             str+= dir + ": " + object.toString() + " : { ";
-            for (LinkedSet<O> set : getSet(dir)) {
+            for (LinkedSet<K> set : getSet(dir)) {
                 str += set.object + ", ";
             }
             str += "} \t";
         }
         return str;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof LinkedSet){
+            return object.equals(((LinkedSet) o).object);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return object.hashCode();
     }
 }
