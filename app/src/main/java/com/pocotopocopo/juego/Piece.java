@@ -24,6 +24,7 @@ public class Piece extends View {
     private boolean movable=true;
     private boolean numerable=false;
     public boolean border=false;
+    private int lastPos;
 
 
     public boolean isMovable() {
@@ -92,6 +93,14 @@ public class Piece extends View {
             borderBottom.update(left, top + height);
 
         }
+    }
+
+    public int getLastPos() {
+        return lastPos;
+    }
+
+    public void setLastPos(int lastPos) {
+        this.lastPos = lastPos;
     }
 
     public int getNumber() {

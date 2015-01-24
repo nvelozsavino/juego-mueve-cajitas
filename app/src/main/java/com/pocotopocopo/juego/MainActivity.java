@@ -7,7 +7,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +32,14 @@ public class MainActivity extends Activity {
     private RelativeLayout frame;
 
     List<Piece> pieceList= new ArrayList<>();
+    private final int[] tol = new int[2];
+    List<Integer[]> positions = new ArrayList<>();
     Physics physics=new Physics();
     private Piece movingPiece;
     private Integer lastX,lastY;
     private Integer pointerId;
     private int displayWidth, displayHeight;
+    private int moveCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +54,25 @@ public class MainActivity extends Activity {
         //leftBorder.setMovable(false);
         //pieceList.add(leftBorder);
         //frame.addView(leftBorder);
-
+        tol[0]=pieceWidth/2;
+        tol[1]=pieceHeight/2;
         for (int x=0;x<maxPiecesW;x++) {
             for (int y = 0; y < maxPiecesH; y++) {
                 int i = x * maxPiecesH + y;
+                int top, left;
+                left = x * (pieceWidth+paddingPieceX)+ paddingLeft+paddingPieceX;
+                top = y * (pieceHeight+paddingPieceY)+paddingTop+paddingPieceY;
+                Integer[] pos = new Integer[2];
+                pos[0]=left;//-paddingLeft-paddingPieceX;
+                pos[1]=top;//-paddingTop-paddingPieceY;
+
+                positions.add(pos);
+
                 if (i < maxPieces) {
-                    int top, left;
-                    left = x * (pieceWidth+paddingPieceX)+ paddingLeft+paddingPieceX;
-                    top = y * (pieceHeight+paddingPieceY)+paddingTop+paddingPieceY;
+
                     Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
                     pieceList.add(piece);
+                    piece.setLastPos(positions.size()-1);
                     frame.addView(piece);
                 }
             }
@@ -247,10 +261,12 @@ public class MainActivity extends Activity {
                     pointerId=null;
                     lastY=null;
                     lastX=null;
+                    snapPiece(pieceList,positions,tol);
                 }
                 break;
             }
             case MotionEvent.ACTION_UP:
+
                 if (movingPiece!=null){
                     movingPiece.setSelected(false);
                 }
@@ -258,6 +274,12 @@ public class MainActivity extends Activity {
                 pointerId=null;
                 lastY=null;
                 lastX=null;
+                if (snapPiece(pieceList,positions,tol)){
+                    moveCounter++;
+                    TextView text = (TextView)findViewById(R.id.moveCounterText);
+                    text.setText("Moves = " + moveCounter);
+                    text.invalidate();
+                }
                 break;
 
 
@@ -268,9 +290,43 @@ public class MainActivity extends Activity {
 
     private void movePiece(Piece piece, int dx, int dy){
 
-        physics.movePiece(piece,Orientation.X,dx);
-        physics.movePiece(piece,Orientation.Y,dy);
+        physics.movePiece(piece, Orientation.X, dx);
+        physics.movePiece(piece, Orientation.Y, dy);
 
     }
+
+    private boolean snapPiece(List<Piece> pieceList, List<Integer[]> positions, int[] tol){
+        boolean hasBeenMoved=false;
+        for (Piece piece : pieceList){
+
+            if (piece.isMovable()) {
+                int k=0;
+                for (Integer[] pos : positions) {
+                    int x = pos[0];
+                    int y = pos[1];
+                    if (piece.getLeftPos() - x < tol[0] && piece.getLeftPos() - x >= -tol[0]
+                            && piece.getTopPos() - y < tol[1] && piece.getTopPos() - y >= -tol[1]) {
+
+                        int dx = x-piece.getLeftPos();
+                        int dy = y-piece.getTopPos();
+                        movePiece(piece,dx,dy);
+                         if(piece.getLastPos()!=k) {
+                             hasBeenMoved = true;
+                             piece.setLastPos(k);
+                         }
+
+
+                        //piece.setLeft(x);
+                        //piece.setTop(y);
+                        //piece.invalidate();
+                    }
+                    k++;
+                }
+            }
+
+        }
+        return hasBeenMoved;
+    }
+
 
 }

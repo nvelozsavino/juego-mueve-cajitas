@@ -9,4 +9,12 @@
     tools:context=".MainActivity"
     android:id="@+id/frame">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Moves = 0"
+        android:id="@+id/moveCounterText"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>
