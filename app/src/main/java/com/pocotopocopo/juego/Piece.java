@@ -148,8 +148,11 @@ public class Piece extends View {
         if (selected) {
             paint.setStyle(Paint.Style.STROKE);
             paint.setColor(Color.BLACK);
-            paint.setStrokeWidth(5);
-            canvas.drawRect(r, paint);
+            int stroke=5;
+            paint.setStrokeWidth(stroke);
+
+            Rect rBorder = new Rect((int)(left+stroke/2), (int)(top+stroke/2), (int)(left + width-stroke/2), (int)(top + height-stroke/2));
+            canvas.drawRect(rBorder, paint);
         }
 
     }

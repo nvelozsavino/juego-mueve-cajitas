@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,8 @@ import java.util.Random;
 
 public class MainActivity extends Activity {
 
-    private static final int maxPiecesW=5;
-    private static final int maxPiecesH=5;
+    private static final int maxPiecesW=3;
+    private static final int maxPiecesH=3;
     private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
     private static final int pieceWidth=50;
     private static final int pieceHeight=50;
@@ -57,9 +58,9 @@ public class MainActivity extends Activity {
         //frame.addView(leftBorder);
         tol[0]=pieceWidth/2;
         tol[1]=pieceHeight/2;
-        for (int x=0;x<maxPiecesW;x++) {
-            for (int y = 0; y < maxPiecesH; y++) {
-                int i = x * maxPiecesH + y;
+        for (int y=0;y<maxPiecesH;y++) {
+            for (int x = 0; x < maxPiecesW; x++) {
+                //int i = x * maxPiecesH + y;
                 int top, left;
                 left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
                 top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
@@ -289,6 +290,13 @@ public class MainActivity extends Activity {
                     TextView text = (TextView)findViewById(R.id.moveCounterText);
                     text.setText("Moves = " + moveCounter);
                     text.invalidate();
+                    if(checkWin(pieceList)){
+                        Log.d(TAG,"you win");
+                        Toast toast = Toast.makeText(getApplicationContext(),"you win",Toast.LENGTH_LONG);
+                        //toast.setText("Congratulations you Won in " + moveCounter + "moves");
+                        //toast.setDuration(Toast.LENGTH_LONG);
+                        toast.show();
+                    }
                 }
                 break;
 
@@ -338,5 +346,14 @@ public class MainActivity extends Activity {
         return hasBeenMoved;
     }
 
+    private boolean checkWin(List<Piece> pieceList){
+        boolean win=true;
+        for (Piece piece:pieceList){
+            if (piece.getNumber()!=piece.getLastPos()){
+                win = false;
+            }
+        }
 
+        return win;
+    }
 }
