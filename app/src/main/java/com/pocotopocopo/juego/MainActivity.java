@@ -21,10 +21,10 @@ public class MainActivity extends Activity {
     private static final int maxPiecesW=5;
     private static final int maxPiecesH=5;
     private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
-    private static final int pieceWidth=100;
-    private static final int pieceHeight=100;
-    private static final int paddingLeft=20;
-    private static final int paddingTop=20;
+    private static final int pieceWidth=50;
+    private static final int pieceHeight=50;
+    private static final int paddingLeft=10;
+    private static final int paddingTop=10;
     private static final int paddingPieceX=0;
     private static final int paddingPieceY=0;
 
