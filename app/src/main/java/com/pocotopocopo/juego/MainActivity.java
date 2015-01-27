@@ -28,35 +28,37 @@ public class MainActivity extends Activity {
 
     private static final int maxPiecesW=4;
     private static final int maxPiecesH=4;
-    private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
-    private static final int pieceWidth=100;
-    private static final int pieceHeight=100;
-    private static final int paddingLeft=20;
-    private static final int paddingTop=20;
-    private static final int paddingPieceX=0;
-    private static final int paddingPieceY=0;
-    private Bitmap bitmap;
+ //   private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
+ //   private static final int pieceWidth=100;
+ //   private static final int pieceHeight=100;
+ //   private static final int paddingLeft=20;
+ //   private static final int paddingTop=20;
+ //   private static final int paddingPieceX=0;
+ //   private static final int paddingPieceY=0;
+ //   private Bitmap bitmap;
     private static final String TAG="Juego";
 
     private RelativeLayout frame;
 
     List<Piece> pieceList= new ArrayList<>();
-    private final int[] tol = new int[2];
-    List<Integer[]> positions = new ArrayList<>();
-    Physics physics=new Physics();
-    private Piece movingPiece;
-    private Integer lastX,lastY;
-    private Integer pointerId;
-    private int displayWidth, displayHeight;
-    private int moveCounter = 0;
+ //   private final int[] tol = new int[2];
+  //  List<Integer[]> positions = new ArrayList<>();
+  //  Physics physics=new Physics();
+  //  private Piece movingPiece;
+  //  private Integer lastX,lastY;
+  //  private Integer pointerId;
+  //  private int displayWidth, displayHeight;
+  //  private int moveCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
-        frame = (RelativeLayout) findViewById(R.id.frame);
-        bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
+        //frame = (RelativeLayout) findViewById(R.id.frame);
+        //Container container = new Container(getApplicationContext());
+        //frame.addView(container);
+  /*      bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
         Log.d(TAG,"bitmap = "+ bitmap.getWidth()+" , " + bitmap.getHeight());
         int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
         int miniBitmapSizeH=bitmap.getHeight()/maxPiecesH;
@@ -194,9 +196,9 @@ public class MainActivity extends Activity {
 //        physics.movePiece(p3,Orientation.Y,20);
 //        Log.d(TAG,"Connections 4: \n" + physics);
 //
-
+*/
     }
-
+/*
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
@@ -243,7 +245,7 @@ public class MainActivity extends Activity {
 
 
     }
-
+*/
 
     private void showPieces(){
         for (Piece p: pieceList){
@@ -280,14 +282,14 @@ public class MainActivity extends Activity {
         if (hasFocus) {
 
             // Get the size of the display so this View knows where borders are
-            displayWidth = frame.getWidth();
-            displayHeight = frame.getHeight();
+            //displayWidth = frame.getWidth();
+            //displayHeight = frame.getHeight();
             //Log.d(TAG,"Width = " + displayWidth);
             //Log.d(TAG,"Height = " + displayHeight);
-            Log.d(TAG,frame.getMeasuredWidth()+" " +frame.getMeasuredHeight());
+            //Log.d(TAG,frame.getMeasuredWidth()+" " +frame.getMeasuredHeight());
         }
     }
-
+/*
     private boolean touchEvent(MotionEvent event) {
 
         switch (event.getActionMasked()) {
@@ -421,4 +423,5 @@ public class MainActivity extends Activity {
 
         return win;
     }
+    */
 }
