@@ -1,10 +1,12 @@
 package com.pocotopocopo.juego;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ public class Piece extends View {
     private boolean numerable=false;
     public boolean border=false;
     private int lastPos;
+    private Bitmap bitmap;
+    private Rect rInic;
 
 
     public boolean isMovable() {
@@ -95,6 +99,22 @@ public class Piece extends View {
         }
     }
 
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public Rect getrInic() {
+        return rInic;
+    }
+
+    public void setrInic(Rect rInic) {
+        this.rInic = rInic;
+    }
+
     public int getLastPos() {
         return lastPos;
     }
@@ -134,16 +154,35 @@ public class Piece extends View {
         paint.setStyle(Paint.Style.FILL);
 
         if (movable) {
+
             paint.setColor(Color.GREEN);
         } else {
             paint.setColor(Color.GRAY);
         }
         canvas.drawRect(r, paint);
+        //Log.d(TAG, "antes de dibujar pieza " + number);
+
+       // try {
+        if (bitmap!=null) {
+            //Log.d(TAG, "width = " + bitmap.getWidth());
+            //Log.d(TAG, "Height = " + bitmap.getHeight());
+            //Log.d(TAG,rInic.toString());
+            canvas.drawBitmap(bitmap, rInic, r, paint);
+            //Log.d(TAG,"Logre dibujar");
+        }
+       // }catch(RuntimeException e){
+       //     Log.d(TAG,e.getMessage());
+        //}
+
+
+       // Log.d(TAG,"despues de dibujar pieza " + number);
         if (numerable) {
             paint.setTextSize(height / 2);
             paint.setColor(Color.BLUE);
             paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText(Integer.toString(number), left + (width / 2), top + (height / 2) + (paint.getTextSize() / 2), paint);
+            Log.d(TAG, "width = " + bitmap.getWidth());
+            Log.d(TAG, "Height = " + bitmap.getHeight());
         }
         if (selected) {
             paint.setStyle(Paint.Style.STROKE);

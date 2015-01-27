@@ -1,6 +1,11 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -13,14 +18,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 
 public class MainActivity extends Activity {
 
-    private static final int maxPiecesW=3;
-    private static final int maxPiecesH=3;
+    private static final int maxPiecesW=4;
+    private static final int maxPiecesH=4;
     private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
     private static final int pieceWidth=50;
     private static final int pieceHeight=50;
@@ -28,7 +35,7 @@ public class MainActivity extends Activity {
     private static final int paddingTop=10;
     private static final int paddingPieceX=0;
     private static final int paddingPieceY=0;
-
+    private Bitmap bitmap;
     private static final String TAG="Juego";
 
     private RelativeLayout frame;
@@ -49,9 +56,11 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
         frame = (RelativeLayout) findViewById(R.id.frame);
-        Log.d(TAG, "frame height: " + displayHeight);
-
-
+        bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
+        Log.d(TAG,"bitmap = "+ bitmap.getWidth()+" , " + bitmap.getHeight());
+        int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
+        int miniBitmapSizeH=bitmap.getHeight()/maxPiecesH;
+        Map<Integer,Rect> rectList = new HashMap<>();
         //Piece leftBorder= new Piece(getApplicationContext(),0,0,(pieceWidth+50)*maxPieces,(pieceHeight+50)*maxPieces,true);
         //leftBorder.setMovable(false);
         //pieceList.add(leftBorder);
@@ -64,9 +73,14 @@ public class MainActivity extends Activity {
                 int top, left;
                 left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
                 top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
+
                 Integer[] pos = new Integer[2];
                 pos[0] = left;//-paddingLeft-paddingPieceX;
                 pos[1] = top;//-paddingTop-paddingPieceY;
+
+                Rect rect = new Rect(x*miniBitmapSizeW,y*miniBitmapSizeH,(x+1)*miniBitmapSizeW,(y+1)*miniBitmapSizeH);
+
+                rectList.put(x+y*maxPiecesH,rect);
 
                 positions.add(pos);
             }
@@ -78,10 +92,22 @@ public class MainActivity extends Activity {
             int posIndex = rnd.nextInt(posRand.size());
             int left = posRand.get(posIndex)[0];
             int top = posRand.get(posIndex)[1];
+
             posRand.remove(posIndex);
             if (i < maxPieces) {
 
                 Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
+                //Log.d(TAG,"no he agregado la imagen de la pieza " + i);
+                //Matrix matrix = new Matrix();
+                //matrix.postScale((float)(pieceWidth/miniBitmapSizeW),(float)(pieceHeight/miniBitmapSizeH));
+                //Log.d(TAG,"llegue aqui");
+                //Bitmap bmp=Bitmap.createBitmap(bitmap,left,top,pieceWidth,pieceHeight,matrix,false);
+
+                Rect rect = rectList.get(i+1);
+                piece.setBitmap(bitmap);
+                piece.setrInic(rect);
+                //Log.d(TAG, "pieza "+ (i+1) + "-" +  rectList.get(posIndex).toString());
+                //Log.d(TAG,"agregue la imagen de la pieza " + i);
                 pieceList.add(piece);
                 piece.setLastPos(i);
                 frame.addView(piece);
@@ -156,7 +182,7 @@ public class MainActivity extends Activity {
         Piece p9=pieceList.get(8);
         Piece p10=pieceList.get(9);
 
-        Log.d(TAG,"Connections 0: \n" + physics);
+       // Log.d(TAG,"Connections 0: \n" + physics);
         physics.movePiece(p4,Orientation.X,210);
 //        Log.d(TAG,"Connections 1: \n" + physics);
 //        physics.movePiece(p7,Orientation.Y,50);
@@ -169,6 +195,45 @@ public class MainActivity extends Activity {
 //        Log.d(TAG,"Connections 4: \n" + physics);
 //
 
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
+                                                         int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resId, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeResource(res, resId, options);
     }
 
     @Override
@@ -217,8 +282,8 @@ public class MainActivity extends Activity {
             // Get the size of the display so this View knows where borders are
             displayWidth = frame.getWidth();
             displayHeight = frame.getHeight();
-            Log.d(TAG,"Width = " + displayWidth);
-            Log.d(TAG,"Height = " + displayHeight);
+            //Log.d(TAG,"Width = " + displayWidth);
+            //Log.d(TAG,"Height = " + displayHeight);
             Log.d(TAG,frame.getMeasuredWidth()+" " +frame.getMeasuredHeight());
         }
     }
