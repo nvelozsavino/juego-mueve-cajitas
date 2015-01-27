@@ -233,16 +233,16 @@ public class Piece extends View {
 //                removeSideContact(Side.LEFT);
 //                if (all) {
 //                    //removeSideContact(piece,Side.RIGHT,Side.LEFT);
-//                    removeSideContact(Side.TOP);
-//                    removeSideContact(Side.BOTTOM);
+//                    removeSideContact(Side.UP);
+//                    removeSideContact(Side.DOWN);
 //                }
 //
 //            } else {
 //                //removeSideContact(piece,Side.LEFT,Side.RIGHT);
 //                removeSideContact(Side.RIGHT);
 //                if (all) {
-//                    removeSideContact( Side.TOP);
-//                    removeSideContact( Side.BOTTOM);
+//                    removeSideContact( Side.UP);
+//                    removeSideContact( Side.DOWN);
 //                }
 //            }
 //        } else {
@@ -252,28 +252,28 @@ public class Piece extends View {
 //                    removeSideContact( Side.LEFT);
 //                    removeSideContact( Side.RIGHT);
 //                }
-//                removeSideContact(Side.TOP);
-//                //removeSideContact(piece,Side.BOTTOM,Side.TOP);
+//                removeSideContact(Side.UP);
+//                //removeSideContact(piece,Side.DOWN,Side.UP);
 //
 //            } else {
 //                if(all) {
 //                    removeSideContact( Side.LEFT);
 //                    removeSideContact( Side.RIGHT);
 //                }
-////                removeSideContact(piece,Side.TOP,Side.BOTTOM);
-//                removeSideContact(Side.BOTTOM);
+////                removeSideContact(piece,Side.UP,Side.DOWN);
+//                removeSideContact(Side.DOWN);
 //
 //            }
 //        }
 //    }
 //    private void removeSideContact(Side side1){
-//        Side side2=Side.TOP;
+//        Side side2=Side.UP;
 //        switch (side1){
-//            case TOP:
-//                side2=Side.BOTTOM;
+//            case UP:
+//                side2=Side.DOWN;
 //                break;
-//            case BOTTOM:
-//                side2=Side.TOP;
+//            case DOWN:
+//                side2=Side.UP;
 //                break;
 //            case LEFT:
 //                side2=Side.RIGHT;
@@ -290,13 +290,13 @@ public class Piece extends View {
 //    }
 
 //    private void removeSpecificContact(Side side1){
-//        Side side2=Side.TOP;
+//        Side side2=Side.UP;
 //        switch (side1){
-//            case TOP:
-//                side2=Side.BOTTOM;
+//            case UP:
+//                side2=Side.DOWN;
 //                break;
-//            case BOTTOM:
-//                side2=Side.TOP;
+//            case DOWN:
+//                side2=Side.UP;
 //                break;
 //            case LEFT:
 //                side2=Side.RIGHT;
@@ -321,8 +321,8 @@ public class Piece extends View {
 //    private void checkAndRemoveContacts(Orientation orientation){
 //        //Log.d(TAG, "Contacts: *********** checking and Removing Contacts ***********");
 //        if (orientation.equals(Orientation.Y)){
-//            removeSpecificContact(Side.TOP);
-//            removeSpecificContact(Side.BOTTOM);
+//            removeSpecificContact(Side.UP);
+//            removeSpecificContact(Side.DOWN);
 ////            for (Piece top:piece.contactTop){
 ////                if (!piece.borderTop.checkDanger(top.borderBottom)){
 ////                    top.contactBottom.remove(piece);
@@ -375,10 +375,10 @@ public class Piece extends View {
 //        } else {
 //            dy = delta;
 //            if (delta > 0) { //moving down=> borderFront bottom, piece border up
-//                side = Side.BOTTOM;
+//                side = Side.DOWN;
 //
 //            } else { //moving up=> borderFront top, piece border down
-//                side = Side.TOP;
+//                side = Side.UP;
 //
 //            }
 //        }
@@ -423,11 +423,11 @@ public class Piece extends View {
 //            } else {
 //
 //                if (delta > 0) { //moving down=> borderFront bottom, piece border up
-//                    side = Side.BOTTOM;
+//                    side = Side.DOWN;
 //                    sign = 1;
 //
 //                } else { //moving up=> borderFront top, piece border down
-//                    side = Side.TOP;
+//                    side = Side.UP;
 //                    sign = -1;
 //                }
 //            }
@@ -534,11 +534,11 @@ public class Piece extends View {
 //        } else {
 //
 //            if (delta > 0) { //moving down=> borderFront bottom, piece border top
-//                side = Side.BOTTOM;
+//                side = Side.DOWN;
 //                border = piece.borderTop;
 //
 //            } else { //moving down=> borderFront bottom, piece border up
-//                side = Side.TOP;
+//                side = Side.UP;
 //                border = piece.borderBottom;
 //            }
 //        }
@@ -592,9 +592,9 @@ public class Piece extends View {
                 return borderLeft;
             case RIGHT:
                 return borderRight;
-            case TOP:
+            case UP:
                 return borderTop;
-            case BOTTOM:
+            case DOWN:
                 return borderBottom;
         }
         return null;
@@ -606,9 +606,9 @@ public class Piece extends View {
 //                return contactLeft;
 //            case RIGHT:
 //                return contactRight;
-//            case TOP:
+//            case UP:
 //                return contactTop;
-//            case BOTTOM:
+//            case DOWN:
 //                return contactBottom;
 //        }
 //        return null;

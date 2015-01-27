@@ -29,8 +29,8 @@ public class MainActivity extends Activity {
     private static final int maxPiecesW=4;
     private static final int maxPiecesH=4;
     private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
-    private static final int pieceWidth=50;
-    private static final int pieceHeight=50;
+    private static final int pieceWidth=100;
+    private static final int pieceHeight=100;
     private static final int paddingLeft=10;
     private static final int paddingTop=10;
     private static final int paddingPieceX=0;
@@ -41,10 +41,10 @@ public class MainActivity extends Activity {
     private RelativeLayout frame;
 
     List<Piece> pieceList= new ArrayList<>();
-    private final int[] tol = new int[2];
+//    private final int[] tol = new int[2];
     List<Integer[]> positions = new ArrayList<>();
-    Physics physics=new Physics();
-    private Piece movingPiece;
+    Physics physics=new Physics(maxPiecesH,maxPiecesW);
+    private Physics.Movement pieceMovement;
     private Integer lastX,lastY;
     private Integer pointerId;
     private int displayWidth, displayHeight;
@@ -61,12 +61,11 @@ public class MainActivity extends Activity {
         int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
         int miniBitmapSizeH=bitmap.getHeight()/maxPiecesH;
         Map<Integer,Rect> rectList = new HashMap<>();
-        //Piece leftBorder= new Piece(getApplicationContext(),0,0,(pieceWidth+50)*maxPieces,(pieceHeight+50)*maxPieces,true);
-        //leftBorder.setMovable(false);
-        //pieceList.add(leftBorder);
-        //frame.addView(leftBorder);
-        tol[0]=pieceWidth/2;
-        tol[1]=pieceHeight/2;
+
+
+//        tol[0]=pieceWidth/2;
+//        tol[1]=pieceHeight/2;
+
         for (int y=0;y<maxPiecesH;y++) {
             for (int x = 0; x < maxPiecesW; x++) {
                 //int i = x * maxPiecesH + y;
@@ -83,19 +82,23 @@ public class MainActivity extends Activity {
                 rectList.put(x+y*maxPiecesH,rect);
 
                 positions.add(pos);
+
             }
         }
-        List<Integer[]> posRand = new ArrayList<>();
-        posRand.addAll(positions);
-        for (int i=0;i<maxPieces;i++){
-            Random rnd = new Random();
-            int posIndex = rnd.nextInt(posRand.size());
-            int left = posRand.get(posIndex)[0];
-            int top = posRand.get(posIndex)[1];
 
-            posRand.remove(posIndex);
+//        List<Integer[]> posRand = new ArrayList<>();
+//        posRand.addAll(positions);
+        for (int i=0;i<maxPieces;i++) {
+//            Random rnd = new Random();
+            int posIndex = i;//rnd.nextInt(posRand.size());
+            int left = positions.get(posIndex)[0];
+            int top = positions.get(posIndex)[1];
+
+
+//
+//            posRand.remove(posIndex);
             if (i < maxPieces) {
-
+//
                 Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
                 //Log.d(TAG,"no he agregado la imagen de la pieza " + i);
                 //Matrix matrix = new Matrix();
@@ -109,48 +112,55 @@ public class MainActivity extends Activity {
                 //Log.d(TAG, "pieza "+ (i+1) + "-" +  rectList.get(posIndex).toString());
                 //Log.d(TAG,"agregue la imagen de la pieza " + i);
                 pieceList.add(piece);
+                physics.addPiece(piece);
                 piece.setLastPos(i);
                 frame.addView(piece);
             }
 
         }
+
         int borderTop = 0 + paddingTop;
         int borderLeft = 0 + paddingLeft;
         int borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
         int borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
         for (int i=0;i<4;i++) {
             int top=0, left=0, width=0, height=0;
-
+            Direction direction=Direction.NONE;
             switch (i) {
                 case 0://border left
                     top = borderTop - paddingTop;
                     left = borderLeft - paddingLeft;
                     width = paddingLeft;
                     height = borderBottom-top;
+                    direction=Direction.LEFT;
                     break;
                 case 1://border top
                     top = borderTop-paddingTop;
                     left = borderLeft;
                     width = borderRight;
                     height = paddingTop;
+                    direction=Direction.UP;
                     break;
                 case 2://border right
                     top = borderTop;
                     left = borderRight;
                     width = paddingLeft;
                     height = borderBottom;
+                    direction=Direction.RIGHT;
                     break;
                 case 3://border bottom
                     top = borderBottom;
                     left = borderLeft-paddingLeft;
                     width = borderRight-left;
                     height = paddingTop;
+                    direction=Direction.DOWN;
                     break;
             }
 
             Piece border = new Piece(getApplicationContext(), top, left, width, height, false);
             border.setMovable(false);
             pieceList.add(border);
+            physics.addBorder(border,direction);
             frame.addView(border);
         }
 
@@ -168,7 +178,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        physics.addPieces(pieceList);
+        //physics.addPieces(pieceList);
 
 
         Piece p1=pieceList.get(0);
@@ -183,7 +193,7 @@ public class MainActivity extends Activity {
         Piece p10=pieceList.get(9);
 
        // Log.d(TAG,"Connections 0: \n" + physics);
-        physics.movePiece(p4,Orientation.X,210);
+//        physics.movePiece(p4,Orientation.X,210);
 //        Log.d(TAG,"Connections 1: \n" + physics);
 //        physics.movePiece(p7,Orientation.Y,50);
 //        Log.d(TAG,"Connections 2: \n" + physics);
@@ -300,11 +310,11 @@ public class MainActivity extends Activity {
                 for (Piece p : pieceList) {
                     if (p.intersect(x-frame.getPaddingLeft(), y-frame.getPaddingTop())) {
                         //Log.d(TAG, "intersect");
-                        if (movingPiece!=null){
-                            movingPiece.setSelected(false);
+                        if (pieceMovement!=null){
+                            pieceMovement.getPiece().setSelected(false);
                         }
-                        movingPiece = p;
-                        movingPiece.setSelected(true);
+                        pieceMovement= physics.new Movement(p);
+                        pieceMovement.getPiece().setSelected(true);
                         lastX = x;
                         lastY = y;
                         break;
@@ -314,14 +324,14 @@ public class MainActivity extends Activity {
             }
             case MotionEvent.ACTION_MOVE: {
                 int pointerIndex = event.getActionIndex();
-                if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && movingPiece!=null) {
+                if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && pieceMovement!=null) {
                     int x = (int)event.getX(pointerIndex);
                     int y = (int)event.getY(pointerIndex);
                     int dx=x-lastX;
                     int dy=y-lastY;
                     lastX=x;
                     lastY=y;
-                    movePiece(movingPiece,dx,dy);
+                    movePiece(pieceMovement,dx,dy);
 
                 }
                 break;
@@ -330,39 +340,42 @@ public class MainActivity extends Activity {
             case MotionEvent.ACTION_POINTER_UP: {
                 int pointerIndex = event.getActionIndex();
                 if (pointerId!=null && pointerId==event.getPointerId(pointerIndex)){
-                    if (movingPiece!=null){
-                        movingPiece.setSelected(false);
+                    if (pieceMovement!=null){
+                        pieceMovement.getPiece().setSelected(false);
+                        physics.snapMovement(pieceMovement);
                     }
-                    movingPiece=null;
+
+                    pieceMovement=null;
                     pointerId=null;
                     lastY=null;
                     lastX=null;
-                    snapPiece(pieceList,positions,tol);
+                    //snapPiece(pieceList,positions,tol);
                 }
                 break;
             }
             case MotionEvent.ACTION_UP:
 
-                if (movingPiece!=null){
-                    movingPiece.setSelected(false);
+                if (pieceMovement!=null){
+                    pieceMovement.getPiece().setSelected(false);
+                    physics.snapMovement(pieceMovement);
                 }
-                movingPiece=null;
+                pieceMovement=null;
                 pointerId=null;
                 lastY=null;
                 lastX=null;
-                if (snapPiece(pieceList,positions,tol)){
-                    moveCounter++;
-                    TextView text = (TextView)findViewById(R.id.moveCounterText);
-                    text.setText("Moves = " + moveCounter);
-                    text.invalidate();
-                    if(checkWin(pieceList)){
-                        Log.d(TAG,"you win");
-                        Toast toast = Toast.makeText(getApplicationContext(),"you win",Toast.LENGTH_LONG);
-                        //toast.setText("Congratulations you Won in " + moveCounter + "moves");
-                        //toast.setDuration(Toast.LENGTH_LONG);
-                        toast.show();
-                    }
-                }
+//                if (snapPiece(pieceList,positions,tol)){
+//                    moveCounter++;
+//                    TextView text = (TextView)findViewById(R.id.moveCounterText);
+//                    text.setText("Moves = " + moveCounter);
+//                    text.invalidate();
+//                    if(checkWin(pieceList)){
+//                        Log.d(TAG,"you win");
+//                        Toast toast = Toast.makeText(getApplicationContext(),"you win",Toast.LENGTH_LONG);
+//                        //toast.setText("Congratulations you Won in " + moveCounter + "moves");
+//                        //toast.setDuration(Toast.LENGTH_LONG);
+//                        toast.show();
+//                    }
+//                }
                 break;
 
 
@@ -371,54 +384,64 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private void movePiece(Piece piece, int dx, int dy){
-
-        physics.movePiece(piece, Orientation.X, dx);
-        physics.movePiece(piece, Orientation.Y, dy);
-
-    }
-
-    private boolean snapPiece(List<Piece> pieceList, List<Integer[]> positions, int[] tol){
-        boolean hasBeenMoved=false;
-        for (Piece piece : pieceList){
-
-            if (piece.isMovable()) {
-                int k=0;
-                for (Integer[] pos : positions) {
-                    int x = pos[0];
-                    int y = pos[1];
-                    if (piece.getLeftPos() - x < tol[0] && piece.getLeftPos() - x >= -tol[0]
-                            && piece.getTopPos() - y < tol[1] && piece.getTopPos() - y >= -tol[1]) {
-
-                        int dx = x-piece.getLeftPos();
-                        int dy = y-piece.getTopPos();
-                        movePiece(piece,dx,dy);
-                         if(piece.getLastPos()!=k) {
-                             hasBeenMoved = true;
-                             piece.setLastPos(k);
-                         }
-
-
-                        //piece.setLeft(x);
-                        //piece.setTop(y);
-                        //piece.invalidate();
-                    }
-                    k++;
-                }
-            }
-
+    private void movePiece(Physics.Movement movement, int dx, int dy){
+        Direction direction;
+        if (dx>0){
+            direction=Direction.RIGHT;
+        } else {
+            direction=Direction.LEFT;
         }
-        return hasBeenMoved;
-    }
-
-    private boolean checkWin(List<Piece> pieceList){
-        boolean win=true;
-        for (Piece piece:pieceList){
-            if (piece.getNumber()!=piece.getLastPos()){
-                win = false;
-            }
+        movement.move(direction,dx);
+        if (dy>0){
+            direction=Direction.DOWN;
+        } else {
+            direction=Direction.UP;
         }
+        movement.move(direction,dy);
 
-        return win;
     }
+
+//    private boolean snapPiece(List<Piece> pieceList, List<Integer[]> positions, int[] tol){
+//        boolean hasBeenMoved=false;
+//        for (Piece piece : pieceList){
+//
+//            if (piece.isMovable()) {
+//                int k=0;
+//                for (Integer[] pos : positions) {
+//                    int x = pos[0];
+//                    int y = pos[1];
+//                    if (piece.getLeftPos() - x < tol[0] && piece.getLeftPos() - x >= -tol[0]
+//                            && piece.getTopPos() - y < tol[1] && piece.getTopPos() - y >= -tol[1]) {
+//
+//                        int dx = x-piece.getLeftPos();
+//                        int dy = y-piece.getTopPos();
+//                        movePiece(piece,dx,dy);
+//                         if(piece.getLastPos()!=k) {
+//                             hasBeenMoved = true;
+//                             piece.setLastPos(k);
+//                         }
+//
+//
+//                        //piece.setLeft(x);
+//                        //piece.setTop(y);
+//                        //piece.invalidate();
+//                    }
+//                    k++;
+//                }
+//            }
+//
+//        }
+//        return hasBeenMoved;
+//    }
+
+//    private boolean checkWin(List<Piece> pieceList){
+//        boolean win=true;
+//        for (Piece piece:pieceList){
+//            if (piece.getNumber()!=piece.getLastPos()){
+//                win = false;
+//            }
+//        }
+//
+//        return win;
+//    }
 }

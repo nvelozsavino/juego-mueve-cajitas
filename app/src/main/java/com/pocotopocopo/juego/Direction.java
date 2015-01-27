@@ -1,30 +1,44 @@
 package com.pocotopocopo.juego;
 
 public enum Direction {
-    RIGHT, LEFT, TOP, BOTTOM;
+    RIGHT, LEFT, UP, DOWN, NONE;
     public Direction reverse(){
         switch (this){
             case LEFT:
                 return RIGHT;
             case RIGHT:
                 return LEFT;
-            case TOP:
-                return BOTTOM;
-            case BOTTOM:
-                return TOP;
+            case UP:
+                return DOWN;
+            case DOWN:
+                return UP;
             default:
                 return null;
+        }
+    }
+    public int getSign(){
+        switch (this){
+            case LEFT:
+                return -1;
+            case RIGHT:
+                return -1;
+            case UP:
+                return +1;
+            case DOWN:
+                return +1;
+            default:
+                return 0;
         }
     }
     public Direction rotatedCW(){
         switch (this){
             case LEFT:
-                return BOTTOM;
+                return DOWN;
             case RIGHT:
-                return TOP;
-            case TOP:
+                return UP;
+            case UP:
                 return LEFT;
-            case BOTTOM:
+            case DOWN:
                 return RIGHT;
             default:
                 return null;
@@ -38,8 +52,8 @@ public enum Direction {
             case LEFT:
             case RIGHT:
                 return Orientation.Y;
-            case TOP:
-            case BOTTOM:
+            case UP:
+            case DOWN:
                 return Orientation.X;
             default:
                 return null;
