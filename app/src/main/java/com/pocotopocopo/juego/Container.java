@@ -56,22 +56,22 @@ public class Container extends RelativeLayout {
 
     }
 
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
     public Container(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
-        text = new TextView(this.getContext());
-        text.setText("Moves = 0");
+
         Log.d(TAG,"height = " +getHeight());
         setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                return touchEvent(v,event);
+                return touchEvent(v, event);
             }
         });
-        if (text==null){
-            Log.d(TAG,"frame is null");
-        }
     }
 
     @Override
@@ -80,9 +80,7 @@ public class Container extends RelativeLayout {
         super.onLayout(changed, l, t, r, b);
         Log.d(TAG, "onLayout - width: " + getWidth() + " ,Height: " + getHeight());
         if (!created && getWidth()!=0 && getHeight()!=0) {
-            text.setLeft(0);
-            text.setTop(getHeight() - 100);
-            text.setTextSize(20);
+
 
             pieceWidth=(getWidth()-2*paddingLeft)/maxPiecesW;
             pieceHeight=(getHeight()-2*paddingTop)/maxPiecesH;
@@ -230,6 +228,14 @@ public class Container extends RelativeLayout {
         }
 
         return inSampleSize;
+    }
+
+    public TextView getText() {
+        return text;
+    }
+
+    public void setText(TextView text) {
+        this.text = text;
     }
 
     public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
