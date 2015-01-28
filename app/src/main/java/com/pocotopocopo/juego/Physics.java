@@ -113,31 +113,10 @@ public class Physics {
      * @return  lineal index
      */
     private int getIndex(int i, int j){
-        return j*rows + i;
+        int index=j*rows+i;
+        return index;
     }
 
-
-    /**
-     * Get the allowed movement orientation of a piece according its position and the position of
-     * the null piece
-     * @param piece the piece of the wanted orientation
-     * @return Returns the allowed movement orientation of a piece according its position and
-     * the position of the null piece
-     */
-    private Orientation getAllowedMovementOrientation(Piece piece){
-        return getAllowedMovementDirection(piece).getOrientation();
-
-
-    }
-
-    /**
-     * Get only the direction of movement allowed for the piece
-     * @param piece The piece which the direction of the movement will be calculated
-     * @return returns the allowed movement direction
-     */
-    private Direction getAllowedMovementDirection(Piece piece){
-        return getMaxMovements(piece).firstArgument;
-    }
 
     /**
      * Get a list of pieces which will be in the way of the moving piece
@@ -158,21 +137,25 @@ public class Physics {
                 for (int y=j-1;y>=0;y--){
                     possibleCollisionPieces.add(pieceList.get(getIndex(i,y)));
                 }
+                possibleCollisionPieces.add(getBorder(Direction.UP));
                 break;
             case DOWN:
                 for (int y=j+1;y<rows;y++){
                     possibleCollisionPieces.add(pieceList.get(getIndex(i,y)));
                 }
+                possibleCollisionPieces.add(getBorder(Direction.DOWN));
                 break;
             case LEFT:
                 for (int x=i-1;x>=0;x--){
-                    possibleCollisionPieces.add(pieceList.get(getIndex(x,i)));
+                    possibleCollisionPieces.add(pieceList.get(getIndex(x,j)));
                 }
+                possibleCollisionPieces.add(getBorder(Direction.LEFT));
                 break;
             case RIGHT:
                 for (int x=i+1;x<columns;x++){
-                    possibleCollisionPieces.add(pieceList.get(getIndex(x,i)));
+                    possibleCollisionPieces.add(pieceList.get(getIndex(x,j)));
                 }
+                possibleCollisionPieces.add(getBorder(Direction.RIGHT));
                 break;
         }
         return possibleCollisionPieces;
@@ -189,6 +172,8 @@ public class Physics {
         //private Direction direction;
         private Orientation allowedOrientation;
         private Piece piece;
+        boolean movable=true;
+        private Direction finalAllowedDirection;
         //private int delta;
 
         /**
@@ -197,9 +182,26 @@ public class Physics {
          */
         public Movement(Piece piece){
             this.piece=piece;
-            this.allowedOrientation= getAllowedMovementOrientation(piece);
+            Tuple<Direction,Integer> directionAndMovements= getDirectionAndMovements(piece);
+            this.finalAllowedDirection =directionAndMovements.firstArgument;
+            this.allowedOrientation= finalAllowedDirection.getOrientation();
+            if (allowedOrientation==null){
+                movable=false;
+            }
+
             movedPieces = new HashMap<>();
 
+        }
+
+        /**
+         * Invalidate the movement, after is clear, all the calls to move() will throw an exception
+         */
+        public void clear(){
+            this.piece=null;
+            this.allowedOrientation=null;
+            this.finalAllowedDirection=null;
+            movedPieces=null;
+            movable=false;
         }
 
         /**
@@ -210,26 +212,22 @@ public class Physics {
             return piece;
         }
 
+
         /**
-         * Checks if the piece has space to move in the direction. If the list of pieces which
-         * could collide contains the hole piece (null) or there is no piece in the way,
-         * then, the piece could move
-         * @param possibleCollisionPieces A list of the pieces which could colide
-         * @param direction the direction of the moving piece
-         * @return true if the piece can be moved along direction
+         * Returns if the movement is valid
+         * @return true if is valid, false otherwise
          */
-        private boolean hasSpaceToMove(List<Piece> possibleCollisionPieces,Direction direction){
-            if (!possibleCollisionPieces.isEmpty() && possibleCollisionPieces.contains(null)){
-                possibleCollisionPieces.remove(null);
-                Piece border=getBorder(direction);
-                if (border!=null){
-                    possibleCollisionPieces.add(border);
-                }
-                return true;
-            }
-            return false;
+        public boolean isMovable() {
+            return movable;
         }
 
+        /**
+         * Returns the final allowed movement direction of the piece in the movement
+         * @return the final allowed movement direction of the piece in the movement
+         */
+        public Direction getFinalAllowedDirection() {
+            return finalAllowedDirection;
+        }
 
         /**
          * Move the piece in the direction and a delta distance. if the piece collides with another
@@ -240,49 +238,91 @@ public class Physics {
          * @return the moved distance
          */
         public int move(Direction direction, int delta){
-            List<Piece> movingPieces = new ArrayList<>();
-            int movedDistance=0;
-            List<Piece> possibleCollisionPieces = getPossibleCollisionPieces(piece,direction);
-            if (allowedOrientation.equals(direction.getOrientation()) &&delta>0 && piece.isMovable() && hasSpaceToMove(possibleCollisionPieces,direction)){
+            if (piece==null){
+                throw new RuntimeException("Movement was cleared or the piece is null");
+            }
+            int movedDistance = 0;
+            if (movable && direction.getOrientation().equals(allowedOrientation)) {
+                /**
+                 * @frontPiece the piece which will be at the front of the movement,
+                 * it will be the first piece to collide
+                 * @movingPieces is a list containing all the pieces which moves as a whole
+                 * @possibleCollisionPieces is a list containing all the pieces in the
+                 * direction of the movement, they have to be in order of appearance
+                 * from the moving piece
+                 * @movingDistance is the distance that movingPieces will try to move
+                 * @movedDistance is the total distance moved
+                 */
+                List<Piece> movingPieces = new ArrayList<>();
 
-                Piece movingPiece=piece;
+                List<Piece> possibleCollisionPieces = getPossibleCollisionPieces(piece, direction);
+                //remove the null piece because it is not a piece, it's a hole
+                possibleCollisionPieces.remove(null);
+                /*
+                 if there is at least one piece to collide (at least the border), try to move.
+                 Do nothing otherwise (it should be at least a border.
 
+                 */
+                int movingDistance = Math.abs(delta);
+                Piece frontPiece = piece;
                 movingPieces.add(piece);
-                int movingDistance=delta;
-                for (Piece collisionPiece: possibleCollisionPieces){
+                for (int i = 0; i < possibleCollisionPieces.size() && movingDistance > 0; i++) {
+                    Piece collisionPiece = possibleCollisionPieces.get(i);
 
-                    Tuple<Boolean, Integer> collision = getCollisionDistance(movingPiece, collisionPiece, direction, movingDistance);
-                    if (collision.firstArgument) {
+                    //check the collision
+                    Tuple<Boolean, Integer> collision = getCollisionDistance(frontPiece, collisionPiece, direction, movingDistance);
+
+                    /*
+                    If the collision happens, then move the pieces to just the collision distance
+                    update the moving pieces, front piece and the next moving distance.
+
+                    If there was no collision, then move all the moving Distance.
+                     */
+                    if (collision.firstArgument) { //Collision happens
+                        //get the collision distance
                         int collisionDistance = collision.secondArgument;
+                        //move the pieces to just the collision distance
                         movePieceList(movingPieces, direction, collisionDistance);
-                        movingPiece = collisionPiece;
-                        if (collisionPiece.isMovable()) {
+                        //update the moved distance
+                        movedDistance += collisionDistance;
+
+                        /*
+                        check if the collisionPiece is movable, if it is movable, then it will be
+                        moved with all the other pieces, if it is not movable, then the movement
+                        ends because no matter how many distance left, the pieces won't move any
+                        more
+                         */
+                        if (collisionPiece.isMovable()) { //collided piece is movable
+                            //update the movingPieces with the new collided Piece
                             movingPieces.add(collisionPiece);
+                            //update the new frontPiece, now it will be the collisionPiece
+                            frontPiece = collisionPiece;
+                            //update the distance that left to move
                             movingDistance -= collisionDistance;
-                            movedDistance+=collisionDistance;
-                        } else {
-                            movingDistance=0;
-                            break;
+                        } else { // collided piece is not movable
+                            //stop the movement, the pieces won't move any more
+                            movingDistance = 0;
                         }
-                    } else{
-                        if (movingDistance>0){
-                            movePieceList(movingPieces, direction, movingDistance);
-                            movedDistance+=movingDistance;
-                            movingDistance=0;
-                            break;
-                        }
+
+                    } else { //No collision detected
+
+                        //move the pieces all the desired distance
+                        movePieceList(movingPieces, direction, movingDistance);
+                        movedDistance += movingDistance;
+                        //and break the loop because there is no more distance to move
+                        movingDistance = 0;
                     }
 
-                }
-                if (movingDistance>0) {
-                    movePieceList(movingPieces, direction, movingDistance);
+
                 }
             }
             return movedDistance;
+
         }
 
         /**
-         * Moves all the pieces in the specified direction a distance of delta
+         * Moves all the pieces in the specified direction a distance of delta and update the
+         * moved distance of each moved piece (for the snap adjustment)
          * @param pieceList the list of pieces to move
          * @param direction the direction of the moving piece
          * @param delta the wanted distance of the movement
@@ -291,10 +331,10 @@ public class Physics {
             if (delta>0) {
                 int dx, dy;
                 if (direction.getOrientation() == Orientation.Y) {
-                    dx = delta;
+                    dx = direction.getSign()*delta;
                     dy = 0;
                 } else {
-                    dy = delta;
+                    dy = direction.getSign()*delta;
                     dx = 0;
                 }
                 for (Piece piece : pieceList) {
@@ -333,7 +373,7 @@ public class Physics {
         /**
          * Return the map containing the moved Pieces as the keys and the moved distance
          * as the values
-         * @return Return the map containing the moved Pieces as the keys and the moved distance
+         * @return the map containing the moved Pieces as the keys and the moved distance
          * as the values
          */
         public Map<Piece,Integer> getMovedPieces() {
@@ -342,7 +382,7 @@ public class Physics {
 
         /**
          * Returns the allowed movement orientation of the
-         * @return
+         * @return the allowed orientation
          */
         public Orientation getAllowedOrientation(){
             return allowedOrientation;
@@ -354,87 +394,149 @@ public class Physics {
      * After a movement is finished, the user should call this function to snap the pieces to the
      * grid and to update the index of the grid
      * @param movement the finished movement
+     * @return true if there was a movement (a piece change its position in the grid),
+     * false otherwise
      */
-    public void snapMovement(Movement movement) {
-        Map<Piece,Integer> movedPieces=movement.getMovedPieces();
-        Piece piece=movement.getPiece();
-        int index=pieceList.indexOf(piece);
-        int i=index%rows;
-        int j=index/rows;
-        int nullIndex=pieceList.indexOf(null);
-        int nullI=nullIndex%rows;
-        int nullJ=nullIndex/rows;
-
-        /**
-         * if the null piece is not on the same row or column, something went wrong
+    public boolean snapMovement(Movement movement) {
+        boolean moved=false;
+        /*
+        If the movement is valid (movable) then snap to grid all the moved pieces withing the
+        movement ant then update the index of the pieces that change its position in the grid
          */
-        if (i!=nullI && j!=nullJ){
-            throw new RuntimeException("algo mal");
-        }
+        if (movement.movable) { //is movable
+            //get the map of the moved pieces
+            Map<Piece, Integer> movedPieces = movement.getMovedPieces();
+            //get the piece which originated the movement
+            Piece piece = movement.getPiece();
+            //get the index of the piece which originated the movement
+            // and its x, y (i,j) coordinates
+            int index = pieceList.indexOf(piece);
+            int i = index % rows;
+            int j = index / rows;
 
+            //get the index of the hole (null piece)
+            // and its x, y (i,j) coordinates
+            int nullIndex = pieceList.indexOf(null);
+            int nullI = nullIndex % rows;
+            int nullJ = nullIndex / rows;
 
-        List<Piece> snappedPieces=new ArrayList<>();
-
-        /**
-         * For each piece that has some movement, snap to grid
-         */
-        for (Map.Entry<Piece,Integer> entry:movedPieces.entrySet()){
-            Piece pieceToSnap=entry.getKey();
-            int distance=entry.getValue();
-            int sign;
-            Direction direction;
-            if (distance>0){
-                sign=+1;
-            }else if (distance<0){
-                sign=-1;
-            } else {
-                sign=0;
-            }
-            direction=movement.getAllowedOrientation().direction(sign);
-            int size;
-            int dx=0;
-            int dy=0;
-
-            /**
-             * check if the movement is in X or in Y, and then check if the movement is bigger than
-             * the half of the size in that orientation. if it is bigger then snap it to
-             * the next/previous position in the grid. If is lower then remove the movement
+            /*
+            if the null piece is not on the same row or column, something went wrong,
+            the movement should be invalid and movable should be false
              */
-            if (movement.getAllowedOrientation().equals(Orientation.X)){
-                size=pieceToSnap.getWidth();
-                if (Math.abs(distance)>size){
-                    dx=sign*(size-Math.abs(distance));
-
-                    snappedPieces.add(pieceToSnap);
-                } else {
-                    dx=-distance;
-                }
-            } else {
-                size=pieceToSnap.getHeight();
-                if (Math.abs(distance)>size){
-                    dy=sign*(size-Math.abs(distance));
-
-                    snappedPieces.add(pieceToSnap);
-                } else {
-                    dy=-distance;
-                }
+            if (i != nullI && j != nullJ) {
+                throw new RuntimeException("Inconsistency in the indexes");
             }
-            pieceToSnap.move(dx,dy);
-        }
 
-        /**
-         * There are only two possibilities if there was a piece which changes the index:
-         *  1. The moving piece push all the other pieces
-         *  2. The moving piece push all the other pieces and then went back to his original position
-         */
-        Direction direction=getAllowedMovementDirection(piece);
-        if (snappedPieces.size()>0) {
-            moveInArray(piece, direction);
-            if (!snappedPieces.contains(piece)) {
-                moveInArray(piece,direction.reverse());
+            //create an array to put all the pieces which changes their position in the grid
+            List<Piece> snappedPieces = new ArrayList<>();
+
+            /*
+            For each piece that has some movement, snap to grid
+             */
+            for (Map.Entry<Piece, Integer> entry : movedPieces.entrySet()) {
+                //get the piece
+                Piece pieceToSnap = entry.getKey();
+                //get its movement
+                int distance = entry.getValue();
+                //get the movement sign
+                int sign;
+                if (distance > 0) {
+                    sign = +1; //RIGHT or DOWN
+                } else if (distance < 0) {
+                    sign = -1; //LEFT or UP
+                } else {
+                    sign = 0; //No movement
+                }
+                //a variable to get the piece Width or Height depending on the orientation
+                int size;
+
+                //variables to store the movement on x or y
+                int dx = 0;
+                int dy = 0;
+
+                /*
+                check if the movement is in X or in Y, and then check if the movement is bigger than
+                the half of the size in that orientation. if it is bigger then snap it to
+                the next/previous position in the grid. If is lower then remove the movement
+                 */
+                /*
+                if the movement is perpendicular to X => movement along Y or viceversa
+                 */
+                if (movement.getAllowedOrientation().equals(Orientation.X)) { //along Y
+                    //get the piece's height
+                    size = pieceToSnap.getPieceHeight();
+                    /*
+                    if the distance in module is larger than the size of its height, then
+                    the piece snaps to the next position, if it is not larger, then it snaps to the
+                    original position
+                     */
+                    if (Math.abs(distance) > (size / 2)) { //it is larger=> snap to next
+                        //snap to next (or previous, depending on the sign)
+                        dy = sign * (size - Math.abs(distance));
+
+                        snappedPieces.add(pieceToSnap);
+                    } else {
+                        //snap to the original position (revert the movement)
+                        dy = -distance;
+                    }
+                } else { //along X
+
+                    //get the piece's height
+                    size = pieceToSnap.getPieceWidth();
+                    /*
+                    if the distance in module is larger than the size of its width, then
+                    the piece snaps to the next position, if it is not larger, then it snaps to the
+                    original position
+                     */
+                    if (Math.abs(distance) > (size / 2)) {
+                        //snap to next (or previous, depending on the sign)
+                        dx = sign * (size - Math.abs(distance));
+                        //add the piece to the snapped pieces list
+                        snappedPieces.add(pieceToSnap);
+                    } else {
+                        //snap to the original position (revert the movement)
+                        dx = -distance;
+                    }
+                }
+                //move the piece according to the snapped coordinates
+                pieceToSnap.move(dx, dy);
             }
-        }
 
+            //UPDATING THE INDEXES
+            /*
+            There are only two possibilities if there was a piece which changes the index:
+              1. The moving piece push all the other pieces
+              2. The moving piece push all the other pieces and then went back to his original position
+            If there were no pieces which changes its position in the grid, then the index
+            are the same
+             */
+            //get the only possible movement direction for the piece that initiate the movement
+            Direction direction = movement.getFinalAllowedDirection();
+            /*
+            if there is at least one snapped piece, update the indexes,
+            (the movement's piece push all the other pieces, and it may got back to its position
+            or stay in the new position)
+             */
+            if (snappedPieces.size() > 0) {
+                moved=true;
+                //the piece pushes all the other pieces
+                moveInArray(piece, direction);
+                /*
+                if the movement's piece was not snapped to a new position, then it went back to its
+                original position.
+                 */
+                if (!snappedPieces.contains(piece)) {
+                    //move the piece back to its original index;
+                    moveInArray(piece, direction.reverse());
+                }
+            } else{
+                moved=false;
+            }
+            //the snap should reset the movement
+            movement.clear();
+        }
+        return moved;
 
     }
 
@@ -445,7 +547,7 @@ public class Physics {
      * @return a Tuple containing the direction and how many pieces for getting the hole in that direction
      *
      */
-    private Tuple<Direction,Integer> getMaxMovements(Piece piece){
+    private Tuple<Direction,Integer> getDirectionAndMovements(Piece piece){
         if (!pieceList.contains(piece)){
             throw new GameExceptions.PieceNotExistException();
         }
@@ -490,7 +592,7 @@ public class Physics {
      */
     private void moveInArray(Piece piece,Direction direction){
 
-        Tuple<Direction,Integer> movement=getMaxMovements(piece);
+        Tuple<Direction,Integer> movement= getDirectionAndMovements(piece);
         int index=pieceList.indexOf(piece);
         int i=index%rows;
         int j=index/rows;
@@ -600,7 +702,7 @@ public class Physics {
 
             int a = movingBorder.getPos();
 
-            int b = movingBorder.getPos() + dist;
+            int b = movingBorder.getPos() + dist*direction.getSign();
             int c = otherBorder.getPos();
             result.firstArgument = ( b==c ||(c >= a && c <= b) || (c >= b && c <= a));
             if (result.firstArgument){
@@ -612,5 +714,9 @@ public class Physics {
         return result;
     }
 
+
+    public int getPieceIndex(Piece piece){
+        return pieceList.indexOf(piece);
+    }
 
 }
