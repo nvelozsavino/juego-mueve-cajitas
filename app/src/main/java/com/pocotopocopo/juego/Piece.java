@@ -49,6 +49,15 @@ public class Piece extends View {
         invalidate();
     }
 
+
+    public int getPieceWidth() {
+        return width;
+    }
+
+    public int getPieceHeight() {
+        return height;
+    }
+
     public Piece(Context context, int top, int left, int width, int height,boolean border) {
         super(context);
         this.top = top;
@@ -169,6 +178,8 @@ public class Piece extends View {
             //Log.d(TAG,rInic.toString());
             canvas.drawBitmap(bitmap, rInic, r, paint);
             //Log.d(TAG,"Logre dibujar");
+            Log.d(TAG, "width = " + bitmap.getWidth());
+            Log.d(TAG, "Height = " + bitmap.getHeight());
         }
        // }catch(RuntimeException e){
        //     Log.d(TAG,e.getMessage());
@@ -181,8 +192,7 @@ public class Piece extends View {
             paint.setColor(Color.BLUE);
             paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText(Integer.toString(number), left + (width / 2), top + (height / 2) + (paint.getTextSize() / 2), paint);
-            Log.d(TAG, "width = " + bitmap.getWidth());
-            Log.d(TAG, "Height = " + bitmap.getHeight());
+
         }
         if (selected) {
             paint.setStyle(Paint.Style.STROKE);

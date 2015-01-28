@@ -56,69 +56,83 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
         frame = (RelativeLayout) findViewById(R.id.frame);
-        bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
-        Log.d(TAG,"bitmap = "+ bitmap.getWidth()+" , " + bitmap.getHeight());
-        int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
-        int miniBitmapSizeH=bitmap.getHeight()/maxPiecesH;
-        Map<Integer,Rect> rectList = new HashMap<>();
 
 
-//        tol[0]=pieceWidth/2;
-//        tol[1]=pieceHeight/2;
+        for (int index=1;index<maxPieces+1;index++){
+            int x=index%maxPiecesW;
+            int y=index/maxPiecesH;
 
-        for (int y=0;y<maxPiecesH;y++) {
-            for (int x = 0; x < maxPiecesW; x++) {
-                //int i = x * maxPiecesH + y;
-                int top, left;
-                left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
-                top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
+            int left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
+            int top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
 
-                Integer[] pos = new Integer[2];
-                pos[0] = left;//-paddingLeft-paddingPieceX;
-                pos[1] = top;//-paddingTop-paddingPieceY;
-
-                Rect rect = new Rect(x*miniBitmapSizeW,y*miniBitmapSizeH,(x+1)*miniBitmapSizeW,(y+1)*miniBitmapSizeH);
-
-                rectList.put(x+y*maxPiecesH,rect);
-
-                positions.add(pos);
-
-            }
+            Piece piece = new Piece(getApplicationContext(),top,left,pieceWidth,pieceHeight,index);
+            frame.addView(piece);
+            pieceList.add(piece);
+            physics.addPiece(piece);
         }
-
-//        List<Integer[]> posRand = new ArrayList<>();
-//        posRand.addAll(positions);
-        for (int i=0;i<maxPieces;i++) {
-//            Random rnd = new Random();
-            int posIndex = i;//rnd.nextInt(posRand.size());
-            int left = positions.get(posIndex)[0];
-            int top = positions.get(posIndex)[1];
-
-
+//        bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
+//        Log.d(TAG,"bitmap = "+ bitmap.getWidth()+" , " + bitmap.getHeight());
+//        int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
+//        int miniBitmapSizeH=bitmap.getHeight()/maxPiecesH;
+//        Map<Integer,Rect> rectList = new HashMap<>();
 //
-//            posRand.remove(posIndex);
-            if (i < maxPieces) {
 //
-                Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
-                //Log.d(TAG,"no he agregado la imagen de la pieza " + i);
-                //Matrix matrix = new Matrix();
-                //matrix.postScale((float)(pieceWidth/miniBitmapSizeW),(float)(pieceHeight/miniBitmapSizeH));
-                //Log.d(TAG,"llegue aqui");
-                //Bitmap bmp=Bitmap.createBitmap(bitmap,left,top,pieceWidth,pieceHeight,matrix,false);
-
-                Rect rect = rectList.get(i+1);
-                piece.setBitmap(bitmap);
-                piece.setrInic(rect);
-                //Log.d(TAG, "pieza "+ (i+1) + "-" +  rectList.get(posIndex).toString());
-                //Log.d(TAG,"agregue la imagen de la pieza " + i);
-                pieceList.add(piece);
-                physics.addPiece(piece);
-                piece.setLastPos(i);
-                frame.addView(piece);
-            }
-
-        }
-
+////        tol[0]=pieceWidth/2;
+////        tol[1]=pieceHeight/2;
+//
+//        for (int y=0;y<maxPiecesH;y++) {
+//            for (int x = 0; x < maxPiecesW; x++) {
+//                //int i = x * maxPiecesH + y;
+//                int top, left;
+//                left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
+//                top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
+//
+//                Integer[] pos = new Integer[2];
+//                pos[0] = left;//-paddingLeft-paddingPieceX;
+//                pos[1] = top;//-paddingTop-paddingPieceY;
+//
+//                Rect rect = new Rect(x*miniBitmapSizeW,y*miniBitmapSizeH,(x+1)*miniBitmapSizeW,(y+1)*miniBitmapSizeH);
+//
+//                rectList.put(x+y*maxPiecesH,rect);
+//
+//                positions.add(pos);
+//
+//            }
+//        }
+//
+////        List<Integer[]> posRand = new ArrayList<>();
+////        posRand.addAll(positions);
+//        for (int i=0;i<maxPieces;i++) {
+////            Random rnd = new Random();
+//            int posIndex = i;//rnd.nextInt(posRand.size());
+//            int left = positions.get(posIndex)[0];
+//            int top = positions.get(posIndex)[1];
+//
+//
+////
+////            posRand.remove(posIndex);
+//            if (i < maxPieces) {
+////
+//                Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
+//                //Log.d(TAG,"no he agregado la imagen de la pieza " + i);
+//                //Matrix matrix = new Matrix();
+//                //matrix.postScale((float)(pieceWidth/miniBitmapSizeW),(float)(pieceHeight/miniBitmapSizeH));
+//                //Log.d(TAG,"llegue aqui");
+//                //Bitmap bmp=Bitmap.createBitmap(bitmap,left,top,pieceWidth,pieceHeight,matrix,false);
+//
+//                Rect rect = rectList.get(i+1);
+//                piece.setBitmap(bitmap);
+//                piece.setrInic(rect);
+//                //Log.d(TAG, "pieza "+ (i+1) + "-" +  rectList.get(posIndex).toString());
+//                //Log.d(TAG,"agregue la imagen de la pieza " + i);
+//                pieceList.add(piece);
+//                physics.addPiece(piece);
+//                piece.setLastPos(i);
+//                frame.addView(piece);
+//            }
+//
+//        }
+//
         int borderTop = 0 + paddingTop;
         int borderLeft = 0 + paddingLeft;
         int borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
@@ -159,17 +173,17 @@ public class MainActivity extends Activity {
 
             Piece border = new Piece(getApplicationContext(), top, left, width, height, false);
             border.setMovable(false);
-            pieceList.add(border);
+            //pieceList.add(border);
             physics.addBorder(border,direction);
             frame.addView(border);
         }
-
-
-
-
-
-
-
+//
+//
+//
+//
+//
+//
+//
         frame.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -177,10 +191,10 @@ public class MainActivity extends Activity {
                 return touchEvent(event);
             }
         });
-
-        //physics.addPieces(pieceList);
-
-
+//
+//        //physics.addPieces(pieceList);
+//
+//
         Piece p1=pieceList.get(0);
         Piece p2=pieceList.get(1);
         Piece p3=pieceList.get(2);
@@ -191,19 +205,42 @@ public class MainActivity extends Activity {
         Piece p8=pieceList.get(7);
         Piece p9=pieceList.get(8);
         Piece p10=pieceList.get(9);
+        Piece p11=pieceList.get(10);
+        Piece p12=pieceList.get(11);
+        Piece p13=pieceList.get(12);
+        Piece p14=pieceList.get(13);
+        Piece p15=pieceList.get(14);
 
-       // Log.d(TAG,"Connections 0: \n" + physics);
-//        physics.movePiece(p4,Orientation.X,210);
-//        Log.d(TAG,"Connections 1: \n" + physics);
-//        physics.movePiece(p7,Orientation.Y,50);
-//        Log.d(TAG,"Connections 2: \n" + physics);
+        Physics.Movement movement;
+
+
+        movement=physics.new Movement(p2);
+        movement.move(Direction.LEFT,60);
+        movement.move(Direction.RIGHT,70);
+        physics.snapMovement(movement);
+        Log.d(TAG,"null=" + physics.getPieceIndex(null));
+
+
+        //movement=physics.new Movement(p6);
+        //movement.move(Direction.UP,51);
+        //physics.snapMovement(movement);
+        Log.d(TAG,"null=" + physics.getPieceIndex(null));
+
+
+
 //
-//        physics.movePiece(p3,Orientation.X,110);
-//        Log.d(TAG,"Connections 3: \n" + physics);
-//
-//        physics.movePiece(p3,Orientation.Y,20);
-//        Log.d(TAG,"Connections 4: \n" + physics);
-//
+//       // Log.d(TAG,"Connections 0: \n" + physics);
+////        physics.movePiece(p4,Orientation.X,210);
+////        Log.d(TAG,"Connections 1: \n" + physics);
+////        physics.movePiece(p7,Orientation.Y,50);
+////        Log.d(TAG,"Connections 2: \n" + physics);
+////
+////        physics.movePiece(p3,Orientation.X,110);
+////        Log.d(TAG,"Connections 3: \n" + physics);
+////
+////        physics.movePiece(p3,Orientation.Y,20);
+////        Log.d(TAG,"Connections 4: \n" + physics);
+////
 
     }
 
@@ -391,13 +428,13 @@ public class MainActivity extends Activity {
         } else {
             direction=Direction.LEFT;
         }
-        movement.move(direction,dx);
+        movement.move(direction,Math.abs(dx));
         if (dy>0){
             direction=Direction.DOWN;
         } else {
             direction=Direction.UP;
         }
-        movement.move(direction,dy);
+        movement.move(direction,Math.abs(dy));
 
     }
 

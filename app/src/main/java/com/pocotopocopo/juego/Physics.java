@@ -113,7 +113,8 @@ public class Physics {
      * @return  lineal index
      */
     private int getIndex(int i, int j){
-        return j*rows + i;
+        int index=j*rows+i;
+        return index;
     }
 
 
@@ -166,12 +167,12 @@ public class Physics {
                 break;
             case LEFT:
                 for (int x=i-1;x>=0;x--){
-                    possibleCollisionPieces.add(pieceList.get(getIndex(x,i)));
+                    possibleCollisionPieces.add(pieceList.get(getIndex(x,j)));
                 }
                 break;
             case RIGHT:
                 for (int x=i+1;x<columns;x++){
-                    possibleCollisionPieces.add(pieceList.get(getIndex(x,i)));
+                    possibleCollisionPieces.add(pieceList.get(getIndex(x,j)));
                 }
                 break;
         }
@@ -189,6 +190,7 @@ public class Physics {
         //private Direction direction;
         private Orientation allowedOrientation;
         private Piece piece;
+        boolean movable=true;
         //private int delta;
 
         /**
@@ -198,6 +200,10 @@ public class Physics {
         public Movement(Piece piece){
             this.piece=piece;
             this.allowedOrientation= getAllowedMovementOrientation(piece);
+            if (allowedOrientation==null){
+                movable=false;
+            }
+
             movedPieces = new HashMap<>();
 
         }
@@ -219,7 +225,7 @@ public class Physics {
          * @return true if the piece can be moved along direction
          */
         private boolean hasSpaceToMove(List<Piece> possibleCollisionPieces,Direction direction){
-            if (!possibleCollisionPieces.isEmpty() && possibleCollisionPieces.contains(null)){
+            if (!possibleCollisionPieces.isEmpty()){
                 possibleCollisionPieces.remove(null);
                 Piece border=getBorder(direction);
                 if (border!=null){
@@ -243,12 +249,12 @@ public class Physics {
             List<Piece> movingPieces = new ArrayList<>();
             int movedDistance=0;
             List<Piece> possibleCollisionPieces = getPossibleCollisionPieces(piece,direction);
-            if (allowedOrientation.equals(direction.getOrientation()) &&delta>0 && piece.isMovable() && hasSpaceToMove(possibleCollisionPieces,direction)){
+            if (movable && allowedOrientation.equals(direction.getOrientation()) &&delta>0 && piece.isMovable() && hasSpaceToMove(possibleCollisionPieces,direction)){
 
                 Piece movingPiece=piece;
 
                 movingPieces.add(piece);
-                int movingDistance=delta;
+                int movingDistance=Math.abs(delta);
                 for (Piece collisionPiece: possibleCollisionPieces){
 
                     Tuple<Boolean, Integer> collision = getCollisionDistance(movingPiece, collisionPiece, direction, movingDistance);
@@ -291,10 +297,10 @@ public class Physics {
             if (delta>0) {
                 int dx, dy;
                 if (direction.getOrientation() == Orientation.Y) {
-                    dx = delta;
+                    dx = direction.getSign()*delta;
                     dy = 0;
                 } else {
-                    dy = delta;
+                    dy = direction.getSign()*delta;
                     dx = 0;
                 }
                 for (Piece piece : pieceList) {
@@ -356,85 +362,86 @@ public class Physics {
      * @param movement the finished movement
      */
     public void snapMovement(Movement movement) {
-        Map<Piece,Integer> movedPieces=movement.getMovedPieces();
-        Piece piece=movement.getPiece();
-        int index=pieceList.indexOf(piece);
-        int i=index%rows;
-        int j=index/rows;
-        int nullIndex=pieceList.indexOf(null);
-        int nullI=nullIndex%rows;
-        int nullJ=nullIndex/rows;
-
-        /**
-         * if the null piece is not on the same row or column, something went wrong
-         */
-        if (i!=nullI && j!=nullJ){
-            throw new RuntimeException("algo mal");
-        }
-
-
-        List<Piece> snappedPieces=new ArrayList<>();
-
-        /**
-         * For each piece that has some movement, snap to grid
-         */
-        for (Map.Entry<Piece,Integer> entry:movedPieces.entrySet()){
-            Piece pieceToSnap=entry.getKey();
-            int distance=entry.getValue();
-            int sign;
-            Direction direction;
-            if (distance>0){
-                sign=+1;
-            }else if (distance<0){
-                sign=-1;
-            } else {
-                sign=0;
-            }
-            direction=movement.getAllowedOrientation().direction(sign);
-            int size;
-            int dx=0;
-            int dy=0;
+        if (movement.movable) {
+            Map<Piece, Integer> movedPieces = movement.getMovedPieces();
+            Piece piece = movement.getPiece();
+            int index = pieceList.indexOf(piece);
+            int i = index % rows;
+            int j = index / rows;
+            int nullIndex = pieceList.indexOf(null);
+            int nullI = nullIndex % rows;
+            int nullJ = nullIndex / rows;
 
             /**
-             * check if the movement is in X or in Y, and then check if the movement is bigger than
-             * the half of the size in that orientation. if it is bigger then snap it to
-             * the next/previous position in the grid. If is lower then remove the movement
+             * if the null piece is not on the same row or column, something went wrong
              */
-            if (movement.getAllowedOrientation().equals(Orientation.X)){
-                size=pieceToSnap.getWidth();
-                if (Math.abs(distance)>size){
-                    dx=sign*(size-Math.abs(distance));
+            if (i != nullI && j != nullJ) {
+                throw new RuntimeException("algo mal");
+            }
 
-                    snappedPieces.add(pieceToSnap);
+
+            List<Piece> snappedPieces = new ArrayList<>();
+
+            /**
+             * For each piece that has some movement, snap to grid
+             */
+            for (Map.Entry<Piece, Integer> entry : movedPieces.entrySet()) {
+                Piece pieceToSnap = entry.getKey();
+                int distance = entry.getValue();
+                int sign;
+                Direction direction;
+                if (distance > 0) {
+                    sign = +1;
+                } else if (distance < 0) {
+                    sign = -1;
                 } else {
-                    dx=-distance;
+                    sign = 0;
                 }
-            } else {
-                size=pieceToSnap.getHeight();
-                if (Math.abs(distance)>size){
-                    dy=sign*(size-Math.abs(distance));
+                direction = movement.getAllowedOrientation().direction(sign);
+                int size;
+                int dx = 0;
+                int dy = 0;
 
-                    snappedPieces.add(pieceToSnap);
+                /**
+                 * check if the movement is in X or in Y, and then check if the movement is bigger than
+                 * the half of the size in that orientation. if it is bigger then snap it to
+                 * the next/previous position in the grid. If is lower then remove the movement
+                 */
+                if (movement.getAllowedOrientation().equals(Orientation.X)) {
+                    size = pieceToSnap.getPieceWidth();
+                    if (Math.abs(distance) > (size / 2)) {
+                        dy = sign * (size - Math.abs(distance));
+
+                        snappedPieces.add(pieceToSnap);
+                    } else {
+                        dy = -distance;
+                    }
                 } else {
-                    dy=-distance;
+                    size = pieceToSnap.getPieceHeight();
+                    if (Math.abs(distance) > (size / 2)) {
+                        dx = sign * (size - Math.abs(distance));
+
+                        snappedPieces.add(pieceToSnap);
+                    } else {
+                        dx = -distance;
+                    }
+                }
+                pieceToSnap.move(dx, dy);
+            }
+
+            /**
+             * There are only two possibilities if there was a piece which changes the index:
+             *  1. The moving piece push all the other pieces
+             *  2. The moving piece push all the other pieces and then went back to his original position
+             */
+            Direction direction = getAllowedMovementDirection(piece);
+            if (snappedPieces.size() > 0) {
+                moveInArray(piece, direction);
+                if (!snappedPieces.contains(piece)) {
+                    moveInArray(piece, direction.reverse());
                 }
             }
-            pieceToSnap.move(dx,dy);
         }
-
-        /**
-         * There are only two possibilities if there was a piece which changes the index:
-         *  1. The moving piece push all the other pieces
-         *  2. The moving piece push all the other pieces and then went back to his original position
-         */
-        Direction direction=getAllowedMovementDirection(piece);
-        if (snappedPieces.size()>0) {
-            moveInArray(piece, direction);
-            if (!snappedPieces.contains(piece)) {
-                moveInArray(piece,direction.reverse());
-            }
-        }
-
 
     }
 
@@ -612,5 +619,9 @@ public class Physics {
         return result;
     }
 
+
+    public int getPieceIndex(Piece piece){
+        return pieceList.indexOf(piece);
+    }
 
 }
