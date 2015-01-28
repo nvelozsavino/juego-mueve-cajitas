@@ -221,9 +221,11 @@ public class MainActivity extends Activity {
         Log.d(TAG,"null=" + physics.getPieceIndex(null));
 
 
-        //movement=physics.new Movement(p6);
-        //movement.move(Direction.UP,51);
-        //physics.snapMovement(movement);
+        movement=physics.new Movement(p13);
+        //for (int i =0;i<20;i++) {
+            movement.move(Direction.UP, 120);
+        //}
+        physics.snapMovement(movement);
         Log.d(TAG,"null=" + physics.getPieceIndex(null));
 
 
