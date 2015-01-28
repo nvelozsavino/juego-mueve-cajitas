@@ -220,7 +220,7 @@ public class Physics {
          * Checks if the piece has space to move in the direction. If the list of pieces which
          * could collide contains the hole piece (null) or there is no piece in the way,
          * then, the piece could move
-         * @param possibleCollisionPieces A list of the pieces which could colide
+         * @param possibleCollisionPieces A list of the pieces which could collide
          * @param direction the direction of the moving piece
          * @return true if the piece can be moved along direction
          */

@@ -21,9 +21,9 @@ public enum Direction {
             case LEFT:
                 return -1;
             case RIGHT:
-                return -1;
-            case UP:
                 return +1;
+            case UP:
+                return -1;
             case DOWN:
                 return +1;
             default:
