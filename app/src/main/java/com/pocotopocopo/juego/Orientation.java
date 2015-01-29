@@ -22,9 +22,9 @@ public enum Orientation {
 
         } else {
             if (sign >= 0) {
-                return Direction.BOTTOM;
+                return Direction.DOWN;
             } else {
-                return Direction.TOP;
+                return Direction.UP;
             }
         }
     }
