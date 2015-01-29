@@ -29,8 +29,8 @@ public class BoxPuzzle extends ViewGroup {
     private static final int defaultPieceHeight=50;
     private static final int defaultBorderPaddingX=10;
     private static final int defaultBorderPaddingY=10;
-    private static final int defaultPiecePaddingX=0;
-    private static final int defaultPiecePaddingY=0;
+    private static final int defaultPiecePaddingX=3;
+    private static final int defaultPiecePaddingY=3;
 
     private int rows=defaultRows;
     private int cols=defaultCols;
@@ -242,7 +242,12 @@ public class BoxPuzzle extends ViewGroup {
                 if (pointerId!=null && pointerId==event.getPointerId(pointerIndex)){
                     if (pieceMovement!=null){
                         pieceMovement.getPiece().setSelected(false);
-                        callListener(physics.snapMovement(pieceMovement));
+                        boolean moved=physics.snapMovement(pieceMovement);
+                        if (moved) {
+
+                            callListener();
+                        }
+                        update();
                     }
 
                     pieceMovement=null;
@@ -257,7 +262,11 @@ public class BoxPuzzle extends ViewGroup {
 
                 if (pieceMovement!=null){
                     pieceMovement.getPiece().setSelected(false);
-                    callListener(physics.snapMovement(pieceMovement));
+                    boolean moved=physics.snapMovement(pieceMovement);
+                    if (moved) {
+                        callListener();
+                    }
+                    update();
                 }
                 pieceMovement=null;
                 pointerId=null;
@@ -284,8 +293,8 @@ public class BoxPuzzle extends ViewGroup {
         return true;
     }
 
-    private void callListener(boolean moved){
-        if (listener!=null && moved){
+    private void callListener(){
+        if (listener!=null){
             listener.onPieceMoved();
         }
     }

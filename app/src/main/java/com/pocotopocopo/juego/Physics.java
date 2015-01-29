@@ -521,7 +521,7 @@ public class Physics {
                     }
                 }
                 //move the piece according to the snapped coordinates
-                pieceToSnap.move(dx, dy);
+                //pieceToSnap.move(dx, dy);
             }
 
             //UPDATING THE INDEXES
