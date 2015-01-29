@@ -1,0 +1,14 @@
+<resources>
+    <declare-styleable name="BoxPuzzle">
+        <attr name="rows" format="integer" />
+        <attr name="cols" format="integer" />
+        <attr name="pieceWidth" format="integer" />
+        <attr name="pieceHeight" format="integer" />
+        <attr name="piecePaddingX" format="integer" />
+        <attr name="piecePaddingY" format="integer" />
+        <attr name="borderPaddingX" format="integer" />
+        <attr name="borderPaddingY" format="integer" />
+
+
+    </declare-styleable>
+</resources>

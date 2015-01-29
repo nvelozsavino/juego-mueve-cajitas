@@ -28,7 +28,10 @@ public class Piece extends View {
     public boolean border=false;
     private int lastPos;
     private Bitmap bitmap;
-    private Rect rInic;
+    private Rect rInit;
+    private int paddingX=0;
+    private int paddingY=0;
+
 
 
     public boolean isMovable() {
@@ -47,6 +50,25 @@ public class Piece extends View {
     public void setSelected(boolean selected) {
         this.selected = selected;
         invalidate();
+    }
+
+
+    public int getPieceWidth() {
+        return width;
+    }
+
+    public int getPieceHeight() {
+        return height;
+    }
+
+    public Piece(Context context,int number){
+        this(context,0,0,0,0,number);
+
+    }
+
+    public Piece(Context context,boolean border){
+        this(context,0,0,0,0,border);
+
     }
 
     public Piece(Context context, int top, int left, int width, int height,boolean border) {
@@ -84,17 +106,44 @@ public class Piece extends View {
 
     }
 
+    public void setPadding(int paddingX,int paddingY){
+        this.paddingX=paddingX;
+        this.paddingY=paddingY;
+    }
+
+    public int getPaddingX() {
+        return paddingX;
+    }
+
+    public int getPaddingY() {
+        return paddingY;
+    }
+
+    public void updateSize(int width, int height){
+        this.width=width;
+        this.height=height;
+        updateBorders();
+        invalidate();
+    }
+
+    public void moveAbsolute(int x, int y){
+        this.left=x;
+        this.top=y;
+        updateBorders();
+        invalidate();
+    }
+
     private void updateBorders() {
         if (border) {
-            borderRight.update(left, top);
-            borderLeft.update(left + width, top);
-            borderBottom.update(left, top);
-            borderTop.update(left, top + height);
+            borderRight.update(left, top,height);
+            borderLeft.update(left + width, top,height);
+            borderBottom.update(left, top,width);
+            borderTop.update(left, top + height,width);
         } else {
-            borderLeft.update(left, top);
-            borderRight.update(left + width, top);
-            borderTop.update(left, top);
-            borderBottom.update(left, top + height);
+            borderLeft.update(left, top,height);
+            borderRight.update(left + width, top,height);
+            borderTop.update(left, top,width);
+            borderBottom.update(left, top + height,width);
 
         }
     }
@@ -107,12 +156,12 @@ public class Piece extends View {
         this.bitmap = bitmap;
     }
 
-    public Rect getrInic() {
-        return rInic;
+    public Rect getrInit() {
+        return rInit;
     }
 
-    public void setrInic(Rect rInic) {
-        this.rInic = rInic;
+    public void setrInit(Rect rInit) {
+        this.rInit = rInit;
     }
 
     public int getLastPos() {
@@ -167,8 +216,11 @@ public class Piece extends View {
             //Log.d(TAG, "width = " + bitmap.getWidth());
             //Log.d(TAG, "Height = " + bitmap.getHeight());
             //Log.d(TAG,rInic.toString());
-            canvas.drawBitmap(bitmap, rInic, r, paint);
+            //Rect rInic = new Rect(0,0,bitmap.getWidth(),bitmap.getHeight());
+            canvas.drawBitmap(bitmap, rInit, r, paint);
             //Log.d(TAG,"Logre dibujar");
+            Log.d(TAG, "width = " + bitmap.getWidth());
+            Log.d(TAG, "Height = " + bitmap.getHeight());
         }
        // }catch(RuntimeException e){
        //     Log.d(TAG,e.getMessage());
@@ -181,8 +233,7 @@ public class Piece extends View {
             paint.setColor(Color.BLUE);
             paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText(Integer.toString(number), left + (width / 2), top + (height / 2) + (paint.getTextSize() / 2), paint);
-            Log.d(TAG, "width = " + bitmap.getWidth());
-            Log.d(TAG, "Height = " + bitmap.getHeight());
+
         }
         if (selected) {
             paint.setStyle(Paint.Style.STROKE);
@@ -233,16 +284,16 @@ public class Piece extends View {
 //                removeSideContact(Side.LEFT);
 //                if (all) {
 //                    //removeSideContact(piece,Side.RIGHT,Side.LEFT);
-//                    removeSideContact(Side.TOP);
-//                    removeSideContact(Side.BOTTOM);
+//                    removeSideContact(Side.UP);
+//                    removeSideContact(Side.DOWN);
 //                }
 //
 //            } else {
 //                //removeSideContact(piece,Side.LEFT,Side.RIGHT);
 //                removeSideContact(Side.RIGHT);
 //                if (all) {
-//                    removeSideContact( Side.TOP);
-//                    removeSideContact( Side.BOTTOM);
+//                    removeSideContact( Side.UP);
+//                    removeSideContact( Side.DOWN);
 //                }
 //            }
 //        } else {
@@ -252,28 +303,28 @@ public class Piece extends View {
 //                    removeSideContact( Side.LEFT);
 //                    removeSideContact( Side.RIGHT);
 //                }
-//                removeSideContact(Side.TOP);
-//                //removeSideContact(piece,Side.BOTTOM,Side.TOP);
+//                removeSideContact(Side.UP);
+//                //removeSideContact(piece,Side.DOWN,Side.UP);
 //
 //            } else {
 //                if(all) {
 //                    removeSideContact( Side.LEFT);
 //                    removeSideContact( Side.RIGHT);
 //                }
-////                removeSideContact(piece,Side.TOP,Side.BOTTOM);
-//                removeSideContact(Side.BOTTOM);
+////                removeSideContact(piece,Side.UP,Side.DOWN);
+//                removeSideContact(Side.DOWN);
 //
 //            }
 //        }
 //    }
 //    private void removeSideContact(Side side1){
-//        Side side2=Side.TOP;
+//        Side side2=Side.UP;
 //        switch (side1){
-//            case TOP:
-//                side2=Side.BOTTOM;
+//            case UP:
+//                side2=Side.DOWN;
 //                break;
-//            case BOTTOM:
-//                side2=Side.TOP;
+//            case DOWN:
+//                side2=Side.UP;
 //                break;
 //            case LEFT:
 //                side2=Side.RIGHT;
@@ -290,13 +341,13 @@ public class Piece extends View {
 //    }
 
 //    private void removeSpecificContact(Side side1){
-//        Side side2=Side.TOP;
+//        Side side2=Side.UP;
 //        switch (side1){
-//            case TOP:
-//                side2=Side.BOTTOM;
+//            case UP:
+//                side2=Side.DOWN;
 //                break;
-//            case BOTTOM:
-//                side2=Side.TOP;
+//            case DOWN:
+//                side2=Side.UP;
 //                break;
 //            case LEFT:
 //                side2=Side.RIGHT;
@@ -321,8 +372,8 @@ public class Piece extends View {
 //    private void checkAndRemoveContacts(Orientation orientation){
 //        //Log.d(TAG, "Contacts: *********** checking and Removing Contacts ***********");
 //        if (orientation.equals(Orientation.Y)){
-//            removeSpecificContact(Side.TOP);
-//            removeSpecificContact(Side.BOTTOM);
+//            removeSpecificContact(Side.UP);
+//            removeSpecificContact(Side.DOWN);
 ////            for (Piece top:piece.contactTop){
 ////                if (!piece.borderTop.checkDanger(top.borderBottom)){
 ////                    top.contactBottom.remove(piece);
@@ -375,10 +426,10 @@ public class Piece extends View {
 //        } else {
 //            dy = delta;
 //            if (delta > 0) { //moving down=> borderFront bottom, piece border up
-//                side = Side.BOTTOM;
+//                side = Side.DOWN;
 //
 //            } else { //moving up=> borderFront top, piece border down
-//                side = Side.TOP;
+//                side = Side.UP;
 //
 //            }
 //        }
@@ -423,11 +474,11 @@ public class Piece extends View {
 //            } else {
 //
 //                if (delta > 0) { //moving down=> borderFront bottom, piece border up
-//                    side = Side.BOTTOM;
+//                    side = Side.DOWN;
 //                    sign = 1;
 //
 //                } else { //moving up=> borderFront top, piece border down
-//                    side = Side.TOP;
+//                    side = Side.UP;
 //                    sign = -1;
 //                }
 //            }
@@ -534,11 +585,11 @@ public class Piece extends View {
 //        } else {
 //
 //            if (delta > 0) { //moving down=> borderFront bottom, piece border top
-//                side = Side.BOTTOM;
+//                side = Side.DOWN;
 //                border = piece.borderTop;
 //
 //            } else { //moving down=> borderFront bottom, piece border up
-//                side = Side.TOP;
+//                side = Side.UP;
 //                border = piece.borderBottom;
 //            }
 //        }
@@ -592,9 +643,9 @@ public class Piece extends View {
                 return borderLeft;
             case RIGHT:
                 return borderRight;
-            case TOP:
+            case UP:
                 return borderTop;
-            case BOTTOM:
+            case DOWN:
                 return borderBottom;
         }
         return null;
@@ -606,9 +657,9 @@ public class Piece extends View {
 //                return contactLeft;
 //            case RIGHT:
 //                return contactRight;
-//            case TOP:
+//            case UP:
 //                return contactTop;
-//            case BOTTOM:
+//            case DOWN:
 //                return contactBottom;
 //        }
 //        return null;

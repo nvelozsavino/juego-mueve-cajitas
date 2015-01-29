@@ -2,7 +2,6 @@ package com.pocotopocopo.juego;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -26,9 +25,9 @@ public class LinkedSet<K>{
                 return setsR;
             case LEFT:
                 return setsL;
-            case TOP:
+            case UP:
                 return setsT;
-            case BOTTOM:
+            case DOWN:
                 return setsB;
         }
         return null;
