@@ -1,21 +1,27 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,10 +41,9 @@ public class MainActivity extends Activity {
     private static final int paddingTop=10;
     private static final int paddingPieceX=0;
     private static final int paddingPieceY=0;
-    private Bitmap bitmap;
     private static final String TAG="Juego";
 
-    private RelativeLayout frame;
+    private LinearLayout frame;
 
     List<Piece> pieceList= new ArrayList<>();
 //    private final int[] tol = new int[2];
@@ -48,14 +53,51 @@ public class MainActivity extends Activity {
     private Integer lastX,lastY;
     private Integer pointerId;
     private int displayWidth, displayHeight;
+    private TextView moveCounterText;
     private int moveCounter = 0;
+
+
+
+
+    private Bitmap bitmap;
+    private Button selectImageButton;
+
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private BoxPuzzle puzzle;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
-        frame = (RelativeLayout) findViewById(R.id.frame);
+        frame = (LinearLayout) findViewById(R.id.frame);
+        selectImageButton = (Button) findViewById(R.id.selectImage);
+        puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
+        moveCounterText = (TextView)findViewById(R.id.moveCounterText);
+
+
+        selectImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                }
+            }
+        });
+
+        puzzle.setOnMovePieceListener(new BoxPuzzle.OnMovePieceListener() {
+            @Override
+            public void onPieceMoved() {
+
+                moveCounterText.setText("Movimientos: "+ (++moveCounter));
+            }
+        });
+
+
 //
 //
 //        for (int index=1;index<maxPieces+1;index++){
@@ -246,44 +288,57 @@ public class MainActivity extends Activity {
 
     }
 
-    public static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG,"onActivityResult");
+        if (requestCode==REQUEST_IMAGE_CAPTURE && resultCode==RESULT_OK){
 
-        if (height > reqHeight || width > reqWidth) {
+            Bundle extras = data.getExtras();
+            bitmap = (Bitmap) extras.get("data");
+            Log.d(TAG,"bitmap loaded? " + (bitmap!=null));
+            puzzle.setBitmap(bitmap);
 
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
         }
-
-        return inSampleSize;
     }
-
-    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
-                                                         int reqWidth, int reqHeight) {
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }
+//
+//    public static int calculateInSampleSize(
+//            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+//        // Raw height and width of image
+//        final int height = options.outHeight;
+//        final int width = options.outWidth;
+//        int inSampleSize = 1;
+//
+//        if (height > reqHeight || width > reqWidth) {
+//
+//            final int halfHeight = height / 2;
+//            final int halfWidth = width / 2;
+//
+//            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+//            // height and width larger than the requested height and width.
+//            while ((halfHeight / inSampleSize) > reqHeight
+//                    && (halfWidth / inSampleSize) > reqWidth) {
+//                inSampleSize *= 2;
+//            }
+//        }
+//
+//        return inSampleSize;
+//    }
+//
+//    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
+//                                                         int reqWidth, int reqHeight) {
+//
+//        // First decode with inJustDecodeBounds=true to check dimensions
+//        final BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true;
+//        BitmapFactory.decodeResource(res, resId, options);
+//
+//        // Calculate inSampleSize
+//        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+//
+//        // Decode bitmap with inSampleSize set
+//        options.inJustDecodeBounds = false;
+//        return BitmapFactory.decodeResource(res, resId, options);
+//    }
 
     @Override
     protected void onResume() {
@@ -323,122 +378,111 @@ public class MainActivity extends Activity {
     }
 
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-
-            // Get the size of the display so this View knows where borders are
-            displayWidth = frame.getWidth();
-            displayHeight = frame.getHeight();
-            //Log.d(TAG,"Width = " + displayWidth);
-            //Log.d(TAG,"Height = " + displayHeight);
-            Log.d(TAG,frame.getMeasuredWidth()+" " +frame.getMeasuredHeight());
-        }
-    }
-
-    private boolean touchEvent(MotionEvent event) {
-
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN: {
-                //Log.d(TAG, "pointer down");
-                int pointerIndex = event.getActionIndex();
-                pointerId = event.getPointerId(pointerIndex);
-                int x = (int)event.getX(pointerIndex);
-                int y = (int)event.getY(pointerIndex);
-                for (Piece p : pieceList) {
-                    if (p.intersect(x-frame.getPaddingLeft(), y-frame.getPaddingTop())) {
-                        //Log.d(TAG, "intersect");
-                        if (pieceMovement!=null){
-                            pieceMovement.getPiece().setSelected(false);
-                        }
-                        pieceMovement= physics.new Movement(p);
-                        pieceMovement.getPiece().setSelected(true);
-                        lastX = x;
-                        lastY = y;
-                        break;
-                    }
-                }
-                break;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                int pointerIndex = event.getActionIndex();
-                if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && pieceMovement!=null) {
-                    int x = (int)event.getX(pointerIndex);
-                    int y = (int)event.getY(pointerIndex);
-                    int dx=x-lastX;
-                    int dy=y-lastY;
-                    lastX=x;
-                    lastY=y;
-                    movePiece(pieceMovement,dx,dy);
-
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_POINTER_UP: {
-                int pointerIndex = event.getActionIndex();
-                if (pointerId!=null && pointerId==event.getPointerId(pointerIndex)){
-                    if (pieceMovement!=null){
-                        pieceMovement.getPiece().setSelected(false);
-                        physics.snapMovement(pieceMovement);
-                    }
-
-                    pieceMovement=null;
-                    pointerId=null;
-                    lastY=null;
-                    lastX=null;
-                    //snapPiece(pieceList,positions,tol);
-                }
-                break;
-            }
-            case MotionEvent.ACTION_UP:
-
-                if (pieceMovement!=null){
-                    pieceMovement.getPiece().setSelected(false);
-                    physics.snapMovement(pieceMovement);
-                }
-                pieceMovement=null;
-                pointerId=null;
-                lastY=null;
-                lastX=null;
-//                if (snapPiece(pieceList,positions,tol)){
-//                    moveCounter++;
-//                    TextView text = (TextView)findViewById(R.id.moveCounterText);
-//                    text.setText("Moves = " + moveCounter);
-//                    text.invalidate();
-//                    if(checkWin(pieceList)){
-//                        Log.d(TAG,"you win");
-//                        Toast toast = Toast.makeText(getApplicationContext(),"you win",Toast.LENGTH_LONG);
-//                        //toast.setText("Congratulations you Won in " + moveCounter + "moves");
-//                        //toast.setDuration(Toast.LENGTH_LONG);
-//                        toast.show();
-//                    }
-//                }
-                break;
-
-
-        }
-
-        return true;
-    }
-
-    private void movePiece(Physics.Movement movement, int dx, int dy){
-        Direction direction;
-        if (dx>0){
-            direction=Direction.RIGHT;
-        } else {
-            direction=Direction.LEFT;
-        }
-        movement.move(direction,Math.abs(dx));
-        if (dy>0){
-            direction=Direction.DOWN;
-        } else {
-            direction=Direction.UP;
-        }
-        movement.move(direction,Math.abs(dy));
-
-    }
+  // // }
+//
+//    private boolean touchEvent(MotionEvent event//)// {
+//
+//        switch (event.getActionMasked()//) {
+//            case MotionEvent.ACTION_DOWN//: {
+//                //Log.d(TAG, "pointer down//");
+//                int pointerIndex = event.getActionIndex//();
+//                pointerId = event.getPointerId(pointerInde//x);
+//                int x = (int)event.getX(pointerInde//x);
+//                int y = (int)event.getY(pointerInde//x);
+//                for (Piece p : pieceList//) {
+//                    if (p.intersect(x-frame.getPaddingLeft(), y-frame.getPaddingTop())//) {
+//                        //Log.d(TAG, "intersect//");
+//                        if (pieceMovement!=nul//l){
+//                            pieceMovement.getPiece().setSelected(fals//e);
+//                      //  }
+//                        pieceMovement= physics.new Movement(//p);
+//                        pieceMovement.getPiece().setSelected(tru//e);
+//                        lastX =// x;
+//                        lastY =// y;
+//                        bre//ak;
+//                  //  }
+//              //  }
+//                bre//ak;
+//          //  }
+//            case MotionEvent.ACTION_MOVE//: {
+//                int pointerIndex = event.getActionIndex//();
+//                if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && pieceMovement!=null//) {
+//                    int x = (int)event.getX(pointerInde//x);
+//                    int y = (int)event.getY(pointerInde//x);
+//                    int dx=x-las//tX;
+//                    int dy=y-las//tY;
+//                    lastX//=x;
+//                    lastY//=y;
+//                    movePiece(pieceMovement,dx,d//y//);
+//
+//              //  }
+//                bre//ak;
+//          // // }
+//
+//            case MotionEvent.ACTION_POINTER_UP//: {
+//                int pointerIndex = event.getActionIndex//();
+//                if (pointerId!=null && pointerId==event.getPointerId(pointerIndex//)){
+//                    if (pieceMovement!=nul//l){
+//                        pieceMovement.getPiece().setSelected(fals//e);
+//                        callListener(physics.snapMovement(pieceMovement//));
+//                  // // }
+//
+//                    pieceMovement=nu//ll;
+//                    pointerId=nu//ll;
+//                    lastY=nu//ll;
+//                    lastX=nu//ll;
+//                    //snapPiece(pieceList,positions,to//l);
+//              //  }
+//                bre//ak;
+//          //  }
+//            case MotionEvent.ACTION_//U//P:
+//
+//                if (pieceMovement!=nul//l){
+//                    pieceMovement.getPiece().setSelected(fals//e);
+//                    callListener(physics.snapMovement(pieceMovement//));
+//              //  }
+//                pieceMovement=nu//ll;
+//                pointerId=nu//ll;
+//                lastY=nu//ll;
+//                lastX=nu//ll;
+////                if (snapPiece(pieceList,positions,tol//)){
+////                    moveCounter//++;
+////                    TextView text = (TextView)findViewById(R.id.moveCounterTex//t);
+////                    text.setText("Moves = " + moveCounte//r);
+////                    text.invalidate//();
+////                    if(checkWin(pieceList//)){
+////                        Log.d(TAG,"you win//");
+////                        Toast toast = Toast.makeText(getApplicationContext(),"you win",Toast.LENGTH_LON//G);
+////                        //toast.setText("Congratulations you Won in " + moveCounter + "moves//");
+////                        //toast.setDuration(Toast.LENGTH_LON//G);
+////                        toast.show//();
+////                  //  }
+////              //  }
+//                bre//a//k//;
+//
+//
+//      // // }
+//
+//        return tr//ue;
+//  // // //}
+//
+//
+//    private void movePiece(Physics.Movement movement, int dx, int d//y){
+//        Direction directi//on;
+//        if (dx>//0){
+//            direction=Direction.RIG//HT;
+//        } els//e {
+//            direction=Direction.LE//FT;
+//      //  }
+//        movement.move(direction,Math.abs(dx//));
+//        if (dy>//0){
+//            direction=Direction.DO//WN;
+//        } els//e {
+//            direction=Direction.//UP;
+//      //  }
+//        movement.move(direction,Math.abs(dy//)//);
+//
+//    }
 
 //    private boolean snapPiece(List<Piece> pieceList, List<Integer[]> positions, int[] tol){
 //        boolean hasBeenMoved=false;

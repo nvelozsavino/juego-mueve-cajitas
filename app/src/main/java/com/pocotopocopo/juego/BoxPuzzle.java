@@ -2,6 +2,7 @@ package com.pocotopocopo.juego;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -49,6 +50,17 @@ public class BoxPuzzle extends ViewGroup {
     private List<Piece> pieceList;
     private Map<Direction,Piece> borderMap;
 
+    private Bitmap bitmap;
+
+    private OnMovePieceListener listener;
+    public static interface OnMovePieceListener{
+        void onPieceMoved();
+    }
+
+    public void setOnMovePieceListener(OnMovePieceListener listener){
+        this.listener=listener;
+    }
+
     public BoxPuzzle(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray typedArray=context.getTheme().obtainStyledAttributes(attrs,R.styleable.BoxPuzzle,0,0);
@@ -69,7 +81,8 @@ public class BoxPuzzle extends ViewGroup {
         } finally {
             typedArray.recycle();
         }
-        //setWillNotDraw(false);
+        setWillNotDraw(false);
+
         init();
     }
 
@@ -78,7 +91,16 @@ public class BoxPuzzle extends ViewGroup {
 
     }
 
+    public void setBitmap (Bitmap bitmap){
+        this.bitmap=bitmap;
+        invalidate();
+        update();
+        requestLayout();
+
+    }
+
     private void init(){
+
         pieces=rows*cols-1;
         Log.d(TAG,"# pieces = " + pieces);
         physics=new Physics(rows,cols);
@@ -220,7 +242,7 @@ public class BoxPuzzle extends ViewGroup {
                 if (pointerId!=null && pointerId==event.getPointerId(pointerIndex)){
                     if (pieceMovement!=null){
                         pieceMovement.getPiece().setSelected(false);
-                        physics.snapMovement(pieceMovement);
+                        callListener(physics.snapMovement(pieceMovement));
                     }
 
                     pieceMovement=null;
@@ -235,7 +257,7 @@ public class BoxPuzzle extends ViewGroup {
 
                 if (pieceMovement!=null){
                     pieceMovement.getPiece().setSelected(false);
-                    physics.snapMovement(pieceMovement);
+                    callListener(physics.snapMovement(pieceMovement));
                 }
                 pieceMovement=null;
                 pointerId=null;
@@ -262,6 +284,13 @@ public class BoxPuzzle extends ViewGroup {
         return true;
     }
 
+    private void callListener(boolean moved){
+        if (listener!=null && moved){
+            listener.onPieceMoved();
+        }
+    }
+
+
     private void movePiece(Physics.Movement movement, int dx, int dy){
         Direction direction;
         if (dx>0){
@@ -279,15 +308,16 @@ public class BoxPuzzle extends ViewGroup {
 
     }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        Log.d(TAG,"OnSizeChanged w="+w+" h="+h);
+    private void update(){
+        Map<Integer,Rect> rectList = new HashMap<>();
+        int miniBitmapWidth=0,miniBitmapHeight=0;
+        if (bitmap!=null){
+            miniBitmapWidth=bitmap.getWidth()/cols;
+            miniBitmapHeight=bitmap.getHeight()/rows;
 
-        pieceWidth=((w-(2*borderPaddingX)-piecePaddingX)/cols)-piecePaddingX;
-        pieceHeight=((h-(2*borderPaddingY)-piecePaddingY)/rows)-piecePaddingY;
+        }
 
-        for (int i=0;i<pieces;i++){
+        for (int i=0;i<physics.getPieceList().size();i++){
             Piece piece = physics.getPiece(i);
             if (piece!=null){
                 int x=i%cols;
@@ -295,11 +325,16 @@ public class BoxPuzzle extends ViewGroup {
 
                 int left = x * (pieceWidth + piecePaddingX) + borderPaddingX + piecePaddingX;
                 int top = y * (pieceHeight + piecePaddingY) + borderPaddingY + piecePaddingY;
+                if (bitmap!=null) {
+                    //Rect rect = new Rect(x * miniBitmapWidth, y * miniBitmapHeight, (x + 1) * miniBitmapWidth, (y + 1) * miniBitmapHeight);
+                    Bitmap pieceBitmap = Bitmap.createBitmap(bitmap,x*miniBitmapWidth,y*miniBitmapHeight,miniBitmapWidth,miniBitmapHeight);
+                    piece.setBitmap(pieceBitmap);
+                }
 
                 piece.updateSize(pieceWidth,pieceHeight);
                 piece.setPadding(piecePaddingX,piecePaddingY);
                 piece.moveAbsolute(left,top);
-                piece.layout(0, 0, w, h);
+                piece.layout(0, 0, getWidth(), getHeight());
             }
         }
 
@@ -341,7 +376,7 @@ public class BoxPuzzle extends ViewGroup {
             }
             border.updateSize(width,height);
             border.moveAbsolute(left,top);
-            border.layout(0,0,w,h);
+            border.layout(0,0,getWidth(),getHeight());
 
         }
 
@@ -361,13 +396,25 @@ public class BoxPuzzle extends ViewGroup {
         Piece p14=pieceList.get(13);
         Piece p15=pieceList.get(14);
 
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        Log.d(TAG,"OnSizeChanged w="+w+" h="+h);
+
+        pieceWidth=((w-(2*borderPaddingX)-piecePaddingX)/cols)-piecePaddingX;
+        pieceHeight=((h-(2*borderPaddingY)-piecePaddingY)/rows)-piecePaddingY;
+
+        update();
 
 
 
 
-        Physics.Movement movement=physics.new Movement(p4);
-        movement.move(Direction.DOWN,1000);
-        physics.snapMovement(movement);
+//
+//        Physics.Movement movement=physics.new Movement(p4);
+//        movement.move(Direction.DOWN,1000);
+//        physics.snapMovement(movement);
 
         invalidate();
 

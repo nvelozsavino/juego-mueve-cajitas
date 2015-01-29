@@ -44,6 +44,9 @@ public class Physics {
         pieceList.add(index,null);
     }
 
+    public List<Piece> getPieceList(){
+        return pieceList;
+    }
 
     public Piece getPiece(int index){
         return pieceList.get(index);

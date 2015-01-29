@@ -28,7 +28,7 @@ public class Piece extends View {
     public boolean border=false;
     private int lastPos;
     private Bitmap bitmap;
-    private Rect rInic;
+    //private Rect rInic;
     private int paddingX=0;
     private int paddingY=0;
 
@@ -156,13 +156,13 @@ public class Piece extends View {
         this.bitmap = bitmap;
     }
 
-    public Rect getrInic() {
-        return rInic;
-    }
+//    public Rect getrInic() {
+//        return rInic;
+//    }
 
-    public void setrInic(Rect rInic) {
-        this.rInic = rInic;
-    }
+//    public void setrInic(Rect rInic) {
+//        this.rInic = rInic;
+//    }
 
     public int getLastPos() {
         return lastPos;
@@ -216,6 +216,7 @@ public class Piece extends View {
             //Log.d(TAG, "width = " + bitmap.getWidth());
             //Log.d(TAG, "Height = " + bitmap.getHeight());
             //Log.d(TAG,rInic.toString());
+            Rect rInic = new Rect(0,0,bitmap.getWidth(),bitmap.getHeight());
             canvas.drawBitmap(bitmap, rInic, r, paint);
             //Log.d(TAG,"Logre dibujar");
             Log.d(TAG, "width = " + bitmap.getWidth());
