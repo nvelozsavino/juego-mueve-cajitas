@@ -5,9 +5,15 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
+import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -23,6 +29,7 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +67,13 @@ public class MainActivity extends Activity {
     private TextView resolvableText;
 
     private int moveCounter = 0;
+    private Camera camera=null;
+    private byte[] cameraData = null;
+    private boolean liveFeedEnabled=false;
+    private Button liveFeedButton;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private SurfaceTexture dummySurfaceTexture;
+
 
 
 
@@ -85,15 +99,33 @@ public class MainActivity extends Activity {
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         resolvableText = (TextView)findViewById(R.id.resolvableText);
 
+        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
+        dummySurfaceTexture=new SurfaceTexture(0);
+
+        liveFeedButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!liveFeedEnabled) {
+                    liveFeedEnabled=startLiveFeed();
+                } else {
+                    stopLiveFeed();
+
+                }
+            }
+        });
+
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopLiveFeed();
+
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }
         });
+
 
         puzzle.setOnMovePieceListener(new BoxPuzzle.OnMovePieceListener() {
             @Override
@@ -317,8 +349,59 @@ public class MainActivity extends Activity {
             Log.d(TAG,"bitmap loaded? " + (bitmap!=null));
             puzzle.setBitmap(bitmap);
 
+
         }
     }
+
+    private boolean startLiveFeed(){
+        if (camera!=null){
+            stopLiveFeed();
+        }
+        camera=Camera.open();
+        try {
+            camera.setPreviewTexture(dummySurfaceTexture);
+            camera.startPreview();
+            camera.setPreviewCallback(new Camera.PreviewCallback() {
+                @Override
+                public void onPreviewFrame(byte[] data, Camera camera) {
+                    cameraData=data;
+                    handler.post(liveFeed);
+
+
+                }
+            });
+        } catch (Exception e){
+
+        }
+        return (camera!=null);
+    }
+
+    private void stopLiveFeed(){
+        if (camera!=null) {
+            camera.setPreviewCallback(null);
+            camera.stopPreview();
+            camera.release();
+            handler.removeCallbacks(liveFeed);
+
+            camera = null;
+        }
+        liveFeedEnabled=false;
+    }
+
+    private Runnable liveFeed = new Runnable() {
+        @Override
+        public void run() {
+            if (camera!=null) {
+                Camera.Size previewSize = camera.getParameters().getPreviewSize();
+                YuvImage yuvImage = new YuvImage(cameraData, ImageFormat.NV21, previewSize.width, previewSize.height, null);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                yuvImage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
+                byte[] jdata = baos.toByteArray();
+                bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
+                puzzle.setBitmap(bitmap);
+            }
+        }
+    };
 //
 //    public static int calculateInSampleSize(
 //            BitmapFactory.Options options, int reqWidth, int reqHeight) {
@@ -367,6 +450,11 @@ public class MainActivity extends Activity {
 
     }
 
+    @Override
+    protected void onPause() {
+        stopLiveFeed();
+        super.onPause();
+    }
 
     private void showPieces(){
         for (Piece p: pieceList){
