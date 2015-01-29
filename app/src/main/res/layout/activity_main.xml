@@ -31,4 +31,9 @@
         android:layout_height="wrap_content"
         android:id="@+id/selectImage"
         android:text="Selecciona Imagen"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/liveFeedButton"
+        android:text="Live Feed"/>
 </LinearLayout>

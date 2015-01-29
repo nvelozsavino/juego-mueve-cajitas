@@ -219,8 +219,8 @@ public class Piece extends View {
             //Rect rInic = new Rect(0,0,bitmap.getWidth(),bitmap.getHeight());
             canvas.drawBitmap(bitmap, rInit, r, paint);
             //Log.d(TAG,"Logre dibujar");
-            Log.d(TAG, "width = " + bitmap.getWidth());
-            Log.d(TAG, "Height = " + bitmap.getHeight());
+            //Log.d(TAG, "width = " + bitmap.getWidth());
+            //Log.d(TAG, "Height = " + bitmap.getHeight());
         }
        // }catch(RuntimeException e){
        //     Log.d(TAG,e.getMessage());
