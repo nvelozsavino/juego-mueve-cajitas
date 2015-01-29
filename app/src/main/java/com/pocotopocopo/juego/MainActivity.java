@@ -57,6 +57,8 @@ public class MainActivity extends Activity {
     private Integer pointerId;
     private int displayWidth, displayHeight;
     private TextView moveCounterText;
+    private TextView resolvableText;
+
     private int moveCounter = 0;
 
 
@@ -81,6 +83,7 @@ public class MainActivity extends Activity {
         selectImageButton = (Button) findViewById(R.id.selectImage);
         puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
+        resolvableText = (TextView)findViewById(R.id.resolvableText);
 
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +99,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPieceMoved() {
 
-                moveCounterText.setText("Movimientos: "+ (++moveCounter));
+                moveCounterText.setText("Movimientos: " + (++moveCounter));
+                resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
             }
         });
 

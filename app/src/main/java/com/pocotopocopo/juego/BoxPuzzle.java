@@ -57,6 +57,30 @@ public class BoxPuzzle extends ViewGroup {
         void onPieceMoved();
     }
 
+    public int getResolvableNumber(){
+        List<Piece> pieceList = physics.getPieceList();
+        int cont=0;
+        int e=0;
+        for (int i=0;i<pieceList.size();i++) {
+            Piece piece1 = pieceList.get(i);
+            if (piece1 != null) {
+                int number1 = piece1.getNumber();
+                for (int j = i + 1; j < pieceList.size(); j++) {
+                    Piece piece2 = pieceList.get(j);
+                    if (piece2 != null) {
+                        int number2 = piece2.getNumber();
+                        if (number2 < number1) {
+                            cont++;
+                        }
+                    }
+                }
+            } else {
+                e = i / cols;
+            }
+        }
+        return cont+e;
+    }
+
     public void setOnMovePieceListener(OnMovePieceListener listener){
         this.listener=listener;
     }
