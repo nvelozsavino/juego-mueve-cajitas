@@ -13,8 +13,8 @@
     <com.pocotopocopo.juego.BoxPuzzle
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        boxpuzzle:rows="6"
-        boxpuzzle:cols="6"
+        boxpuzzle:rows="5"
+        boxpuzzle:cols="5"
         android:id="@+id/puzzle"
         />
 

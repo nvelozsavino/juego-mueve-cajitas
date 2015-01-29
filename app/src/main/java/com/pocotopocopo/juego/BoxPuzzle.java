@@ -50,7 +50,7 @@ public class BoxPuzzle extends ViewGroup {
     private List<Piece> pieceList;
     private Map<Direction,Piece> borderMap;
 
-    private Bitmap bitmap;
+    private BitmapContainer bitmapContainer;
 
     private OnMovePieceListener listener;
     public static interface OnMovePieceListener{
@@ -89,8 +89,8 @@ public class BoxPuzzle extends ViewGroup {
         return physics;
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    public BitmapContainer getBitmapContainer() {
+        return bitmapContainer;
     }
 
     public void setPhysics(Physics physics) {
@@ -127,13 +127,13 @@ public class BoxPuzzle extends ViewGroup {
 
     }
 
-    public void setBitmap (Bitmap bitmap){
-        this.bitmap=bitmap;
-//        Log.d(TAG,"setBitmap");
+    public void setBitmapContainer(BitmapContainer bitmapContainer){
+        this.bitmapContainer=bitmapContainer;
+//        Log.d(TAG,"setBitmapContainer");
         for (Piece piece: physics.getPieceList()){
             if (piece!=null) {
-//                Log.d(TAG, "setBitmap piece " + piece.getNumber());
-                piece.setBitmap(bitmap);
+                Log.d(TAG, "setBitmapContainer piece " + piece.getNumber());
+                piece.setBitmap(bitmapContainer);
             }
         }
         update();
@@ -275,7 +275,7 @@ public class BoxPuzzle extends ViewGroup {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        Log.d(TAG,"OnDraw");
+        //Log.d(TAG,"OnDraw");
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.BLACK);
@@ -289,7 +289,7 @@ public class BoxPuzzle extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG,"Touched");
+        //Log.d(TAG,"Touched");
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
                 //Log.d(TAG, "pointer down");
@@ -412,12 +412,12 @@ public class BoxPuzzle extends ViewGroup {
 
 
 
-    private void update(){
+    public void update(){
 //        Map<Integer,Rect> rectList = new HashMap<>();
         int miniBitmapWidth=0,miniBitmapHeight=0;
-        if (bitmap!=null){
-            miniBitmapWidth=bitmap.getWidth()/cols;
-            miniBitmapHeight=bitmap.getHeight()/rows;
+        if (bitmapContainer.getBitmap()!=null){
+            miniBitmapWidth=bitmapContainer.getBitmap().getWidth()/cols;
+            miniBitmapHeight=bitmapContainer.getBitmap().getHeight()/rows;
 
         }
 
@@ -441,10 +441,10 @@ public class BoxPuzzle extends ViewGroup {
 //                Log.d(TAG,"despues de hacer el rectangulo " + piece.getNumber());
                     piece.setrInit(rect);
 //                Log.d(TAG,"setie el rect en la pieza "+ piece.getNumber());
-                   // piece.setBitmap(bitmap);
+                   // piece.setBitmapContainer(bitmap);
 //                    Bitmap pieceBitmap = Bitmap.createBitmap(bitmap,x*miniBitmapWidth,y*miniBitmapHeight,miniBitmapWidth,miniBitmapHeight);
 
-//                    piece.setBitmap(pieceBitmap);
+//                    piece.setBitmapContainer(pieceBitmap);
                 //}
 
                 piece.updateSize(pieceWidth,pieceHeight);
@@ -518,7 +518,7 @@ public class BoxPuzzle extends ViewGroup {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.d(TAG,"OnSizeChanged w="+w+" h="+h);
+        //Log.d(TAG,"OnSizeChanged w="+w+" h="+h);
 
         pieceWidth=((w-(2*borderPaddingX)-piecePaddingX)/cols)-piecePaddingX;
         pieceHeight=((h-(2*borderPaddingY)-piecePaddingY)/rows)-piecePaddingY;

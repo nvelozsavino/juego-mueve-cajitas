@@ -2,11 +2,9 @@ package com.pocotopocopo.juego;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
@@ -18,23 +16,14 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 
 public class MainActivity extends Activity {
@@ -50,8 +39,9 @@ public class MainActivity extends Activity {
     private static final int paddingPieceY=0;
     private static final String TAG="Juego";
     public static final String MOVES_COUNTER_KEY = "movesCount";
-    public static final String BITMAP_KEY = "bitmap";
+    public static final String BITMAP_KEY = "bitmapContainer";
     public static final String POS_KEY = "posNumbers";
+    public static final String LIVEFEED_KEY = "liveFeed";
 
     private LinearLayout frame;
 
@@ -70,6 +60,7 @@ public class MainActivity extends Activity {
     private Camera camera=null;
     private byte[] cameraData = null;
     private boolean liveFeedEnabled=false;
+    private boolean liveFeedState=false;
     private Button liveFeedButton;
     private Handler handler = new Handler(Looper.getMainLooper());
     private SurfaceTexture dummySurfaceTexture;
@@ -78,7 +69,7 @@ public class MainActivity extends Activity {
 
 
 
-    private Bitmap bitmap;
+    private BitmapContainer bitmapContainer;
     private Button selectImageButton;
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -102,9 +93,16 @@ public class MainActivity extends Activity {
         liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
         dummySurfaceTexture=new SurfaceTexture(0);
 
+        bitmapContainer = new BitmapContainer();
+
+        puzzle.setBitmapContainer(bitmapContainer);
+        bitmapContainer.setBitmap(null);
+
+
         liveFeedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                puzzle.update();
                 if (!liveFeedEnabled) {
                     liveFeedEnabled=startLiveFeed();
                 } else {
@@ -140,12 +138,14 @@ public class MainActivity extends Activity {
         if (savedInstanceState!=null){
             moveCounter=savedInstanceState.getInt(MOVES_COUNTER_KEY);
             Log.d(TAG,"moveCounter = " +moveCounter );
-
-            puzzle.setBitmap((Bitmap)savedInstanceState.getParcelable(BITMAP_KEY));
-            Log.d(TAG,"Resetie el bitmap" );
+            bitmapContainer.setBitmap((Bitmap)savedInstanceState.getParcelable(BITMAP_KEY));
+            //puzzle.setBitmapContainer();
+            Log.d(TAG,"Resetie el bitmapContainer" );
             puzzle.setPositions(savedInstanceState.getIntArray(POS_KEY));
             Log.d(TAG,"resetie las posiciones");
             moveCounterText.setText("Movimientos = " + moveCounter);
+            liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
+
 
         }
 
@@ -163,10 +163,10 @@ public class MainActivity extends Activity {
 //            pieceList.add(piece);
 //            physics.addPiece(piece);
 //        }
-//        bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
-//        Log.d(TAG,"bitmap = "+ bitmap.getWidth()+" , " + bitmap.getHeight());
-//        int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
-//        int miniBitmapSizeH=bitmap.getHeight()/maxPiecesH;
+//        bitmapContainer = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
+//        Log.d(TAG,"bitmapContainer = "+ bitmapContainer.getWidth()+" , " + bitmapContainer.getHeight());
+//        int miniBitmapSizeW=bitmapContainer.getWidth()/maxPiecesW;
+//        int miniBitmapSizeH=bitmapContainer.getHeight()/maxPiecesH;
 //        Map<Integer,Rect> rectList = new HashMap<>();
 //
 //
@@ -211,10 +211,10 @@ public class MainActivity extends Activity {
 //                //Matrix matrix = new Matrix();
 //                //matrix.postScale((float)(pieceWidth/miniBitmapSizeW),(float)(pieceHeight/miniBitmapSizeH));
 //                //Log.d(TAG,"llegue aqui");
-//                //Bitmap bmp=Bitmap.createBitmap(bitmap,left,top,pieceWidth,pieceHeight,matrix,false);
+//                //Bitmap bmp=Bitmap.createBitmap(bitmapContainer,left,top,pieceWidth,pieceHeight,matrix,false);
 //
 //                Rect rect = rectList.get(i+1);
-//                piece.setBitmap(bitmap);
+//                piece.setBitmapContainer(bitmapContainer);
 //                piece.setrInic(rect);
 //                //Log.d(TAG, "pieza "+ (i+1) + "-" +  rectList.get(posIndex).toString());
 //                //Log.d(TAG,"agregue la imagen de la pieza " + i);
@@ -345,9 +345,9 @@ public class MainActivity extends Activity {
         if (requestCode==REQUEST_IMAGE_CAPTURE && resultCode==RESULT_OK){
 
             Bundle extras = data.getExtras();
-            bitmap = (Bitmap) extras.get("data");
-            Log.d(TAG,"bitmap loaded? " + (bitmap!=null));
-            puzzle.setBitmap(bitmap);
+            Bitmap bitmap = (Bitmap) extras.get("data");
+            Log.d(TAG,"bitmapContainer loaded? " + (bitmap!=null));
+            bitmapContainer.setBitmap(bitmap);
 
 
         }
@@ -370,6 +370,7 @@ public class MainActivity extends Activity {
 
                 }
             });
+
         } catch (Exception e){
 
         }
@@ -397,8 +398,17 @@ public class MainActivity extends Activity {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 yuvImage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
                 byte[] jdata = baos.toByteArray();
-                bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
-                puzzle.setBitmap(bitmap);
+
+                Bitmap bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
+                Bitmap oldBitmap= bitmapContainer.getBitmap();
+                bitmapContainer.setBitmap(bitmap);
+                if(oldBitmap==null){
+                    puzzle.update();
+
+                }
+
+
+                //puzzle.setBitmapContainer(bitmapContainer);
             }
         }
     };
@@ -437,14 +447,18 @@ public class MainActivity extends Activity {
 //        // Calculate inSampleSize
 //        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 //
-//        // Decode bitmap with inSampleSize set
+//        // Decode bitmapContainer with inSampleSize set
 //        options.inJustDecodeBounds = false;
 //        return BitmapFactory.decodeResource(res, resId, options);
 //    }
 
     @Override
     protected void onResume() {
+
         super.onResume();
+        if (liveFeedState){
+            liveFeedEnabled=startLiveFeed();
+        }
 
 
 
@@ -452,6 +466,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        liveFeedState=liveFeedEnabled;
         stopLiveFeed();
         super.onPause();
     }
@@ -487,8 +502,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(MOVES_COUNTER_KEY,moveCounter);
-        outState.putParcelable(BITMAP_KEY,puzzle.getBitmap());
+        outState.putParcelable(BITMAP_KEY,puzzle.getBitmapContainer().getBitmap());
         outState.putIntArray(POS_KEY,puzzle.getPositions());
+        outState.putBoolean(LIVEFEED_KEY,liveFeedState);
         super.onSaveInstanceState(outState);
 
     }

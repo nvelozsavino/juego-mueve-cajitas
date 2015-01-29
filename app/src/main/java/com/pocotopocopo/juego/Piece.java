@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -27,10 +26,20 @@ public class Piece extends View {
     private boolean numerable=false;
     public boolean border=false;
     private int lastPos;
-    private Bitmap bitmap;
+    private BitmapContainer bitmapContainer;
     private Rect rInit;
     private int paddingX=0;
     private int paddingY=0;
+
+    private BitmapContainer.OnBitmapChangeListener bitmapChangeListener = new BitmapContainer.OnBitmapChangeListener() {
+        @Override
+        public void bitmapChange(Bitmap bitmap) {
+            if (bitmap!=null) {
+                invalidate();
+            }
+        }
+    };
+
 
 
 
@@ -96,6 +105,7 @@ public class Piece extends View {
         contactBottom = new ArrayList<>();
         numerable=false;
 
+
     }
     public Piece(Context context, int top, int left, int width, int height, int number) {
         this(context,top,left,width,height,false);
@@ -148,12 +158,15 @@ public class Piece extends View {
         }
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    public BitmapContainer getBitmap() {
+        return bitmapContainer;
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
+    public void setBitmap(BitmapContainer bitmapContainer) {
+        this.bitmapContainer = bitmapContainer;
+        if (bitmapContainer!=null){
+            bitmapContainer.registerBitmapChangeListener(bitmapChangeListener);
+        }
     }
 
     public Rect getrInit() {
@@ -212,12 +225,12 @@ public class Piece extends View {
         //Log.d(TAG, "antes de dibujar pieza " + number);
 
        // try {
-        if (bitmap!=null) {
+        if (bitmapContainer!=null && bitmapContainer.getBitmap()!=null) {
             //Log.d(TAG, "width = " + bitmap.getWidth());
             //Log.d(TAG, "Height = " + bitmap.getHeight());
             //Log.d(TAG,rInic.toString());
             //Rect rInic = new Rect(0,0,bitmap.getWidth(),bitmap.getHeight());
-            canvas.drawBitmap(bitmap, rInit, r, paint);
+            canvas.drawBitmap(bitmapContainer.getBitmap(), rInit, r, paint);
             //Log.d(TAG,"Logre dibujar");
             //Log.d(TAG, "width = " + bitmap.getWidth());
             //Log.d(TAG, "Height = " + bitmap.getHeight());

@@ -56,7 +56,7 @@ public class Container {//extends RelativeLayout {
 //
 //    }
 //
-//    public void setBitmap(Bitmap bitmap) {
+//    public void setBitmapContainer(Bitmap bitmap) {
 //        this.bitmap = bitmap;
 //    }
 //
@@ -130,7 +130,7 @@ public class Container {//extends RelativeLayout {
 //
 //                    Piece piece = new Piece(this.getContext(), top, left, pieceWidth, pieceHeight, i + 1);
 //                    Rect rect = rectList.get(i + 1);
-//                    piece.setBitmap(bitmap);
+//                    piece.setBitmapContainer(bitmap);
 //                    piece.setrInic(rect);
 //                    pieceList.add(piece);
 //                    piece.setLastPos(i);
