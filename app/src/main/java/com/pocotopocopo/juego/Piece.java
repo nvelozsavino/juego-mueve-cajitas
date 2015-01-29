@@ -29,6 +29,9 @@ public class Piece extends View {
     private int lastPos;
     private Bitmap bitmap;
     private Rect rInic;
+    private int paddingX=0;
+    private int paddingY=0;
+
 
 
     public boolean isMovable() {
@@ -56,6 +59,16 @@ public class Piece extends View {
 
     public int getPieceHeight() {
         return height;
+    }
+
+    public Piece(Context context,int number){
+        this(context,0,0,0,0,number);
+
+    }
+
+    public Piece(Context context,boolean border){
+        this(context,0,0,0,0,border);
+
     }
 
     public Piece(Context context, int top, int left, int width, int height,boolean border) {
@@ -93,17 +106,44 @@ public class Piece extends View {
 
     }
 
+    public void setPadding(int paddingX,int paddingY){
+        this.paddingX=paddingX;
+        this.paddingY=paddingY;
+    }
+
+    public int getPaddingX() {
+        return paddingX;
+    }
+
+    public int getPaddingY() {
+        return paddingY;
+    }
+
+    public void updateSize(int width, int height){
+        this.width=width;
+        this.height=height;
+        updateBorders();
+        invalidate();
+    }
+
+    public void moveAbsolute(int x, int y){
+        this.left=x;
+        this.top=y;
+        updateBorders();
+        invalidate();
+    }
+
     private void updateBorders() {
         if (border) {
-            borderRight.update(left, top);
-            borderLeft.update(left + width, top);
-            borderBottom.update(left, top);
-            borderTop.update(left, top + height);
+            borderRight.update(left, top,height);
+            borderLeft.update(left + width, top,height);
+            borderBottom.update(left, top,width);
+            borderTop.update(left, top + height,width);
         } else {
-            borderLeft.update(left, top);
-            borderRight.update(left + width, top);
-            borderTop.update(left, top);
-            borderBottom.update(left, top + height);
+            borderLeft.update(left, top,height);
+            borderRight.update(left + width, top,height);
+            borderTop.update(left, top,width);
+            borderBottom.update(left, top + height,width);
 
         }
     }

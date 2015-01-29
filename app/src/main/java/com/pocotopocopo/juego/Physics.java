@@ -39,6 +39,20 @@ public class Physics {
         pieceList.add(null);
     }
 
+    public void moveHole(int index){
+        pieceList.remove(null);
+        pieceList.add(index,null);
+    }
+
+
+    public Piece getPiece(int index){
+        return pieceList.get(index);
+    }
+
+
+
+
+
     /**
      * Add all the pieces in the pieces collection, removing the duplicates and if there is enough
      * space for storing all the new unique pieces
@@ -113,7 +127,7 @@ public class Physics {
      * @return  lineal index
      */
     private int getIndex(int i, int j){
-        int index=j*rows+i;
+        int index=j*columns+i;
         return index;
     }
 
@@ -130,8 +144,8 @@ public class Physics {
         }
         List<Piece> possibleCollisionPieces=new ArrayList<>();
         int index=pieceList.indexOf(movingPiece);
-        int i=index%rows;
-        int j=index/rows;
+        int i=index%columns;
+        int j=index/columns;
         switch (direction){
             case UP:
                 for (int y=j-1;y>=0;y--){
@@ -411,14 +425,14 @@ public class Physics {
             //get the index of the piece which originated the movement
             // and its x, y (i,j) coordinates
             int index = pieceList.indexOf(piece);
-            int i = index % rows;
-            int j = index / rows;
+            int i = index % columns;
+            int j = index / columns;
 
             //get the index of the hole (null piece)
             // and its x, y (i,j) coordinates
             int nullIndex = pieceList.indexOf(null);
-            int nullI = nullIndex % rows;
-            int nullJ = nullIndex / rows;
+            int nullI = nullIndex % columns;
+            int nullJ = nullIndex / columns;
 
             /*
             if the null piece is not on the same row or column, something went wrong,
@@ -451,6 +465,7 @@ public class Physics {
                 //a variable to get the piece Width or Height depending on the orientation
                 int size;
 
+                int padding;
                 //variables to store the movement on x or y
                 int dx = 0;
                 int dy = 0;
@@ -466,14 +481,15 @@ public class Physics {
                 if (movement.getAllowedOrientation().equals(Orientation.X)) { //along Y
                     //get the piece's height
                     size = pieceToSnap.getPieceHeight();
+                    padding = pieceToSnap.getPaddingY();
                     /*
                     if the distance in module is larger than the size of its height, then
                     the piece snaps to the next position, if it is not larger, then it snaps to the
                     original position
                      */
-                    if (Math.abs(distance) > (size / 2)) { //it is larger=> snap to next
+                    if (Math.abs(distance) >padding+(size / 2)) { //it is larger=> snap to next
                         //snap to next (or previous, depending on the sign)
-                        dy = sign * (size - Math.abs(distance));
+                        dy = sign * (padding+size - Math.abs(distance));
 
                         snappedPieces.add(pieceToSnap);
                     } else {
@@ -484,14 +500,16 @@ public class Physics {
 
                     //get the piece's height
                     size = pieceToSnap.getPieceWidth();
+
+                    padding = pieceToSnap.getPaddingX();
                     /*
                     if the distance in module is larger than the size of its width, then
                     the piece snaps to the next position, if it is not larger, then it snaps to the
                     original position
                      */
-                    if (Math.abs(distance) > (size / 2)) {
+                    if (Math.abs(distance) > padding+(size / 2)) {
                         //snap to next (or previous, depending on the sign)
-                        dx = sign * (size - Math.abs(distance));
+                        dx = sign * (padding+size - Math.abs(distance));
                         //add the piece to the snapped pieces list
                         snappedPieces.add(pieceToSnap);
                     } else {
@@ -553,12 +571,12 @@ public class Physics {
         }
 
         int index=pieceList.indexOf(piece);
-        int i=index%rows;
-        int j=index/rows;
+        int i=index%columns;
+        int j=index/columns;
 
         int ini=-1;
         int inj=-1;
-        for (int x=0;x<rows;x++){
+        for (int x=0;x<columns;x++){
             if (pieceList.get(getIndex(x,j))==null){
                 ini=x;
                 if (ini<i){
@@ -570,7 +588,7 @@ public class Physics {
                 }
             }
         }
-        for (int y=0;y<columns;y++){
+        for (int y=0;y<rows;y++){
             if (pieceList.get(getIndex(i, y))==null){
                 inj=y;
                 if (inj<j){
@@ -594,8 +612,8 @@ public class Physics {
 
         Tuple<Direction,Integer> movement= getDirectionAndMovements(piece);
         int index=pieceList.indexOf(piece);
-        int i=index%rows;
-        int j=index/rows;
+        int i=index%columns;
+        int j=index/columns;
         if (movement.firstArgument.equals(direction)){
 
             for (int x=0;x<movement.secondArgument;x++){

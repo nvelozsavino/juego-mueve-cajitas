@@ -56,20 +56,20 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
         frame = (RelativeLayout) findViewById(R.id.frame);
-
-
-        for (int index=1;index<maxPieces+1;index++){
-            int x=index%maxPiecesW;
-            int y=index/maxPiecesH;
-
-            int left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
-            int top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
-
-            Piece piece = new Piece(getApplicationContext(),top,left,pieceWidth,pieceHeight,index);
-            frame.addView(piece);
-            pieceList.add(piece);
-            physics.addPiece(piece);
-        }
+//
+//
+//        for (int index=1;index<maxPieces+1;index++){
+//            int x=index%maxPiecesW;
+//            int y=index/maxPiecesH;
+//
+//            int left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
+//            int top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
+//
+//            Piece piece = new Piece(getApplicationContext(),top,left,pieceWidth,pieceHeight,index);
+//            frame.addView(piece);
+//            pieceList.add(piece);
+//            physics.addPiece(piece);
+//        }
 //        bitmap = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
 //        Log.d(TAG,"bitmap = "+ bitmap.getWidth()+" , " + bitmap.getHeight());
 //        int miniBitmapSizeW=bitmap.getWidth()/maxPiecesW;
@@ -133,102 +133,102 @@ public class MainActivity extends Activity {
 //
 //        }
 //
-        int borderTop = 0 + paddingTop;
-        int borderLeft = 0 + paddingLeft;
-        int borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
-        int borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
-        for (int i=0;i<4;i++) {
-            int top=0, left=0, width=0, height=0;
-            Direction direction=Direction.NONE;
-            switch (i) {
-                case 0://border left
-                    top = borderTop - paddingTop;
-                    left = borderLeft - paddingLeft;
-                    width = paddingLeft;
-                    height = borderBottom-top;
-                    direction=Direction.LEFT;
-                    break;
-                case 1://border top
-                    top = borderTop-paddingTop;
-                    left = borderLeft;
-                    width = borderRight;
-                    height = paddingTop;
-                    direction=Direction.UP;
-                    break;
-                case 2://border right
-                    top = borderTop;
-                    left = borderRight;
-                    width = paddingLeft;
-                    height = borderBottom;
-                    direction=Direction.RIGHT;
-                    break;
-                case 3://border bottom
-                    top = borderBottom;
-                    left = borderLeft-paddingLeft;
-                    width = borderRight-left;
-                    height = paddingTop;
-                    direction=Direction.DOWN;
-                    break;
-            }
-
-            Piece border = new Piece(getApplicationContext(), top, left, width, height, false);
-            border.setMovable(false);
-            //pieceList.add(border);
-            physics.addBorder(border,direction);
-            frame.addView(border);
-        }
+//        int borderTop = 0 + paddingTop;
+//        int borderLeft = 0 + paddingLeft;
+//        int borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
+//        int borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
+//        for (int i=0;i<4;i++) {
+//            int top=0, left=0, width=0, height=0;
+//            Direction direction=Direction.NONE;
+//            switch (i) {
+//                case 0://border left
+//                    top = borderTop - paddingTop;
+//                    left = borderLeft - paddingLeft;
+//                    width = paddingLeft;
+//                    height = borderBottom-top;
+//                    direction=Direction.LEFT;
+//                    break;
+//                case 1://border top
+//                    top = borderTop-paddingTop;
+//                    left = borderLeft;
+//                    width = borderRight;
+//                    height = paddingTop;
+//                    direction=Direction.UP;
+//                    break;
+//                case 2://border right
+//                    top = borderTop;
+//                    left = borderRight;
+//                    width = paddingLeft;
+//                    height = borderBottom;
+//                    direction=Direction.RIGHT;
+//                    break;
+//                case 3://border bottom
+//                    top = borderBottom;
+//                    left = borderLeft-paddingLeft;
+//                    width = borderRight-left;
+//                    height = paddingTop;
+//                    direction=Direction.DOWN;
+//                    break;
+//            }
+//
+//            Piece border = new Piece(getApplicationContext(), top, left, width, height, false);
+//            border.setMovable(false);
+//            //pieceList.add(border);
+//            physics.addBorder(border,direction);
+//            frame.addView(border);
+//        }
+////
+////
+////
+////
+////
+////
+////
+//        frame.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//
+//                return touchEvent(event);
+//            }
+//        });
+////
+////        //physics.addPieces(pieceList);
+////
+////
+//        Piece p1=pieceList.get(0);
+//        Piece p2=pieceList.get(1);
+//        Piece p3=pieceList.get(2);
+//        Piece p4=pieceList.get(3);
+//        Piece p5=pieceList.get(4);
+//        Piece p6=pieceList.get(5);
+//        Piece p7=pieceList.get(6);
+//        Piece p8=pieceList.get(7);
+//        Piece p9=pieceList.get(8);
+//        Piece p10=pieceList.get(9);
+//        Piece p11=pieceList.get(10);
+//        Piece p12=pieceList.get(11);
+//        Piece p13=pieceList.get(12);
+//        Piece p14=pieceList.get(13);
+//        Piece p15=pieceList.get(14);
+//
+//        Physics.Movement movement;
 //
 //
+//        movement=physics.new Movement(p2);
+//        movement.move(Direction.LEFT,60);
+//        movement.move(Direction.RIGHT,70);
+//        physics.snapMovement(movement);
+//        Log.d(TAG,"null=" + physics.getPieceIndex(null));
 //
 //
+//        movement=physics.new Movement(p13);
+//        //for (int i =0;i<20;i++) {
+//            movement.move(Direction.UP, 120);
+//        //}
+//        physics.snapMovement(movement);
+//        Log.d(TAG,"null=" + physics.getPieceIndex(null));
 //
 //
-//
-        frame.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-                return touchEvent(event);
-            }
-        });
-//
-//        //physics.addPieces(pieceList);
-//
-//
-        Piece p1=pieceList.get(0);
-        Piece p2=pieceList.get(1);
-        Piece p3=pieceList.get(2);
-        Piece p4=pieceList.get(3);
-        Piece p5=pieceList.get(4);
-        Piece p6=pieceList.get(5);
-        Piece p7=pieceList.get(6);
-        Piece p8=pieceList.get(7);
-        Piece p9=pieceList.get(8);
-        Piece p10=pieceList.get(9);
-        Piece p11=pieceList.get(10);
-        Piece p12=pieceList.get(11);
-        Piece p13=pieceList.get(12);
-        Piece p14=pieceList.get(13);
-        Piece p15=pieceList.get(14);
-
-        Physics.Movement movement;
-
-
-        movement=physics.new Movement(p2);
-        movement.move(Direction.LEFT,60);
-        movement.move(Direction.RIGHT,70);
-        physics.snapMovement(movement);
-        Log.d(TAG,"null=" + physics.getPieceIndex(null));
-
-
-        movement=physics.new Movement(p13);
-        //for (int i =0;i<20;i++) {
-            movement.move(Direction.UP, 120);
-        //}
-        physics.snapMovement(movement);
-        Log.d(TAG,"null=" + physics.getPieceIndex(null));
-
-
 
 //
 //       // Log.d(TAG,"Connections 0: \n" + physics);

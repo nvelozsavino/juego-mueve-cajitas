@@ -17,9 +17,7 @@ public class Border {
 
     public void update(Orientation orientation, int x, int y, int size) {
         this.orientation = orientation;
-        this.x = x;
-        this.y = y;
-        this.size = size;
+        update(x,y,size);
     }
 
 //    public void update(int x, int y, int size) {
@@ -28,9 +26,10 @@ public class Border {
 //        this.size = size;
 //    }
 
-    public void update(int x, int y) {
+    public void update(int x, int y, int size) {
         this.x = x;
         this.y = y;
+        this.size=size;
 
     }
 
