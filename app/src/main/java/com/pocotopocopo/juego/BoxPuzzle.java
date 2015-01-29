@@ -29,8 +29,8 @@ public class BoxPuzzle extends ViewGroup {
     private static final int defaultPieceHeight=50;
     private static final int defaultBorderPaddingX=10;
     private static final int defaultBorderPaddingY=10;
-    private static final int defaultPiecePaddingX=0;
-    private static final int defaultPiecePaddingY=0;
+    private static final int defaultPiecePaddingX=3;
+    private static final int defaultPiecePaddingY=3;
 
     private int rows=defaultRows;
     private int cols=defaultCols;
@@ -59,6 +59,18 @@ public class BoxPuzzle extends ViewGroup {
 
     public void setOnMovePieceListener(OnMovePieceListener listener){
         this.listener=listener;
+    }
+
+    public Physics getPhysics() {
+        return physics;
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setPhysics(Physics physics) {
+        this.physics = physics;
     }
 
     public BoxPuzzle(Context context, AttributeSet attrs) {
@@ -93,9 +105,19 @@ public class BoxPuzzle extends ViewGroup {
 
     public void setBitmap (Bitmap bitmap){
         this.bitmap=bitmap;
-        invalidate();
+//        Log.d(TAG,"setBitmap");
+        for (Piece piece: physics.getPieceList()){
+            if (piece!=null) {
+//                Log.d(TAG, "setBitmap piece " + piece.getNumber());
+                piece.setBitmap(bitmap);
+            }
+        }
         update();
+//        Log.d(TAG,"updatie");
+        invalidate();
+//        Log.d(TAG,"invalide");
         requestLayout();
+//        Log.d(TAG,"requestie");
 
     }
 
@@ -126,7 +148,51 @@ public class BoxPuzzle extends ViewGroup {
     }
 
 
+    public int[] getPositions(){
+        int[] posNumbers = new int[physics.getPieceList().size()];
+        for (int i=0;i<physics.getPieceList().size();i++){
+            Piece piece = physics.getPieceList().get(i);
+            if (piece!=null){
+                posNumbers[i] = piece.getNumber();
 
+            }else{
+                posNumbers[i] = 0;
+            }
+        }
+        return posNumbers;
+    }
+
+    public void setPositions(int[] posNumbers){
+        List<Piece> pieceList = physics.getPieceList();
+        List<Piece> pieceList1 = new ArrayList<>();
+        for (int i=0; i< posNumbers.length; i++){
+
+            for (int j=0;j<pieceList.size();j++){
+                Piece piece = pieceList.get(j);
+                if (piece!=null){
+                    if (piece.getNumber()==posNumbers[i]){
+                        pieceList.remove(piece);
+                        pieceList1.add(i,piece);
+                    }
+
+                }else{
+                    if (posNumbers[i]==0){
+                        pieceList.remove(j);
+                        pieceList1.add(i,null);
+                    }
+                }
+            }
+
+        }
+        Log.d(TAG,"hice el for");
+
+        physics.getPieceList().addAll(pieceList1);
+        Log.d(TAG,"reagregue las piezas");
+
+        update();
+        Log.d(TAG,"updatie");
+
+    }
 
 
     public int getRows() {
@@ -242,7 +308,13 @@ public class BoxPuzzle extends ViewGroup {
                 if (pointerId!=null && pointerId==event.getPointerId(pointerIndex)){
                     if (pieceMovement!=null){
                         pieceMovement.getPiece().setSelected(false);
-                        callListener(physics.snapMovement(pieceMovement));
+
+                        if (physics.snapMovement(pieceMovement)){
+                            callListener();
+
+                        }
+                        update();
+
                     }
 
                     pieceMovement=null;
@@ -257,7 +329,13 @@ public class BoxPuzzle extends ViewGroup {
 
                 if (pieceMovement!=null){
                     pieceMovement.getPiece().setSelected(false);
-                    callListener(physics.snapMovement(pieceMovement));
+
+                    if (physics.snapMovement(pieceMovement)) {
+                        callListener();
+
+
+                    }
+                    update();
                 }
                 pieceMovement=null;
                 pointerId=null;
@@ -284,8 +362,8 @@ public class BoxPuzzle extends ViewGroup {
         return true;
     }
 
-    private void callListener(boolean moved){
-        if (listener!=null && moved){
+    private void callListener(){
+        if (listener!=null){
             listener.onPieceMoved();
         }
     }
@@ -308,8 +386,10 @@ public class BoxPuzzle extends ViewGroup {
 
     }
 
+
+
     private void update(){
-        Map<Integer,Rect> rectList = new HashMap<>();
+//        Map<Integer,Rect> rectList = new HashMap<>();
         int miniBitmapWidth=0,miniBitmapHeight=0;
         if (bitmap!=null){
             miniBitmapWidth=bitmap.getWidth()/cols;
@@ -322,20 +402,33 @@ public class BoxPuzzle extends ViewGroup {
             if (piece!=null){
                 int x=i%cols;
                 int y=i/cols;
-
                 int left = x * (pieceWidth + piecePaddingX) + borderPaddingX + piecePaddingX;
                 int top = y * (pieceHeight + piecePaddingY) + borderPaddingY + piecePaddingY;
-                if (bitmap!=null) {
-                    //Rect rect = new Rect(x * miniBitmapWidth, y * miniBitmapHeight, (x + 1) * miniBitmapWidth, (y + 1) * miniBitmapHeight);
-                    Bitmap pieceBitmap = Bitmap.createBitmap(bitmap,x*miniBitmapWidth,y*miniBitmapHeight,miniBitmapWidth,miniBitmapHeight);
-                    piece.setBitmap(pieceBitmap);
-                }
+
+                int number = piece.getNumber()-1;
+                int xNum = number%cols;
+                int yNum = number/cols;
+               // int leftNum = xNum * (pieceWidth + piecePaddingX) + borderPaddingX + piecePaddingX;
+               // int topNum = yNum * (pieceHeight + piecePaddingY) + borderPaddingY + piecePaddingY;
+
+                //if (bitmap!=null) {
+//                Log.d(TAG,"antes de hacer el rectangulo " + piece.getNumber());
+                Rect rect = new Rect(xNum * miniBitmapWidth, yNum * miniBitmapHeight, (xNum + 1) * miniBitmapWidth, (yNum + 1) * miniBitmapHeight);
+//                Log.d(TAG,"despues de hacer el rectangulo " + piece.getNumber());
+                    piece.setrInit(rect);
+//                Log.d(TAG,"setie el rect en la pieza "+ piece.getNumber());
+                   // piece.setBitmap(bitmap);
+//                    Bitmap pieceBitmap = Bitmap.createBitmap(bitmap,x*miniBitmapWidth,y*miniBitmapHeight,miniBitmapWidth,miniBitmapHeight);
+
+//                    piece.setBitmap(pieceBitmap);
+                //}
 
                 piece.updateSize(pieceWidth,pieceHeight);
                 piece.setPadding(piecePaddingX,piecePaddingY);
                 piece.moveAbsolute(left,top);
                 piece.layout(0, 0, getWidth(), getHeight());
             }
+
         }
 
         int borderTop = 0 + borderPaddingY;
@@ -380,21 +473,21 @@ public class BoxPuzzle extends ViewGroup {
 
         }
 
-        Piece p1=pieceList.get(0);
-        Piece p2=pieceList.get(1);
-        Piece p3=pieceList.get(2);
-        Piece p4=pieceList.get(3);
-        Piece p5=pieceList.get(4);
-        Piece p6=pieceList.get(5);
-        Piece p7=pieceList.get(6);
-        Piece p8=pieceList.get(7);
-        Piece p9=pieceList.get(8);
-        Piece p10=pieceList.get(9);
-        Piece p11=pieceList.get(10);
-        Piece p12=pieceList.get(11);
-        Piece p13=pieceList.get(12);
-        Piece p14=pieceList.get(13);
-        Piece p15=pieceList.get(14);
+//        Piece p1=pieceList.get(0);
+//        Piece p2=pieceList.get(1);
+//        Piece p3=pieceList.get(2);
+//        Piece p4=pieceList.get(3);
+//        Piece p5=pieceList.get(4);
+//        Piece p6=pieceList.get(5);
+//        Piece p7=pieceList.get(6);
+//        Piece p8=pieceList.get(7);
+//        Piece p9=pieceList.get(8);
+//        Piece p10=pieceList.get(9);
+//        Piece p11=pieceList.get(10);
+//        Piece p12=pieceList.get(11);
+//        Piece p13=pieceList.get(12);
+//        Piece p14=pieceList.get(13);
+//        Piece p15=pieceList.get(14);
 
     }
 
