@@ -9,14 +9,15 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MainActivity"
     android:orientation="vertical"
-    android:id="@+id/frame">
+    android:id="@+id/frame"
+    android:weightSum="1">
     <com.pocotopocopo.juego.BoxPuzzle
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="268dp"
         boxpuzzle:rows="5"
         boxpuzzle:cols="5"
         android:id="@+id/puzzle"
-        />
+        android:layout_weight="0.52" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,14 +35,39 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/selectImage"
         android:text="Selecciona Imagen"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/liveFeedButton"
         android:text="Live Feed"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.gms.common.SignInButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/signInButton" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/signOutButton"
+            android:text="Sign Out"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+
 </LinearLayout>

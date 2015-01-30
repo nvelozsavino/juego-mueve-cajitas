@@ -14,45 +14,34 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.games.Games;
+import com.google.example.games.basegameutils.BaseGameUtils;
+
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 
-public class MainActivity extends Activity {
 
-    private static final int maxPiecesW=4;
-    private static final int maxPiecesH=4;
-    private static final int maxPieces=(maxPiecesH*maxPiecesW)-1;
-    private static final int pieceWidth=100;
-    private static final int pieceHeight=100;
-    private static final int paddingLeft=10;
-    private static final int paddingTop=10;
-    private static final int paddingPieceX=0;
-    private static final int paddingPieceY=0;
+
+
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+
     private static final String TAG="Juego";
-    public static final String MOVES_COUNTER_KEY = "movesCount";
-    public static final String BITMAP_KEY = "bitmapContainer";
-    public static final String POS_KEY = "posNumbers";
-    public static final String LIVEFEED_KEY = "liveFeed";
+    private static final String MOVES_COUNTER_KEY = "movesCount";
+    private static final String BITMAP_KEY = "bitmapContainer";
+    private static final String POS_KEY = "posNumbers";
+    private static final String LIVEFEED_KEY = "liveFeed";
 
-    private LinearLayout frame;
 
-    List<Piece> pieceList= new ArrayList<>();
-//    private final int[] tol = new int[2];
-    List<Integer[]> positions = new ArrayList<>();
-    Physics physics=new Physics(maxPiecesH,maxPiecesW);
-    private Physics.Movement pieceMovement;
-    private Integer lastX,lastY;
-    private Integer pointerId;
-    private int displayWidth, displayHeight;
     private TextView moveCounterText;
     private TextView resolvableText;
 
@@ -62,11 +51,11 @@ public class MainActivity extends Activity {
     private boolean liveFeedEnabled=false;
     private boolean liveFeedState=false;
     private Button liveFeedButton;
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private Handler handler;
     private SurfaceTexture dummySurfaceTexture;
 
 
-
+    private GoogleApiClient googleApiClient;
 
 
     private BitmapContainer bitmapContainer;
@@ -75,30 +64,21 @@ public class MainActivity extends Activity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
     private BoxPuzzle puzzle;
+    private SignInButton signInButton;
+    private Button signOutButton;
 
 
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
-        setContentView(R.layout.activity_main);
-
-        frame = (LinearLayout) findViewById(R.id.frame);
+    private void initViews(){
         selectImageButton = (Button) findViewById(R.id.selectImage);
         puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         resolvableText = (TextView)findViewById(R.id.resolvableText);
-
         liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
-        dummySurfaceTexture=new SurfaceTexture(0);
+        signInButton = (SignInButton)findViewById(R.id.signInButton);
+        signOutButton = (Button)findViewById(R.id.signOutButton);
+    }
 
-        bitmapContainer = new BitmapContainer();
-
-        puzzle.setBitmapContainer(bitmapContainer);
-        bitmapContainer.setBitmap(null);
-
-
+    private void setClickListeners(){
         liveFeedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,7 +91,6 @@ public class MainActivity extends Activity {
                 }
             }
         });
-
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,6 +103,32 @@ public class MainActivity extends Activity {
             }
         });
 
+        signInButton.setOnClickListener(singInOutClickListener);
+
+        signOutButton.setOnClickListener(singInOutClickListener);
+
+
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
+        setContentView(R.layout.activity_main);
+
+        initViews();
+        handler = new Handler(Looper.getMainLooper());
+        setClickListeners();
+
+        dummySurfaceTexture=new SurfaceTexture(0);
+
+        bitmapContainer = new BitmapContainer();
+
+        puzzle.setBitmapContainer(bitmapContainer);
+        bitmapContainer.setBitmap(null);
+
+
 
         puzzle.setOnMovePieceListener(new BoxPuzzle.OnMovePieceListener() {
             @Override
@@ -133,6 +138,15 @@ public class MainActivity extends Activity {
                 resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
             }
         });
+
+
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Games.API).addScope(Games.SCOPE_GAMES)
+                        // add other APIs and scopes here as needed
+                .build();
 
 
         if (savedInstanceState!=null){
@@ -145,197 +159,9 @@ public class MainActivity extends Activity {
             Log.d(TAG,"resetie las posiciones");
             moveCounterText.setText("Movimientos = " + moveCounter);
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
-
-
         }
 
-//
-//
-//        for (int index=1;index<maxPieces+1;index++){
-//            int x=index%maxPiecesW;
-//            int y=index/maxPiecesH;
-//
-//            int left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
-//            int top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
-//
-//            Piece piece = new Piece(getApplicationContext(),top,left,pieceWidth,pieceHeight,index);
-//            frame.addView(piece);
-//            pieceList.add(piece);
-//            physics.addPiece(piece);
-//        }
-//        bitmapContainer = decodeSampledBitmapFromResource(getResources(),R.drawable.imagen,maxPiecesW*pieceWidth,maxPiecesH*pieceHeight);
-//        Log.d(TAG,"bitmapContainer = "+ bitmapContainer.getWidth()+" , " + bitmapContainer.getHeight());
-//        int miniBitmapSizeW=bitmapContainer.getWidth()/maxPiecesW;
-//        int miniBitmapSizeH=bitmapContainer.getHeight()/maxPiecesH;
-//        Map<Integer,Rect> rectList = new HashMap<>();
-//
-//
-////        tol[0]=pieceWidth/2;
-////        tol[1]=pieceHeight/2;
-//
-//        for (int y=0;y<maxPiecesH;y++) {
-//            for (int x = 0; x < maxPiecesW; x++) {
-//                //int i = x * maxPiecesH + y;
-//                int top, left;
-//                left = x * (pieceWidth + paddingPieceX) + paddingLeft + paddingPieceX;
-//                top = y * (pieceHeight + paddingPieceY) + paddingTop + paddingPieceY;
-//
-//                Integer[] pos = new Integer[2];
-//                pos[0] = left;//-paddingLeft-paddingPieceX;
-//                pos[1] = top;//-paddingTop-paddingPieceY;
-//
-//                Rect rect = new Rect(x*miniBitmapSizeW,y*miniBitmapSizeH,(x+1)*miniBitmapSizeW,(y+1)*miniBitmapSizeH);
-//
-//                rectList.put(x+y*maxPiecesH,rect);
-//
-//                positions.add(pos);
-//
-//            }
-//        }
-//
-////        List<Integer[]> posRand = new ArrayList<>();
-////        posRand.addAll(positions);
-//        for (int i=0;i<maxPieces;i++) {
-////            Random rnd = new Random();
-//            int posIndex = i;//rnd.nextInt(posRand.size());
-//            int left = positions.get(posIndex)[0];
-//            int top = positions.get(posIndex)[1];
-//
-//
-////
-////            posRand.remove(posIndex);
-//            if (i < maxPieces) {
-////
-//                Piece piece = new Piece(getApplicationContext(), top, left, pieceWidth, pieceHeight, i + 1);
-//                //Log.d(TAG,"no he agregado la imagen de la pieza " + i);
-//                //Matrix matrix = new Matrix();
-//                //matrix.postScale((float)(pieceWidth/miniBitmapSizeW),(float)(pieceHeight/miniBitmapSizeH));
-//                //Log.d(TAG,"llegue aqui");
-//                //Bitmap bmp=Bitmap.createBitmap(bitmapContainer,left,top,pieceWidth,pieceHeight,matrix,false);
-//
-//                Rect rect = rectList.get(i+1);
-//                piece.setBitmapContainer(bitmapContainer);
-//                piece.setrInic(rect);
-//                //Log.d(TAG, "pieza "+ (i+1) + "-" +  rectList.get(posIndex).toString());
-//                //Log.d(TAG,"agregue la imagen de la pieza " + i);
-//                pieceList.add(piece);
-//                physics.addPiece(piece);
-//                piece.setLastPos(i);
-//                frame.addView(piece);
-//            }
-//
-//        }
-//
-//        int borderTop = 0 + paddingTop;
-//        int borderLeft = 0 + paddingLeft;
-//        int borderRight= (pieceWidth+paddingPieceX)*maxPiecesW + paddingPieceX + paddingLeft;
-//        int borderBottom = (pieceHeight+paddingPieceY)*maxPiecesH + paddingPieceY + paddingTop;
-//        for (int i=0;i<4;i++) {
-//            int top=0, left=0, width=0, height=0;
-//            Direction direction=Direction.NONE;
-//            switch (i) {
-//                case 0://border left
-//                    top = borderTop - paddingTop;
-//                    left = borderLeft - paddingLeft;
-//                    width = paddingLeft;
-//                    height = borderBottom-top;
-//                    direction=Direction.LEFT;
-//                    break;
-//                case 1://border top
-//                    top = borderTop-paddingTop;
-//                    left = borderLeft;
-//                    width = borderRight;
-//                    height = paddingTop;
-//                    direction=Direction.UP;
-//                    break;
-//                case 2://border right
-//                    top = borderTop;
-//                    left = borderRight;
-//                    width = paddingLeft;
-//                    height = borderBottom;
-//                    direction=Direction.RIGHT;
-//                    break;
-//                case 3://border bottom
-//                    top = borderBottom;
-//                    left = borderLeft-paddingLeft;
-//                    width = borderRight-left;
-//                    height = paddingTop;
-//                    direction=Direction.DOWN;
-//                    break;
-//            }
-//
-//            Piece border = new Piece(getApplicationContext(), top, left, width, height, false);
-//            border.setMovable(false);
-//            //pieceList.add(border);
-//            physics.addBorder(border,direction);
-//            frame.addView(border);
-//        }
-////
-////
-////
-////
-////
-////
-////
-//        frame.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//
-//                return touchEvent(event);
-//            }
-//        });
-////
-////        //physics.addPieces(pieceList);
-////
-////
-//        Piece p1=pieceList.get(0);
-//        Piece p2=pieceList.get(1);
-//        Piece p3=pieceList.get(2);
-//        Piece p4=pieceList.get(3);
-//        Piece p5=pieceList.get(4);
-//        Piece p6=pieceList.get(5);
-//        Piece p7=pieceList.get(6);
-//        Piece p8=pieceList.get(7);
-//        Piece p9=pieceList.get(8);
-//        Piece p10=pieceList.get(9);
-//        Piece p11=pieceList.get(10);
-//        Piece p12=pieceList.get(11);
-//        Piece p13=pieceList.get(12);
-//        Piece p14=pieceList.get(13);
-//        Piece p15=pieceList.get(14);
-//
-//        Physics.Movement movement;
-//
-//
-//        movement=physics.new Movement(p2);
-//        movement.move(Direction.LEFT,60);
-//        movement.move(Direction.RIGHT,70);
-//        physics.snapMovement(movement);
-//        Log.d(TAG,"null=" + physics.getPieceIndex(null));
-//
-//
-//        movement=physics.new Movement(p13);
-//        //for (int i =0;i<20;i++) {
-//            movement.move(Direction.UP, 120);
-//        //}
-//        physics.snapMovement(movement);
-//        Log.d(TAG,"null=" + physics.getPieceIndex(null));
-//
-//
 
-//
-//       // Log.d(TAG,"Connections 0: \n" + physics);
-////        physics.movePiece(p4,Orientation.X,210);
-////        Log.d(TAG,"Connections 1: \n" + physics);
-////        physics.movePiece(p7,Orientation.Y,50);
-////        Log.d(TAG,"Connections 2: \n" + physics);
-////
-////        physics.movePiece(p3,Orientation.X,110);
-////        Log.d(TAG,"Connections 3: \n" + physics);
-////
-////        physics.movePiece(p3,Orientation.Y,20);
-////        Log.d(TAG,"Connections 4: \n" + physics);
-////
 
     }
 
@@ -347,9 +173,26 @@ public class MainActivity extends Activity {
             Bundle extras = data.getExtras();
             Bitmap bitmap = (Bitmap) extras.get("data");
             Log.d(TAG,"bitmapContainer loaded? " + (bitmap!=null));
+            Bitmap oldBitmap= bitmapContainer.getBitmap();
             bitmapContainer.setBitmap(bitmap);
+            if(oldBitmap==null){
+                puzzle.update();
 
-
+            }
+        }
+        if (requestCode == RC_SIGN_IN) {
+            mSignInClicked = false;
+            mResolvingConnectionFailure = false;
+            if (resultCode == RESULT_OK) {
+                googleApiClient.connect();
+            } else {
+                // Bring up an error dialog to alert the user that sign-in
+                // failed. The R.string.signin_failure should reference an error
+                // string in your strings.xml file that tells the user they
+                // could not be signed in, such as "Unable to sign in."
+                BaseGameUtils.showActivityResultError(this,
+                        requestCode, resultCode, R.string.signin_failure);
+            }
         }
     }
 
@@ -406,51 +249,10 @@ public class MainActivity extends Activity {
                     puzzle.update();
 
                 }
-
-
-                //puzzle.setBitmapContainer(bitmapContainer);
             }
         }
     };
-//
-//    public static int calculateInSampleSize(
-//            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-//        // Raw height and width of image
-//        final int height = options.outHeight;
-//        final int width = options.outWidth;
-//        int inSampleSize = 1;
-//
-//        if (height > reqHeight || width > reqWidth) {
-//
-//            final int halfHeight = height / 2;
-//            final int halfWidth = width / 2;
-//
-//            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-//            // height and width larger than the requested height and width.
-//            while ((halfHeight / inSampleSize) > reqHeight
-//                    && (halfWidth / inSampleSize) > reqWidth) {
-//                inSampleSize *= 2;
-//            }
-//        }
-//
-//        return inSampleSize;
-//    }
-//
-//    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
-//                                                         int reqWidth, int reqHeight) {
-//
-//        // First decode with inJustDecodeBounds=true to check dimensions
-//        final BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true;
-//        BitmapFactory.decodeResource(res, resId, options);
-//
-//        // Calculate inSampleSize
-//        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-//
-//        // Decode bitmapContainer with inSampleSize set
-//        options.inJustDecodeBounds = false;
-//        return BitmapFactory.decodeResource(res, resId, options);
-//    }
+
 
     @Override
     protected void onResume() {
@@ -459,9 +261,6 @@ public class MainActivity extends Activity {
         if (liveFeedState){
             liveFeedEnabled=startLiveFeed();
         }
-
-
-
     }
 
     @Override
@@ -471,33 +270,6 @@ public class MainActivity extends Activity {
         super.onPause();
     }
 
-    private void showPieces(){
-        for (Piece p: pieceList){
-            Log.d(TAG,"piece: " + p.getNumber());
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -509,153 +281,129 @@ public class MainActivity extends Activity {
 
     }
 
-// // }
-//
-//    private boolean touchEvent(MotionEvent event//)// {
-//
-//        switch (event.getActionMasked()//) {
-//            case MotionEvent.ACTION_DOWN//: {
-//                //Log.d(TAG, "pointer down//");
-//                int pointerIndex = event.getActionIndex//();
-//                pointerId = event.getPointerId(pointerInde//x);
-//                int x = (int)event.getX(pointerInde//x);
-//                int y = (int)event.getY(pointerInde//x);
-//                for (Piece p : pieceList//) {
-//                    if (p.intersect(x-frame.getPaddingLeft(), y-frame.getPaddingTop())//) {
-//                        //Log.d(TAG, "intersect//");
-//                        if (pieceMovement!=nul//l){
-//                            pieceMovement.getPiece().setSelected(fals//e);
-//                      //  }
-//                        pieceMovement= physics.new Movement(//p);
-//                        pieceMovement.getPiece().setSelected(tru//e);
-//                        lastX =// x;
-//                        lastY =// y;
-//                        bre//ak;
-//                  //  }
-//              //  }
-//                bre//ak;
-//          //  }
-//            case MotionEvent.ACTION_MOVE//: {
-//                int pointerIndex = event.getActionIndex//();
-//                if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && pieceMovement!=null//) {
-//                    int x = (int)event.getX(pointerInde//x);
-//                    int y = (int)event.getY(pointerInde//x);
-//                    int dx=x-las//tX;
-//                    int dy=y-las//tY;
-//                    lastX//=x;
-//                    lastY//=y;
-//                    movePiece(pieceMovement,dx,d//y//);
-//
-//              //  }
-//                bre//ak;
-//          // // }
-//
-//            case MotionEvent.ACTION_POINTER_UP//: {
-//                int pointerIndex = event.getActionIndex//();
-//                if (pointerId!=null && pointerId==event.getPointerId(pointerIndex//)){
-//                    if (pieceMovement!=nul//l){
-//                        pieceMovement.getPiece().setSelected(fals//e);
-//                        callListener(physics.snapMovement(pieceMovement//));
-//                  // // }
-//
-//                    pieceMovement=nu//ll;
-//                    pointerId=nu//ll;
-//                    lastY=nu//ll;
-//                    lastX=nu//ll;
-//                    //snapPiece(pieceList,positions,to//l);
-//              //  }
-//                bre//ak;
-//          //  }
-//            case MotionEvent.ACTION_//U//P:
-//
-//                if (pieceMovement!=nul//l){
-//                    pieceMovement.getPiece().setSelected(fals//e);
-//                    callListener(physics.snapMovement(pieceMovement//));
-//              //  }
-//                pieceMovement=nu//ll;
-//                pointerId=nu//ll;
-//                lastY=nu//ll;
-//                lastX=nu//ll;
-////                if (snapPiece(pieceList,positions,tol//)){
-////                    moveCounter//++;
-////                    TextView text = (TextView)findViewById(R.id.moveCounterTex//t);
-////                    text.setText("Moves = " + moveCounte//r);
-////                    text.invalidate//();
-////                    if(checkWin(pieceList//)){
-////                        Log.d(TAG,"you win//");
-////                        Toast toast = Toast.makeText(getApplicationContext(),"you win",Toast.LENGTH_LON//G);
-////                        //toast.setText("Congratulations you Won in " + moveCounter + "moves//");
-////                        //toast.setDuration(Toast.LENGTH_LON//G);
-////                        toast.show//();
-////                  //  }
-////              //  }
-//                bre//a//k//;
-//
-//
-//      // // }
-//
-//        return tr//ue;
-//  // // //}
-//
-//
-//    private void movePiece(Physics.Movement movement, int dx, int d//y){
-//        Direction directi//on;
-//        if (dx>//0){
-//            direction=Direction.RIG//HT;
-//        } els//e {
-//            direction=Direction.LE//FT;
-//      //  }
-//        movement.move(direction,Math.abs(dx//));
-//        if (dy>//0){
-//            direction=Direction.DO//WN;
-//        } els//e {
-//            direction=Direction.//UP;
-//      //  }
-//        movement.move(direction,Math.abs(dy//)//);
-//
-//    }
 
-//    private boolean snapPiece(List<Piece> pieceList, List<Integer[]> positions, int[] tol){
-//        boolean hasBeenMoved=false;
-//        for (Piece piece : pieceList){
-//
-//            if (piece.isMovable()) {
-//                int k=0;
-//                for (Integer[] pos : positions) {
-//                    int x = pos[0];
-//                    int y = pos[1];
-//                    if (piece.getLeftPos() - x < tol[0] && piece.getLeftPos() - x >= -tol[0]
-//                            && piece.getTopPos() - y < tol[1] && piece.getTopPos() - y >= -tol[1]) {
-//
-//                        int dx = x-piece.getLeftPos();
-//                        int dy = y-piece.getTopPos();
-//                        movePiece(piece,dx,dy);
-//                         if(piece.getLastPos()!=k) {
-//                             hasBeenMoved = true;
-//                             piece.setLastPos(k);
-//                         }
-//
-//
-//                        //piece.setLeft(x);
-//                        //piece.setTop(y);
-//                        //piece.invalidate();
-//                    }
-//                    k++;
-//                }
-//            }
-//
-//        }
-//        return hasBeenMoved;
-//    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!mInSignInFlow && !mExplicitSignOut) {
+            // auto sign in
+            googleApiClient.connect();
+        }
+    }
 
-//    private boolean checkWin(List<Piece> pieceList){
-//        boolean win=true;
-//        for (Piece piece:pieceList){
-//            if (piece.getNumber()!=piece.getLastPos()){
-//                win = false;
-//            }
-//        }
-//
-//        return win;
-//    }
+    @Override
+    protected void onStop() {
+        googleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Log.d(TAG,"onConnected");
+        signInButton.setVisibility(View.INVISIBLE);
+        signOutButton.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        googleApiClient.connect();
+    }
+
+    private static int RC_SIGN_IN = 9001;
+
+    private boolean mResolvingConnectionFailure = false;
+    private boolean mAutoStartSignInFlow = true;
+    private boolean mSignInClicked = false;
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+        if (ConnectionResult.SIGN_IN_REQUIRED== connectionResult.getErrorCode()){
+
+        }
+
+        if (mResolvingConnectionFailure) {
+
+            // already resolving
+            return;
+        }
+
+        // if the sign-in button was clicked or if auto sign-in is enabled,
+        // launch the sign-in flow
+
+        if (mSignInClicked || mAutoStartSignInFlow) {
+
+            mAutoStartSignInFlow = false;
+            mSignInClicked = false;
+            mResolvingConnectionFailure = true;
+
+            // Attempt to resolve the connection failure using BaseGameUtils.
+            // The R.string.signin_other_error value should reference a generic
+            // error string in your strings.xml file, such as "There was
+            // an issue with sign-in, please try again later."
+            if (!BaseGameUtils.resolveConnectionFailure(this,googleApiClient, connectionResult,RC_SIGN_IN, "There was an issue with sign-in, please try again later.")) {
+                //Log.d(TAG,"ErrorCossssde="+connectionResult.getErrorCode());
+                mResolvingConnectionFailure = false;
+            }
+
+        }
+
+        signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
+        signOutButton.setVisibility(View.INVISIBLE);
+    }
+
+    // Call when the sign-in button is clicked
+    private void signInClicked() {
+        mSignInClicked = true;
+        googleApiClient.connect();
+        Log.d(TAG,"sign in clicked");
+    }
+
+    // Call when the sign-out button is clicked
+    private void signOutClicked() {
+        mSignInClicked = false;
+        signInButton.setVisibility(View.INVISIBLE);// Put code here to display the sign-in button
+        signOutButton.setVisibility(View.INVISIBLE);
+        PendingResult<Status> statusPendingResult =Games.signOut(googleApiClient);
+        statusPendingResult.setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status status) {
+                if (status.isSuccess()){
+                    signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
+                    signOutButton.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+
+    }
+
+
+    boolean mExplicitSignOut = false;
+    boolean mInSignInFlow = false; // set to true when you're in the middle of the
+    // sign in flow, to know you should not attempt
+    // to connect in onStart()
+
+
+    private View.OnClickListener singInOutClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if (view.getId() == R.id.signInButton) {
+                // start the asynchronous sign in flow
+                mSignInClicked = true;
+                googleApiClient.connect();
+            }
+            else if (view.getId() == R.id.signOutButton) {
+                // sign out.
+                mExplicitSignOut = true;
+                if (googleApiClient != null && googleApiClient.isConnected()) {
+                    Games.signOut(googleApiClient);
+                    googleApiClient.disconnect();
+                    signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
+                    signOutButton.setVisibility(View.GONE);
+                }
+            }
+        }
+    };
 }
