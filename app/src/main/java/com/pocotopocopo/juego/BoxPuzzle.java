@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by nico on 28/01/15.
@@ -47,7 +48,7 @@ public class BoxPuzzle extends ViewGroup {
     private Integer lastX,lastY;
     private Integer pointerId;
 
-    private List<Piece> pieceList;
+    //private List<Piece> pieceList;
     private Map<Direction,Piece> borderMap;
 
     private BitmapContainer bitmapContainer;
@@ -55,6 +56,34 @@ public class BoxPuzzle extends ViewGroup {
     private OnMovePieceListener listener;
     public static interface OnMovePieceListener{
         void onPieceMoved();
+    }
+
+    public void randomizeBoard(){
+        Random rnd = new Random();
+        List<Piece> pieceListTemp = new ArrayList<>();
+//        List<Piece> pieceListTemp2 = physics.getPieceList();
+        Log.d(TAG,"pieceList.Size anres de randomizar = " +physics.getPieceList().size());
+        do{
+
+    //        pieceListTemp.addAll(pieceList);
+            for (int i = 0; i < physics.getPieceList().size(); i++) {
+                int rndPos = rnd.nextInt(physics.getPieceList().size());
+                Piece piece =physics.getPieceList().get(rndPos);
+                if (piece!=null) {
+                    pieceListTemp.add(piece);
+                }else {
+                    pieceListTemp.add(null);
+                }
+                physics.getPieceList().remove(rndPos);
+
+            }
+            physics.getPieceList().addAll(pieceListTemp);
+            pieceListTemp.clear();
+            Log.d(TAG,"randomizando...");
+        }while(getResolvableNumber()%2==0 && pieces%2==1);
+        Log.d(TAG,"randomize");
+        Log.d(TAG,"pieceList.Size antes de updatear = " +physics.getPieceList().size());
+        //update();
     }
 
     public int getResolvableNumber(){
@@ -118,10 +147,19 @@ public class BoxPuzzle extends ViewGroup {
             typedArray.recycle();
         }
         setWillNotDraw(false);
-
+        Log.d(TAG,"listo para init()");
         init();
     }
 
+    public void setSize(int cols, int rows){
+        Log.d(TAG,"setSize");
+        this.cols=cols;
+        this.rows=rows;
+        physics = null;
+        removeAllViews();
+        init();
+
+    }
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
 
@@ -150,11 +188,11 @@ public class BoxPuzzle extends ViewGroup {
         pieces=rows*cols-1;
         Log.d(TAG,"# pieces = " + pieces);
         physics=new Physics(rows,cols);
-        pieceList=new ArrayList<>();
+        //pieceList=new ArrayList<>();
 
         for (int i=0;i<pieces;i++){
             Piece piece=new Piece(getContext(),i+1);
-            pieceList.add(piece);
+            //pieceList.add(piece);
             physics.addPiece(piece);
             addView(piece);
         }
@@ -169,6 +207,7 @@ public class BoxPuzzle extends ViewGroup {
             physics.addBorder(piece,direction);
             addView(piece);
         }
+        randomizeBoard();
     }
 
 
@@ -289,7 +328,7 @@ public class BoxPuzzle extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        //Log.d(TAG,"Touched");
+        Log.d(TAG,"Touched");
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
                 //Log.d(TAG, "pointer down");
@@ -297,7 +336,7 @@ public class BoxPuzzle extends ViewGroup {
                 pointerId = event.getPointerId(pointerIndex);
                 int x = (int)event.getX(pointerIndex);
                 int y = (int)event.getY(pointerIndex);
-                for (Piece p : pieceList) {
+                for (Piece p : physics.getPieceList()) {
                     if (p.intersect(x - getPaddingLeft(), y - getPaddingTop())) {
                         //Log.d(TAG, "intersect");
                         if (pieceMovement!=null){
@@ -416,11 +455,12 @@ public class BoxPuzzle extends ViewGroup {
 //        Map<Integer,Rect> rectList = new HashMap<>();
         int miniBitmapWidth=0,miniBitmapHeight=0;
         if (bitmapContainer.getBitmap()!=null){
+            Log.d(TAG,"bitmapcontainer.bitmap no es null");
             miniBitmapWidth=bitmapContainer.getBitmap().getWidth()/cols;
             miniBitmapHeight=bitmapContainer.getBitmap().getHeight()/rows;
-
+            Log.d(TAG,"tengo las imagenes");
         }
-
+        Log.d(TAG,"pieceList.Size = " +physics.getPieceList().size());
         for (int i=0;i<physics.getPieceList().size();i++){
             Piece piece = physics.getPiece(i);
             if (piece!=null){
