@@ -1,12 +1,11 @@
 package com.pocotopocopo.juego;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
@@ -16,23 +15,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.games.Games;
-import com.google.example.games.basegameutils.BaseGameUtils;
 
 import java.io.ByteArrayOutputStream;
 
@@ -63,6 +50,7 @@ public class MainActivity extends BaseActivity{
     private SurfaceTexture dummySurfaceTexture;
 
 
+
     //private GoogleApiClient googleApiClient;
 
 
@@ -72,13 +60,13 @@ public class MainActivity extends BaseActivity{
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int RESULT_LOAD_IMG = 2;
 
-    private BoxPuzzle puzzle;
+    private Puzzle puzzle;
     //private LinearLayout frame;
 
 
     private void initViews(){
         selectImageButton = (Button) findViewById(R.id.selectImage);
-        puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
+        puzzle = (Puzzle)findViewById(R.id.puzzle);
         //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
 //        resolvableText = (TextView)findViewById(R.id.resolvableText);
@@ -102,23 +90,29 @@ public class MainActivity extends BaseActivity{
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                stopLiveFeed();
-
-//                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-//                }
-                // Create intent to Open Image applications like Gallery, Google Photos
-                Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-// Start the Intent
-                startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+                startSelectImage();
             }
         });
 
 
 
     }
+
+    private void startSelectImage(){
+        stopLiveFeed();
+
+//                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+//                }
+        // Create intent to Open Image applications like Gallery, Google Photos
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+// Start the Intent
+        startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+    }
+
+
 
 
     @Override
@@ -128,7 +122,7 @@ public class MainActivity extends BaseActivity{
         setContentView(R.layout.activity_main);
         Log.d(TAG,"setContentView");
 
-       initViews();
+        initViews();
 
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -140,6 +134,8 @@ public class MainActivity extends BaseActivity{
 
         bitmapContainer = new BitmapContainer();
 
+        BackgroundMode backgroundMode=BackgroundMode.PLAIN;
+        GameMode gameMode=GameMode.TRADITIONAL;
 
         Log.d(TAG, "capturando intent");
         Intent intent = getIntent();
@@ -149,12 +145,21 @@ public class MainActivity extends BaseActivity{
             try {
                 int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
                 int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
+                boolean numbersVisible= intent.getExtras().getBoolean(StartScreen.SHOW_NUMBERS);
+
+                backgroundMode = (BackgroundMode)intent.getExtras().getSerializable(StartScreen.BACKGROUND_MODE);
+                gameMode= (GameMode)intent.getExtras().getSerializable(StartScreen.GAME_MODE);
+
                 Log.d(TAG, "cols = " + cols + " - rows = " + rows);
+
                 puzzle.setSize(cols, rows);
+                puzzle.setNumbersVisible(numbersVisible);
             }catch(Exception e){
                 Log.d(TAG,"el intent no es "+ e.getMessage());
             }
         }
+
+
         puzzle.setBitmapContainer(bitmapContainer);
         Log.d(TAG,"bitmapcontainer = null");
 
@@ -163,15 +168,18 @@ public class MainActivity extends BaseActivity{
 
 
 
-        puzzle.setOnMovePieceListener(new BoxPuzzle.OnMovePieceListener() {
+        puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
             public void onPieceMoved() {
-
                 moveCounterText.setText("Movimientos: " + (++moveCounter));
-//                resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
-                if (puzzle.isWin()){
-                    Toast toast = Toast.makeText(getApplicationContext(),"Congratulations you Win!!!",Toast.LENGTH_LONG);
-                    toast.show();
+            }
+
+            @Override
+            public void onPuzzleSolved() {
+                Toast toast = Toast.makeText(getApplicationContext(),R.string.congratulation_text ,Toast.LENGTH_LONG);
+                toast.show();
+                if (camera!=null){
+                    stopLiveFeed();
                 }
             }
         });
@@ -191,6 +199,24 @@ public class MainActivity extends BaseActivity{
             Log.d(TAG,"resetie las posiciones");
             moveCounterText.setText("Movimientos = " + moveCounter);
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
+        } else {
+            switch (backgroundMode){
+                default:
+                case PLAIN:
+                    liveFeedState=false;
+                    bitmapContainer.setBitmap(null);
+                    break;
+                case IMAGE:
+                    puzzle.update();
+                    liveFeedState=false;
+                    startSelectImage();
+                    break;
+                case VIDEO:
+                    puzzle.update();
+                    liveFeedEnabled=startLiveFeed();
+                    break;
+
+            }
         }
 
 
@@ -245,15 +271,6 @@ public class MainActivity extends BaseActivity{
 
     }
 
-    @Override
-    public void displaySignIn() {
-
-    }
-
-    @Override
-    public void hideSignIn() {
-
-    }
 
     private boolean startLiveFeed(){
         if (camera!=null){
@@ -261,6 +278,8 @@ public class MainActivity extends BaseActivity{
         }
         camera=Camera.open();
         try {
+            Camera.Parameters parameters = camera.getParameters();
+            parameters.setPreviewSize(puzzle.getWidth(),puzzle.getHeight());
             camera.setPreviewTexture(dummySurfaceTexture);
             camera.startPreview();
             camera.setPreviewCallback(new Camera.PreviewCallback() {
@@ -300,10 +319,15 @@ public class MainActivity extends BaseActivity{
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 yuvImage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
                 byte[] jdata = baos.toByteArray();
-
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap , 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+
                 Bitmap oldBitmap= bitmapContainer.getBitmap();
-                bitmapContainer.setBitmap(bitmap);
+
+                bitmapContainer.setBitmap(rotatedBitmap);
 //                puzzle.setBitmapContainer(bitmapContainer);
                 if(oldBitmap==null){
                     puzzle.update();

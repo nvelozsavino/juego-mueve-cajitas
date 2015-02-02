@@ -1,5 +1,5 @@
 <resources>
-    <declare-styleable name="BoxPuzzle">
+    <declare-styleable name="Puzzle">
         <attr name="rows" format="integer" />
         <attr name="cols" format="integer" />
         <attr name="pieceWidth" format="integer" />

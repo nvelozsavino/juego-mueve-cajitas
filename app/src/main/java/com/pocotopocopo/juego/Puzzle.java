@@ -2,7 +2,6 @@ package com.pocotopocopo.juego;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,7 +9,6 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -20,7 +18,7 @@ import java.util.Map;
 import java.util.Random;
 
 
-public class BoxPuzzle extends ViewGroup {
+public class Puzzle extends ViewGroup {
     private final static String TAG="Juego.BoxPuzzle";
     private static final int defaultRows=4;
     private static final int defaultCols=4;
@@ -45,6 +43,7 @@ public class BoxPuzzle extends ViewGroup {
     private Physics.Movement pieceMovement;
     private Integer lastX,lastY;
     private Integer pointerId;
+    private boolean numbersVisible=true;
 
     //private List<Piece> pieceList;
     private Map<Direction,Piece> borderMap;
@@ -54,6 +53,7 @@ public class BoxPuzzle extends ViewGroup {
     private OnMovePieceListener listener;
     public static interface OnMovePieceListener{
         void onPieceMoved();
+        void onPuzzleSolved();
     }
 
     public void randomizeBoard(){
@@ -109,6 +109,20 @@ public class BoxPuzzle extends ViewGroup {
         return cont;
     }
 
+    public boolean isNumbersVisible() {
+        return numbersVisible;
+    }
+
+    public void setNumbersVisible(boolean numbersVisible) {
+        this.numbersVisible = numbersVisible;
+        for (Piece piece:physics.getPieceList()){
+            if (piece!=null) {
+                piece.setNumberVisible(numbersVisible);
+                piece.invalidate();
+            }
+        }
+    }
+
     public boolean isWin(){
 //        boolean win = true;
         for (int i = 0;i<physics.getPieceList().size();i++){
@@ -162,21 +176,21 @@ public class BoxPuzzle extends ViewGroup {
         this.physics = physics;
     }
 
-    public BoxPuzzle(Context context, AttributeSet attrs) {
+    public Puzzle(Context context, AttributeSet attrs) {
         super(context, attrs);
-        TypedArray typedArray=context.getTheme().obtainStyledAttributes(attrs,R.styleable.BoxPuzzle,0,0);
+        TypedArray typedArray=context.getTheme().obtainStyledAttributes(attrs,R.styleable.Puzzle,0,0);
         try{
-            this.rows = typedArray.getInteger(R.styleable.BoxPuzzle_rows,defaultRows);
-            this.cols = typedArray.getInteger(R.styleable.BoxPuzzle_cols,defaultCols);
+            this.rows = typedArray.getInteger(R.styleable.Puzzle_rows,defaultRows);
+            this.cols = typedArray.getInteger(R.styleable.Puzzle_cols,defaultCols);
 
-            this.pieceWidth = typedArray.getInteger(R.styleable.BoxPuzzle_pieceWidth,defaultPieceWidth);
-            this.pieceHeight = typedArray.getInteger(R.styleable.BoxPuzzle_pieceHeight,defaultPieceHeight);
+            this.pieceWidth = typedArray.getInteger(R.styleable.Puzzle_pieceWidth,defaultPieceWidth);
+            this.pieceHeight = typedArray.getInteger(R.styleable.Puzzle_pieceHeight,defaultPieceHeight);
 
-            this.piecePaddingX = typedArray.getInteger(R.styleable.BoxPuzzle_piecePaddingX,defaultPiecePaddingX);
-            this.piecePaddingY = typedArray.getInteger(R.styleable.BoxPuzzle_piecePaddingY,defaultPiecePaddingY);
+            this.piecePaddingX = typedArray.getInteger(R.styleable.Puzzle_piecePaddingX,defaultPiecePaddingX);
+            this.piecePaddingY = typedArray.getInteger(R.styleable.Puzzle_piecePaddingY,defaultPiecePaddingY);
 
-            this.borderPaddingX = typedArray.getInteger(R.styleable.BoxPuzzle_borderPaddingX,defaultBorderPaddingX);
-            this.borderPaddingY = typedArray.getInteger(R.styleable.BoxPuzzle_borderPaddingY,defaultBorderPaddingY);
+            this.borderPaddingX = typedArray.getInteger(R.styleable.Puzzle_borderPaddingX,defaultBorderPaddingX);
+            this.borderPaddingY = typedArray.getInteger(R.styleable.Puzzle_borderPaddingY,defaultBorderPaddingY);
 
 
         } finally {
@@ -471,6 +485,10 @@ public class BoxPuzzle extends ViewGroup {
     private void callListener(){
         if (listener!=null){
             listener.onPieceMoved();
+            if(isWin()){
+                listener.onPuzzleSolved();
+            }
+
         }
     }
 

@@ -11,7 +11,7 @@
     android:orientation="vertical"
     android:id="@+id/frame"
     android:weightSum="1">
-    <com.pocotopocopo.juego.BoxPuzzle
+    <com.pocotopocopo.juego.Puzzle
         android:layout_width="match_parent"
         android:layout_height="268dp"
         boxpuzzle:rows="4"

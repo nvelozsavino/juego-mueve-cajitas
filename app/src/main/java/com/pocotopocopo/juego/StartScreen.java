@@ -47,7 +47,11 @@ public class StartScreen extends BaseActivity {
 
 
 
+
     private RadioGroup backgroundRadioGroup;
+//    private RadioButton backgroundPlainRadioButton;
+//    private RadioButton backgroundImageRadioButton;
+//    private RadioButton backgroundVideoRadioButton;
 
 
 
@@ -69,6 +73,10 @@ public class StartScreen extends BaseActivity {
         showNumbersCheckBox = (CheckBox)findViewById(R.id.showNumbersCheckBox);
 
         backgroundRadioGroup=(RadioGroup)findViewById(R.id.backgroundRadioGroup);
+//        backgroundPlainRadioButton=(RadioButton)findViewById(R.id.backgroundPlainRadioButton);
+//        backgroundImageRadioButton=(RadioButton)findViewById(R.id.backgroundImageRadioButton);
+//        backgroundVideoRadioButton=(RadioButton)findViewById(R.id.backgroundVideoRadioButton);
+
 
         signInButton=(SignInButton)findViewById(R.id.signInButton);
         signOutButton=(Button)findViewById(R.id.signOutButton);
@@ -153,18 +161,32 @@ public class StartScreen extends BaseActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSignInClicked = true;
-                googleApiClient.connect();
+                signIn();
             }
         });
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSignInClicked = false;
-                Games.signOut(googleApiClient);
-                googleApiClient.disconnect();
+                signOut();
                 displaySignIn();
 
+            }
+        });
+
+        backgroundRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId){
+                    case R.id.backgroundPlainRadioButton:
+                        showNumbersCheckBox.setChecked(true);
+                        showNumbersCheckBox.setEnabled(false);
+                        break;
+                    default:
+                    case R.id.backgroundVideoRadioButton:
+                    case R.id.backgroundImageRadioButton:
+                        showNumbersCheckBox.setEnabled(true);
+                        break;
+                }
             }
         });
     }

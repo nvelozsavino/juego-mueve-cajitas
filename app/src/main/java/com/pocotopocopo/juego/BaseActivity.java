@@ -28,7 +28,7 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
     private static int RC_SIGN_IN = 9001;
 
     private boolean mResolvingConnectionFailure = false;
-    private boolean mAutoStartSignInFlow = false;
+    protected boolean mAutoStartSignInFlow = false;
     protected boolean mSignInClicked = false;
 
 
@@ -140,6 +140,21 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
 
     }
 
-    public abstract void displaySignIn();
-    public abstract void hideSignIn();
+    protected void signIn(){
+        mSignInClicked = true;
+        mAutoStartSignInFlow=true;
+        googleApiClient.connect();
+
+    }
+    protected void signOut(){
+        mSignInClicked = false;
+        mAutoStartSignInFlow=false;
+
+        Games.signOut(googleApiClient);
+        googleApiClient.disconnect();
+
+    }
+
+    public void displaySignIn(){}
+    public void hideSignIn(){}
 }
