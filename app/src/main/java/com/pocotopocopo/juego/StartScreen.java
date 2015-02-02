@@ -1,17 +1,43 @@
 package com.pocotopocopo.juego;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 
 public class StartScreen extends ActionBarActivity {
+    private EditText cols;
+    private EditText rows;
+    private Button start;
+    public static final String COLS_KEY = "colsNumber";
+    public static final String ROWS_KEY = "rowsNumber";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen);
+        cols = (EditText)findViewById(R.id.widthEdit);
+        rows = (EditText)findViewById(R.id.heightEdit);
+        start = (Button) findViewById(R.id.startButton);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int colsNumber = Integer.parseInt(cols.getText().toString());
+                int rowsNumber = Integer.parseInt(rows.getText().toString());
+                Intent startGame = new Intent(getApplicationContext(),MainActivity.class);
+                startGame.putExtra(COLS_KEY,colsNumber);
+                startGame.putExtra(ROWS_KEY,rowsNumber);
+                startActivity(startGame);
+
+
+
+            }
+        });
     }
 
 

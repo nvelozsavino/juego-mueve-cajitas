@@ -126,6 +126,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         bitmapContainer = new BitmapContainer();
 
         puzzle.setBitmapContainer(bitmapContainer);
+        Intent intent = getIntent();
+        int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
+        int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
+        Log.d(TAG,"cols = " + cols + " - rows = " + rows);
+        puzzle.setSize(cols,rows);
+
         bitmapContainer.setBitmap(null);
 
 
