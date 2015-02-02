@@ -1,5 +1,6 @@
 package com.pocotopocopo.juego;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,9 +14,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -66,11 +70,13 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private BoxPuzzle puzzle;
     private SignInButton signInButton;
     private Button signOutButton;
+    private LinearLayout frame;
 
 
     private void initViews(){
         selectImageButton = (Button) findViewById(R.id.selectImage);
         puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
+        //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         resolvableText = (TextView)findViewById(R.id.resolvableText);
         liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
@@ -117,20 +123,26 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
 
-        initViews();
+        Intent intent = getIntent();
+        if (intent!=null) {
+            int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
+            int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
+            Log.d(TAG, "cols = " + cols + " - rows = " + rows);
+        }
+
+
+//        puzzle = new BoxPuzzle(this, cols, rows);
+//        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
+//        frame.addView((puzzle));
         handler = new Handler(Looper.getMainLooper());
         setClickListeners();
 
         dummySurfaceTexture=new SurfaceTexture(0);
 
         bitmapContainer = new BitmapContainer();
-
+        initViews();
         puzzle.setBitmapContainer(bitmapContainer);
-        Intent intent = getIntent();
-        int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
-        int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
-        Log.d(TAG,"cols = " + cols + " - rows = " + rows);
-        puzzle.setSize(cols,rows);
+//        puzzle.setSize(cols,rows);
 
         bitmapContainer.setBitmap(null);
 

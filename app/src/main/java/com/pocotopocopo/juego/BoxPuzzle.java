@@ -83,7 +83,7 @@ public class BoxPuzzle extends ViewGroup {
         }while(getResolvableNumber()%2==0 && pieces%2==1);
         Log.d(TAG,"randomize");
         Log.d(TAG,"pieceList.Size antes de updatear = " +physics.getPieceList().size());
-        //update();
+        update();
     }
 
     public int getResolvableNumber(){
@@ -126,7 +126,20 @@ public class BoxPuzzle extends ViewGroup {
         this.physics = physics;
     }
 
+//    public BoxPuzzle(Context context, int cols, int rows){
+//        super(context);
+//        //setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,268));
+//        this.rows = rows;
+//        this.cols = cols;
+//        setWillNotDraw(false);
+//        Log.d(TAG,"listo para init()");
+//        requestLayout();
+//
+//        init();
+//    }
+
     public BoxPuzzle(Context context, AttributeSet attrs) {
+
         super(context, attrs);
         TypedArray typedArray=context.getTheme().obtainStyledAttributes(attrs,R.styleable.BoxPuzzle,0,0);
         try{
@@ -155,8 +168,10 @@ public class BoxPuzzle extends ViewGroup {
         Log.d(TAG,"setSize");
         this.cols=cols;
         this.rows=rows;
-        physics = null;
+        //physics = null;
         removeAllViews();
+        removeAllViewsInLayout();
+        //requestLayout();
         init();
 
     }
@@ -332,17 +347,23 @@ public class BoxPuzzle extends ViewGroup {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
                 //Log.d(TAG, "pointer down");
+                Log.d(TAG,"piezas = "+ physics.getPieceList().size());
                 int pointerIndex = event.getActionIndex();
                 pointerId = event.getPointerId(pointerIndex);
                 int x = (int)event.getX(pointerIndex);
                 int y = (int)event.getY(pointerIndex);
                 for (Piece p : physics.getPieceList()) {
+                    Log.d(TAG,"dentro del for");
                     if (p.intersect(x - getPaddingLeft(), y - getPaddingTop())) {
-                        //Log.d(TAG, "intersect");
+
+                        Log.d(TAG, "intersect");
                         if (pieceMovement!=null){
+                            Log.d(TAG,"no es null");
                             pieceMovement.getPiece().setSelected(false);
                         }
+                        Log.d(TAG,"no fue null");
                         pieceMovement= physics.new Movement(p);
+                        Log.d(TAG,"cree un movement");
                         pieceMovement.getPiece().setSelected(true);
                         lastX = x;
                         lastY = y;
@@ -352,8 +373,12 @@ public class BoxPuzzle extends ViewGroup {
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
+                Log.d(TAG,"moving");
+
                 int pointerIndex = event.getActionIndex();
                 if (pointerId!=null && pointerId ==event.getPointerId(pointerIndex) && pieceMovement!=null) {
+                    Log.d(TAG,"moving ahora si");
+
                     int x = (int)event.getX(pointerIndex);
                     int y = (int)event.getY(pointerIndex);
                     int dx=x-lastX;
@@ -361,6 +386,7 @@ public class BoxPuzzle extends ViewGroup {
                     lastX=x;
                     lastY=y;
                     movePiece(pieceMovement,dx,dy);
+                    Log.d(TAG,"movi");
 
                 }
                 break;
