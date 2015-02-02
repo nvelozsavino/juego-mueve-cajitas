@@ -1,5 +1,6 @@
 package com.pocotopocopo.juego;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,10 +14,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
@@ -66,13 +71,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private BoxPuzzle puzzle;
     private SignInButton signInButton;
     private Button signOutButton;
+    //private LinearLayout frame;
 
 
     private void initViews(){
         selectImageButton = (Button) findViewById(R.id.selectImage);
         puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
+        //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
-        resolvableText = (TextView)findViewById(R.id.resolvableText);
+//        resolvableText = (TextView)findViewById(R.id.resolvableText);
         liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
         signInButton = (SignInButton)findViewById(R.id.signInButton);
         signOutButton = (Button)findViewById(R.id.signOutButton);
@@ -116,8 +123,13 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
+        Log.d(TAG,"setContentView");
 
-        initViews();
+       initViews();
+
+//        puzzle = new BoxPuzzle(this, cols, rows);
+//        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
+//        frame.addView((puzzle));
         handler = new Handler(Looper.getMainLooper());
         setClickListeners();
 
@@ -126,11 +138,21 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         bitmapContainer = new BitmapContainer();
 
         puzzle.setBitmapContainer(bitmapContainer);
+        Log.d(TAG, "capturando intent");
         Intent intent = getIntent();
-        int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
-        int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
-        Log.d(TAG,"cols = " + cols + " - rows = " + rows);
-        puzzle.setSize(cols,rows);
+        Log.d(TAG,"capture intent");
+        if (intent!=null) {
+            Log.d(TAG,"intent no es null");
+            try {
+                int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
+                int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
+                Log.d(TAG, "cols = " + cols + " - rows = " + rows);
+                puzzle.setSize(cols, rows);
+            }catch(Exception e){
+                Log.d(TAG,"el intent no es "+ e.getMessage());
+            }
+        }
+        Log.d(TAG,"bitmapcontainer = null");
 
         bitmapContainer.setBitmap(null);
 
@@ -141,7 +163,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             public void onPieceMoved() {
 
                 moveCounterText.setText("Movimientos: " + (++moveCounter));
-                resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
+//                resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
+                if (puzzle.isWin()){
+                    Toast toast = Toast.makeText(getApplicationContext(),"Congratulations you Win!!!",Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
 
@@ -363,7 +389,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private void signInClicked() {
         mSignInClicked = true;
         googleApiClient.connect();
-        Log.d(TAG,"sign in clicked");
+        Log.d(TAG, "sign in clicked");
     }
 
     // Call when the sign-out button is clicked
