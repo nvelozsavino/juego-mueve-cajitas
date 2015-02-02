@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class Physics {
 
-    private final static String TAG="Physics";
+    private final static String TAG="Juego.Physics";
     private final int rows;
     private final int columns;
     private List<Piece> pieceList;

@@ -22,7 +22,7 @@ public class StartScreen extends Activity {
     private EditText cols;
     private EditText rows;
     private Button start;
-    private static final String TAG = "StartScreen";
+    private static final String TAG = "Juego.StartScreen";
     public static final String COLS_KEY = "colsNumber";
     public static final String ROWS_KEY = "rowsNumber";
     public static final String GAME_MODE= "gameMode";

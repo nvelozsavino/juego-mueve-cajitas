@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Border {
-    private static final String TAG = "Border";
+    private static final String TAG = "Juego.Border";
     private int x, y, size;
     private Orientation orientation;
 
