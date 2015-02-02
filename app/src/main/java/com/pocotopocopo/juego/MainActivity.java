@@ -137,14 +137,21 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         bitmapContainer = new BitmapContainer();
 
         puzzle.setBitmapContainer(bitmapContainer);
+        Log.d(TAG, "capturando intent");
         Intent intent = getIntent();
+        Log.d(TAG,"capture intent");
         if (intent!=null) {
-            int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
-            int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
-            Log.d(TAG, "cols = " + cols + " - rows = " + rows);
-            puzzle.setSize(cols,rows);
+            Log.d(TAG,"intent no es null");
+            try {
+                int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
+                int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
+                Log.d(TAG, "cols = " + cols + " - rows = " + rows);
+                puzzle.setSize(cols, rows);
+            }catch(Exception e){
+                Log.d(TAG,"el intent no es "+ e.getMessage());
+            }
         }
-
+        Log.d(TAG,"bitmapcontainer = null");
 
         bitmapContainer.setBitmap(null);
 
@@ -377,7 +384,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private void signInClicked() {
         mSignInClicked = true;
         googleApiClient.connect();
-        Log.d(TAG,"sign in clicked");
+        Log.d(TAG, "sign in clicked");
     }
 
     // Call when the sign-out button is clicked

@@ -11,6 +11,7 @@
 
 
 
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -36,7 +37,10 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
+
             android:parentActivityName=".StartScreen">
+
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".StartScreen"/>
