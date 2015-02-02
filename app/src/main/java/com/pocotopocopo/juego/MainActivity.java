@@ -137,7 +137,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         bitmapContainer = new BitmapContainer();
 
-        puzzle.setBitmapContainer(bitmapContainer);
+
         Log.d(TAG, "capturando intent");
         Intent intent = getIntent();
         Log.d(TAG,"capture intent");
@@ -154,6 +154,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         }
         Log.d(TAG,"bitmapcontainer = null");
 
+        puzzle.setBitmapContainer(bitmapContainer);
         bitmapContainer.setBitmap(null);
 
 

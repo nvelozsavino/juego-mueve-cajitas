@@ -192,7 +192,6 @@ public class BoxPuzzle extends ViewGroup {
         this.cols=cols;
         this.rows=rows;
         physics = null;
-        removeAllViews();
         init();
 
     }
@@ -220,6 +219,7 @@ public class BoxPuzzle extends ViewGroup {
     }
 
     private void init(){
+        this.removeAllViews();
 
         pieces=rows*cols-1;
 //        Log.d(TAG,"# pieces = " + pieces);
