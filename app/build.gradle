@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'JuegoKey'
             keyPassword '123456'
-            storeFile file('/home/nico/AndroidStudioProjects/Juego/juego.jks')
+            storeFile file('../juego.jks')
             storePassword '123456'
         }
     }
