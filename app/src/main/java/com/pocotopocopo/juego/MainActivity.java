@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
@@ -78,7 +79,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         puzzle = (BoxPuzzle)findViewById(R.id.puzzle);
         //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
-        resolvableText = (TextView)findViewById(R.id.resolvableText);
+//        resolvableText = (TextView)findViewById(R.id.resolvableText);
         liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
         signInButton = (SignInButton)findViewById(R.id.signInButton);
         signOutButton = (Button)findViewById(R.id.signOutButton);
@@ -162,7 +163,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             public void onPieceMoved() {
 
                 moveCounterText.setText("Movimientos: " + (++moveCounter));
-                resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
+//                resolvableText.setText("ResolvableCode = " + puzzle.getResolvableNumber());
+                if (puzzle.isWin()){
+                    Toast toast = Toast.makeText(getApplicationContext(),"Congratulations you Win!!!",Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
 

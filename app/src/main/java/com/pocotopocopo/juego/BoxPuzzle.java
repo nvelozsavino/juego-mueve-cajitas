@@ -78,17 +78,17 @@ public class BoxPuzzle extends ViewGroup {
             physics.getPieceList().addAll(pieceListTemp);
             pieceListTemp.clear();
 //            Log.d(TAG,"randomizando...");
-        }while(getResolvableNumber()%2==0 && pieces%2==1);
+        }while(!isResolvable());
 //        Log.d(TAG,"randomize");
 //        Log.d(TAG,"pieceList.Size antes de updatear = " +physics.getPieceList().size());
         //update();
     }
 
-    public int getResolvableNumber(){
+    public int getResolvableNumber() {
         List<Piece> pieceList = physics.getPieceList();
-        int cont=0;
-        int e=0;
-        for (int i=0;i<pieceList.size();i++) {
+        int cont = 0;
+        int e = 0;
+        for (int i = 0; i < pieceList.size(); i++) {
             Piece piece1 = pieceList.get(i);
             if (piece1 != null) {
                 int number1 = piece1.getNumber();
@@ -101,11 +101,49 @@ public class BoxPuzzle extends ViewGroup {
                         }
                     }
                 }
-            } else {
-                e = i / cols;
+
+            } //else {
+//                e = i / cols;
+//            }
+        }
+        return cont;
+    }
+
+    public boolean isWin(){
+//        boolean win = true;
+        for (int i = 0;i<physics.getPieceList().size();i++){
+            Piece piece = physics.getPieceList().get(i);
+            if (piece!=null){
+                if(i!=piece.getNumber()-1){
+                    return false;
+                }
             }
         }
-        return cont+e;
+        return true;
+    }
+
+    public boolean isResolvable(){
+        int cont = getResolvableNumber();
+        int e=-1;
+        for (int i =0;i<physics.getPieceList().size();i++){
+            if (physics.getPieceList().get(i)==null){
+                e=i/cols;
+            }
+        }
+        if (pieces%2==1){
+            if ((cont+e)%2==1){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if (cont%2==0){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
     }
 
     public void setOnMovePieceListener(OnMovePieceListener listener){
