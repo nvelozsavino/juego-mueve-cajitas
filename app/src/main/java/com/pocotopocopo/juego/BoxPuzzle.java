@@ -21,7 +21,7 @@ import java.util.Random;
 
 
 public class BoxPuzzle extends ViewGroup {
-    private final static String TAG="BoxPuzzle";
+    private final static String TAG="Juego.BoxPuzzle";
     private static final int defaultRows=4;
     private static final int defaultCols=4;
     private static final int defaultPieceWidth=50;
@@ -495,14 +495,14 @@ public class BoxPuzzle extends ViewGroup {
 
 
     public void update(){
-       // Log.d(TAG,"update()");
+//        Log.d(TAG,"update()");
 //        Map<Integer,Rect> rectList = new HashMap<>();
         int miniBitmapWidth=0,miniBitmapHeight=0;
         if (bitmapContainer.getBitmap()!=null){
-            //Log.d(TAG,"bitmapcontainer.bitmap no es null");
+//            Log.d(TAG,"bitmapcontainer.bitmap no es null");
             miniBitmapWidth=bitmapContainer.getBitmap().getWidth()/cols;
             miniBitmapHeight=bitmapContainer.getBitmap().getHeight()/rows;
-            //Log.d(TAG,"tengo las imagenes");
+//            Log.d(TAG,"tengo las imagenes");
         }
 //        Log.d(TAG,"pieceList.Size = " +physics.getPieceList().size());
         for (int i=0;i<physics.getPieceList().size();i++){
@@ -596,12 +596,12 @@ public class BoxPuzzle extends ViewGroup {
 //        Piece p13=pieceList.get(12);
 //        Piece p14=pieceList.get(13);
 //        Piece p15=pieceList.get(14);
-
+        invalidate();
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//        Log.d(TAG,"OnSizeChanged w=" + w + " h="+h);
+        Log.d(TAG,"OnSizeChanged w=" + w + " h="+h);
         super.onSizeChanged(w, h, oldw, oldh);
 
 

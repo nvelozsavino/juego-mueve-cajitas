@@ -7,6 +7,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FLASHLIGHT"/>
 
 
@@ -41,9 +42,9 @@
             android:parentActivityName=".StartScreen">
 
 
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".StartScreen"/>
+            <!--<meta-data-->
+                <!--android:name="android.support.PARENT_ACTIVITY"-->
+                <!--android:value=".StartScreen"/>-->
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,6 +1,7 @@
 package com.pocotopocopo.juego;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -12,6 +13,7 @@ import java.util.Set;
  * Created by nico on 29/01/15.
  */
 public class BitmapContainer {
+    public static final String TAG = "Juego.BitmapContainer";
 
     public static interface OnBitmapChangeListener{
         void bitmapChange(Bitmap bitmap);
@@ -41,6 +43,8 @@ public class BitmapContainer {
     }
 
     public void setBitmap(Bitmap bitmap) {
+//        Log.d(TAG, "setBitmap");
+
         this.bitmap = bitmap;
         for (OnBitmapChangeListener bitmapChangeListener:bitmapChangeListenerList){
             if (bitmapChangeListener!=null){

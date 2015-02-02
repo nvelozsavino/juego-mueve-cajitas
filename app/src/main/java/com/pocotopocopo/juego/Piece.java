@@ -16,7 +16,7 @@ import java.util.List;
  * Created by nico on 21/01/15.
  */
 public class Piece extends View {
-    private static final String TAG = "Piece";
+    private static final String TAG = "Juego.Piece";
     private int top, left;
     private int width, height;
     private int number;

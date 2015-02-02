@@ -3,6 +3,7 @@ package com.pocotopocopo.juego;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -10,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,11 +42,12 @@ import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
-    private static final String TAG="Juego";
+    private static final String TAG="Juego.MainActivity";
     private static final String MOVES_COUNTER_KEY = "movesCount";
     private static final String BITMAP_KEY = "bitmapContainer";
     private static final String POS_KEY = "posNumbers";
     private static final String LIVEFEED_KEY = "liveFeed";
+
 
 
     private TextView moveCounterText;
@@ -67,6 +70,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private Button selectImageButton;
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final int RESULT_LOAD_IMG = 2;
 
     private BoxPuzzle puzzle;
     private SignInButton signInButton;
@@ -103,10 +107,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             public void onClick(View v) {
                 stopLiveFeed();
 
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
+//                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+//                }
+                // Create intent to Open Image applications like Gallery, Google Photos
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+// Start the Intent
+                startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
             }
         });
 
@@ -137,7 +146,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         bitmapContainer = new BitmapContainer();
 
-        puzzle.setBitmapContainer(bitmapContainer);
+
         Log.d(TAG, "capturando intent");
         Intent intent = getIntent();
         Log.d(TAG,"capture intent");
@@ -152,6 +161,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 Log.d(TAG,"el intent no es "+ e.getMessage());
             }
         }
+        puzzle.setBitmapContainer(bitmapContainer);
         Log.d(TAG,"bitmapcontainer = null");
 
         bitmapContainer.setBitmap(null);
@@ -199,18 +209,47 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG,"onActivityResult");
+        Log.d(TAG,"onActivityResult " + requestCode + " - " +resultCode);
         if (requestCode==REQUEST_IMAGE_CAPTURE && resultCode==RESULT_OK){
-
+            Log.d(TAG,"todo ok");
             Bundle extras = data.getExtras();
             Bitmap bitmap = (Bitmap) extras.get("data");
             Log.d(TAG,"bitmapContainer loaded? " + (bitmap!=null));
             Bitmap oldBitmap= bitmapContainer.getBitmap();
             bitmapContainer.setBitmap(bitmap);
+//            puzzle.setBitmapContainer(bitmapContainer);
             if(oldBitmap==null){
+                Log.d(TAG,"oldBitmap = null");
                 puzzle.update();
 
             }
+        }
+        if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK
+                && null != data) {
+            // Get the Image from data
+
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+            // Get the cursor
+            Cursor cursor = getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            // Move to first row
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String imgDecodableString = cursor.getString(columnIndex);
+            cursor.close();
+            Bitmap bitmap = BitmapFactory.decodeFile(imgDecodableString);
+            if (bitmap == null){
+                Log.d(TAG,"Bitmap es null");
+            }else{
+                Log.d(TAG,"Bitmap NO es null");
+            }
+            bitmapContainer.setBitmap(bitmap);
+//            puzzle.setBitmapContainer(bitmapContainer);
+            puzzle.update();
+
         }
         if (requestCode == RC_SIGN_IN) {
             mSignInClicked = false;
@@ -277,6 +316,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 Bitmap bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
                 Bitmap oldBitmap= bitmapContainer.getBitmap();
                 bitmapContainer.setBitmap(bitmap);
+//                puzzle.setBitmapContainer(bitmapContainer);
                 if(oldBitmap==null){
                     puzzle.update();
 
