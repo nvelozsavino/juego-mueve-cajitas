@@ -2,6 +2,7 @@ package com.pocotopocopo.juego;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.provider.BaseColumns;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,10 +16,15 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.games.Game;
+import com.google.android.gms.games.Games;
 
-public class StartScreen extends Activity {
+public class StartScreen extends BaseActivity {
     private EditText cols;
     private EditText rows;
     private Button start;
@@ -28,11 +34,9 @@ public class StartScreen extends Activity {
     public static final String GAME_MODE= "gameMode";
     public static final String BACKGROUND_MODE= "backgroundMode";
 
-    public static final String GOOGLE_CLIENT= "googleClient";
 
     public static final String SHOW_NUMBERS = "showNumbers";
 
-    private GoogleApiClient googleApiClient;
     private Button gameSize3x3Button;
     private Button gameSize4x4Button;
     private Button gameSize5x5Button;
@@ -49,6 +53,10 @@ public class StartScreen extends Activity {
 
     private CheckBox showNumbersCheckBox;
 
+    private SignInButton signInButton;
+    private Button signOutButton;
+
+
     private void initViews(){
         gameSize3x3Button= (Button)findViewById(R.id.gameSize3x3Button);
         gameSize4x4Button= (Button)findViewById(R.id.gameSize4x4Button);
@@ -61,6 +69,9 @@ public class StartScreen extends Activity {
         showNumbersCheckBox = (CheckBox)findViewById(R.id.showNumbersCheckBox);
 
         backgroundRadioGroup=(RadioGroup)findViewById(R.id.backgroundRadioGroup);
+
+        signInButton=(SignInButton)findViewById(R.id.signInButton);
+        signOutButton=(Button)findViewById(R.id.signOutButton);
 
 
     }
@@ -102,7 +113,7 @@ public class StartScreen extends Activity {
         startGame.putExtra(BACKGROUND_MODE,backgroundMode);
         startGame.putExtra(GAME_MODE,gameMode);
         startGame.putExtra(SHOW_NUMBERS,showNumbers);
-
+        startGame.putExtra(BaseActivity.SIGNED_IN,mSignInClicked);
         startActivity(startGame);
     }
 
@@ -138,14 +149,45 @@ public class StartScreen extends Activity {
                 startGame(4,4);
             }
         });
+
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSignInClicked = true;
+                googleApiClient.connect();
+            }
+        });
+        signOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSignInClicked = false;
+                Games.signOut(googleApiClient);
+                googleApiClient.disconnect();
+                displaySignIn();
+
+            }
+        });
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen);
         initViews();
         initListeners();
+
+    }
+
+    @Override
+    public void displaySignIn() {
+        signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
+        signOutButton.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void hideSignIn() {
+        signInButton.setVisibility(View.GONE);// Put code here to display the sign-in button
+        signOutButton.setVisibility(View.VISIBLE);
 
     }
 
