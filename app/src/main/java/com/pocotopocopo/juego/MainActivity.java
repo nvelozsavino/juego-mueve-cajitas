@@ -70,7 +70,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private BoxPuzzle puzzle;
     private SignInButton signInButton;
     private Button signOutButton;
-    private LinearLayout frame;
+    //private LinearLayout frame;
 
 
     private void initViews(){
@@ -122,14 +122,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
+        Log.d(TAG,"setContentView");
 
-        Intent intent = getIntent();
-        if (intent!=null) {
-            int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
-            int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
-            Log.d(TAG, "cols = " + cols + " - rows = " + rows);
-        }
-
+       initViews();
 
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -140,9 +135,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         dummySurfaceTexture=new SurfaceTexture(0);
 
         bitmapContainer = new BitmapContainer();
-        initViews();
+
         puzzle.setBitmapContainer(bitmapContainer);
-//        puzzle.setSize(cols,rows);
+        Intent intent = getIntent();
+        if (intent!=null) {
+            int cols = intent.getExtras().getInt(StartScreen.COLS_KEY);
+            int rows = intent.getExtras().getInt(StartScreen.ROWS_KEY);
+            Log.d(TAG, "cols = " + cols + " - rows = " + rows);
+            puzzle.setSize(cols,rows);
+        }
+
 
         bitmapContainer.setBitmap(null);
 

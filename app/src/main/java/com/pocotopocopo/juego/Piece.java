@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -261,12 +262,13 @@ public class Piece extends View {
     }
 
     public synchronized boolean intersect(int x, int y) {
+//        Log.d(TAG, "intersect");
         if (border){
             return false;
         }
 
         boolean intersection = ((x > left && x < (left + width)) && (y > top && y < (top + height)));
-        //Log.d(TAG, "number=" + number + " square=(" + left + "," + top + "," + (left + width) + "," + (top + height) + ")  (x,y)=(" + x + "," + y + ") intersect=" + intersection);
+//        Log.d(TAG, "number=" + number + " square=(" + left + "," + top + "," + (left + width) + "," + (top + height) + ")  (x,y)=(" + x + "," + y + ") intersect=" + intersection);
         return intersection;
     }
 
