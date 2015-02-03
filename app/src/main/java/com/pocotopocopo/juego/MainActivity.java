@@ -1,6 +1,9 @@
 package com.pocotopocopo.juego;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,8 +15,10 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -22,9 +27,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
-
-
-
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends BaseActivity{
@@ -34,9 +40,10 @@ public class MainActivity extends BaseActivity{
     private static final String BITMAP_KEY = "bitmapContainer";
     private static final String POS_KEY = "posNumbers";
     private static final String LIVEFEED_KEY = "liveFeed";
+    private static final String OUTPUTFILE_KEY = "outputFileKey";
 
 
-
+    private Uri outputFileUri;
     private TextView moveCounterText;
     private TextView resolvableText;
 
@@ -80,7 +87,7 @@ public class MainActivity extends BaseActivity{
             public void onClick(View v) {
                 puzzle.update();
                 if (!liveFeedEnabled) {
-                    liveFeedEnabled=startLiveFeed();
+                    liveFeedEnabled = startLiveFeed();
                 } else {
                     stopLiveFeed();
 
@@ -90,15 +97,13 @@ public class MainActivity extends BaseActivity{
         selectImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                openImageIntent();
                 startSelectImage();
             }
         });
-
-
-
     }
 
-    private void startSelectImage(){
+    private void startSelectImage() {
         stopLiveFeed();
 
 //                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -113,7 +118,49 @@ public class MainActivity extends BaseActivity{
     }
 
 
+    private void openImageIntent() {
 
+// Determine Uri of camera image to save.
+        final File root = new File(Environment.getExternalStorageDirectory() + File.separator + "MyDir" + File.separator);
+        root.mkdirs();
+            final String fName = "img_"+ System.currentTimeMillis() + ".jpg";
+//
+//        final String fName;
+//        try {
+//            ;
+//        } catch (IOException e) {
+//            Log.d(TAG, "algo paso con el nombre " + e.toString());
+//        }
+        final File sdImageMainDirectory = new File(root, fName);
+        outputFileUri = Uri.fromFile(sdImageMainDirectory);
+
+        // Camera.
+        final List<Intent> cameraIntents = new ArrayList<>();
+        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        final PackageManager packageManager = getPackageManager();
+        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+        for(ResolveInfo res : listCam) {
+            final String packageName = res.activityInfo.packageName;
+            final Intent intent = new Intent(captureIntent);
+            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            intent.setPackage(packageName);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+            cameraIntents.add(intent);
+        }
+
+        // Filesystem.
+        final Intent galleryIntent = new Intent();
+        galleryIntent.setType("image/*");
+        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+
+        // Chooser of filesystem options.
+        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Source");
+
+        // Add the camera options.
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
+
+        startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,15 +205,11 @@ public class MainActivity extends BaseActivity{
                 Log.d(TAG,"el intent no es "+ e.getMessage());
             }
         }
-
-
         puzzle.setBitmapContainer(bitmapContainer);
         Log.d(TAG,"bitmapcontainer = null");
 
         puzzle.setBitmapContainer(bitmapContainer);
         bitmapContainer.setBitmap(null);
-
-
 
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
@@ -184,11 +227,6 @@ public class MainActivity extends BaseActivity{
             }
         });
 
-
-
-
-
-
         if (savedInstanceState!=null){
             moveCounter=savedInstanceState.getInt(MOVES_COUNTER_KEY);
             Log.d(TAG,"moveCounter = " +moveCounter );
@@ -199,6 +237,7 @@ public class MainActivity extends BaseActivity{
             Log.d(TAG,"resetie las posiciones");
             moveCounterText.setText("Movimientos = " + moveCounter);
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
+//            outputFileUri = (Uri)savedInstanceState.getParcelable(OUTPUTFILE_KEY);
         } else {
             switch (backgroundMode){
                 default:
@@ -209,18 +248,15 @@ public class MainActivity extends BaseActivity{
                 case IMAGE:
                     puzzle.update();
                     liveFeedState=false;
+//                    openImageIntent();
                     startSelectImage();
                     break;
                 case VIDEO:
                     puzzle.update();
                     liveFeedEnabled=startLiveFeed();
                     break;
-
             }
         }
-
-
-
     }
 
     @Override
@@ -243,34 +279,87 @@ public class MainActivity extends BaseActivity{
         }
         if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK
                 && null != data) {
-            // Get the Image from data
 
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+            Bitmap bitmap =  activityResultChooseImage2(data, puzzle.getWidth(), puzzle.getHeight());
 
-            // Get the cursor
-            Cursor cursor = getContentResolver().query(selectedImage,
-                    filePathColumn, null, null, null);
-            // Move to first row
-            cursor.moveToFirst();
-
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String imgDecodableString = cursor.getString(columnIndex);
-            cursor.close();
-            Bitmap bitmap = BitmapFactory.decodeFile(imgDecodableString);
             if (bitmap == null){
                 Log.d(TAG,"Bitmap es null");
             }else{
                 Log.d(TAG,"Bitmap NO es null");
             }
             bitmapContainer.setBitmap(bitmap);
-//            puzzle.setBitmapContainer(bitmapContainer);
+            puzzle.setBitmapContainer(bitmapContainer);
             puzzle.update();
 
         }
 
     }
 
+    private Bitmap activityResultChooseImage2(Intent data, int rewWidth, int reqHeight){
+        Log.d(TAG,"activityResultChooseImage2");
+        Uri selectedImage = data.getData();
+        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+        // Get the cursor
+        Cursor cursor = getContentResolver().query(selectedImage,
+                filePathColumn, null, null, null);
+        // Move to first row
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String imgDecodableString = cursor.getString(columnIndex);
+        cursor.close();
+        Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
+
+        return bitmap;
+
+    }
+
+    private Bitmap activityResultChooseImage (Intent data, int rewWidth, int reqHeight){
+        final boolean isCamera;
+        if(data == null)
+        {
+            isCamera = true;
+        }
+        else
+        {
+            final String action = data.getAction();
+            if(action == null)
+            {
+                isCamera = false;
+            }
+            else
+            {
+                isCamera = action.equals(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            }
+
+        }
+
+        Uri selectedImageUri;
+        if(isCamera)
+        {
+            selectedImageUri = outputFileUri;
+        }
+        else
+        {
+            selectedImageUri = data == null ? null : data.getData();
+        }
+        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+        // Get the cursor
+        Cursor cursor = getContentResolver().query(selectedImageUri,
+                filePathColumn, null, null, null);
+        // Move to first row
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String imgDecodableString = cursor.getString(columnIndex);
+        cursor.close();
+        Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
+
+        return bitmap;
+
+    }
 
     private boolean startLiveFeed(){
         if (camera!=null){
@@ -337,7 +426,6 @@ public class MainActivity extends BaseActivity{
         }
     };
 
-
     @Override
     protected void onResume() {
 
@@ -354,13 +442,13 @@ public class MainActivity extends BaseActivity{
         super.onPause();
     }
 
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(MOVES_COUNTER_KEY,moveCounter);
         outState.putParcelable(BITMAP_KEY,puzzle.getBitmapContainer().getBitmap());
         outState.putIntArray(POS_KEY,puzzle.getPositions());
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
+//        outState.putParcelable(OUTPUTFILE_KEY,outputFileUri);
         super.onSaveInstanceState(outState);
 
     }
