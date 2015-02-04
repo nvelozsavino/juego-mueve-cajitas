@@ -20,6 +20,7 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 public abstract class BaseActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
     protected GoogleApiClient googleApiClient;
     protected boolean signedIn=true;
+    protected String mEmail;
     public static final String SIGNED_IN="signedIn";
     public static final String AUTO_SIGNED_IN="autoSignedIn";
 
@@ -41,10 +42,10 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
 
         Intent intent=getIntent();
         if (intent!=null){
-            try {
+            if (intent.getExtras().containsKey(SIGNED_IN)){
                 signedIn= intent.getExtras().getBoolean(SIGNED_IN);
-            }catch(Exception e){
-                Log.d(TAG,"el intent no es "+ e.getMessage());
+            } else {
+                signedIn=false;
             }
         }
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -53,6 +54,8 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
                 .addApi(Games.API).addScope(Games.SCOPE_GAMES)
                         // add other APIs and scopes here as needed
                 .build();
+
+
     }
 
     @Override
