@@ -1,33 +1,20 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.provider.BaseColumns;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
 import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.games.Game;
-import com.google.android.gms.games.Games;
 
 public class StartScreen extends BaseActivity {
-    private EditText cols;
-    private EditText rows;
-    private Button start;
+
     private static final String TAG = "Juego.StartScreen";
     public static final String COLS_KEY = "colsNumber";
     public static final String ROWS_KEY = "rowsNumber";
@@ -57,11 +44,11 @@ public class StartScreen extends BaseActivity {
 
     private CheckBox showNumbersCheckBox;
 
-    private SignInButton signInButton;
-    private Button signOutButton;
 
 
-    private void initViews(){
+    @Override
+    protected void initViews(){
+        super.initViews();
         gameSize3x3Button= (Button)findViewById(R.id.gameSize3x3Button);
         gameSize4x4Button= (Button)findViewById(R.id.gameSize4x4Button);
         gameSize5x5Button= (Button)findViewById(R.id.gameSize5x5Button);
@@ -78,8 +65,6 @@ public class StartScreen extends BaseActivity {
 //        backgroundVideoRadioButton=(RadioButton)findViewById(R.id.backgroundVideoRadioButton);
 
 
-        signInButton=(SignInButton)findViewById(R.id.signInButton);
-        signOutButton=(Button)findViewById(R.id.signOutButton);
 
 
     }
@@ -99,6 +84,9 @@ public class StartScreen extends BaseActivity {
             case R.id.gameModeSpeedRadioButton:
                 gameMode=GameMode.SPEED;
                 break;
+            case R.id.gameModeMultiplayerRadioButton:
+                gameMode=GameMode.MULTIPLAYER;
+                break;
         }
 
         int backgroundModeId=backgroundRadioGroup.getCheckedRadioButtonId();
@@ -115,13 +103,20 @@ public class StartScreen extends BaseActivity {
                 break;
         }
         boolean showNumbers=showNumbersCheckBox.isChecked();
-        Intent startGame = new Intent(getApplicationContext(), MainActivity.class);
+        Class<?> activityClass;
+        if (gameMode.equals(GameMode.MULTIPLAYER)){
+            activityClass=MultiplayerActivity.class;
+        } else {
+            activityClass=PuzzleActivity.class;
+        }
+        Intent startGame = new Intent(getApplicationContext(), activityClass);
         startGame.putExtra(COLS_KEY, cols);
         startGame.putExtra(ROWS_KEY, rows);
         startGame.putExtra(BACKGROUND_MODE,backgroundMode);
         startGame.putExtra(GAME_MODE,gameMode);
         startGame.putExtra(SHOW_NUMBERS,showNumbers);
-        startGame.putExtra(BaseActivity.SIGNED_IN,mSignInClicked);
+        Log.d(TAG, "Signed In: " + googleApiClient.isConnected());
+        //startGame.putExtra(BaseActivity.SIGNED_IN,googleApiClient.isConnected());
         startActivity(startGame);
     }
 
@@ -158,20 +153,7 @@ public class StartScreen extends BaseActivity {
             }
         });
 
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signIn();
-            }
-        });
-        signOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signOut();
-                displaySignIn();
 
-            }
-        });
 
         backgroundRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -200,18 +182,7 @@ public class StartScreen extends BaseActivity {
 
     }
 
-    @Override
-    public void displaySignIn() {
-        signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
-        signOutButton.setVisibility(View.GONE);
-    }
 
-    @Override
-    public void hideSignIn() {
-        signInButton.setVisibility(View.GONE);// Put code here to display the sign-in button
-        signOutButton.setVisibility(View.VISIBLE);
-
-    }
 
 
 }

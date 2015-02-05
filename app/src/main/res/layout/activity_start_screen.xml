@@ -106,6 +106,13 @@
             android:id="@+id/gameModeSpeedRadioButton"
             android:checked="false"
             android:enabled="false" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_mode_multiplayer"
+            android:id="@+id/gameModeMultiplayerRadioButton"
+            android:checked="false" />
     </RadioGroup>
 
     <TextView

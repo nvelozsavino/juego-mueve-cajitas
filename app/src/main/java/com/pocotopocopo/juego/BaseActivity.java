@@ -1,14 +1,16 @@
 package com.pocotopocopo.juego;
 
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -16,10 +18,15 @@ import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.plus.Plus;
 import com.google.example.games.basegameutils.BaseGameUtils;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 
@@ -31,7 +38,7 @@ import java.io.IOException;
 
 public abstract class BaseActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
     protected GoogleApiClient googleApiClient;
-    protected boolean signedIn=true;
+    protected boolean signedIn;
 
     public static final String SIGNED_IN="signedIn";
     public static final String AUTO_SIGNED_IN="autoSignedIn";
@@ -50,27 +57,39 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
     private String token;
     private String mEmail;
 
+    protected AuthToken authToken;
+
+    protected SignInButton signInButton;
+    protected Button signOutButton;
+
     public static final String EXTRA_ACCOUNTNAME = "extra_accountname";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG,"************************************* START *************************** " + this.getClass());
+        Log.d(TAG,"onCreate "+ this.getClass());
         super.onCreate(savedInstanceState);
-        if (savedInstanceState!=null){
-            mAutoStartSignInFlow=savedInstanceState.getBoolean(AUTO_SIGNED_IN);
-        }
 
-        Intent intent=getIntent();
-        if (intent!=null){
-            try{
-                signedIn= intent.getExtras().getBoolean(SIGNED_IN);
-            } catch (Exception e){
-                Log.e(TAG, "No",e);
-                signedIn=false;
-            }
+//        if (savedInstanceState!=null){
+//            mAutoStartSignInFlow=savedInstanceState.getBoolean(AUTO_SIGNED_IN);
+//        }
+//
+//        Intent intent=getIntent();
+//        if (intent!=null && intent.getExtras()!=null) {
+//            if (intent.getExtras().containsKey(SIGNED_IN)) {
+//
+//                signedIn = intent.getExtras().getBoolean(SIGNED_IN);
+//                Log.d(TAG, "extras");
+//            } else {
+//                Log.d(TAG, "no extras");
+//                signedIn = false;
+//            }
+//            Log.d(TAG, "Signed In: " + signedIn);
+//        }
 
 
 
-        }
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -80,10 +99,55 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
                 .build();
 
 
+        signInButton=(SignInButton)findViewById(R.id.signInButton);
+        signOutButton=(Button)findViewById(R.id.signOutButton);
+        if (signInButton!=null) {
+            signInButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    signIn();
+                }
+            });
+        }
+        if (signOutButton!=null) {
+            signOutButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    signOut();
+                    disconnected();
+
+                }
+            });
+        }
+
+    }
+
+    protected void initViews(){
+        signInButton=(SignInButton)findViewById(R.id.signInButton);
+        signOutButton=(Button)findViewById(R.id.signOutButton);
+        if (signInButton!=null) {
+            signInButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    signIn();
+                }
+            });
+        }
+        if (signOutButton!=null) {
+            signOutButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    signOut();
+                    disconnected();
+
+                }
+            });
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG,"onActivityResult " + this.getClass());
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
             mSignInClicked = false;
@@ -120,6 +184,8 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
     }
 
 
+
+
     /**
      * This method is a hook for background threads and async tasks that need to provide the
      * user a response UI when an exception occurs.
@@ -153,14 +219,20 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG,"onSaveInstanceState " + this.getClass());
         super.onSaveInstanceState(outState);
         outState.putBoolean(AUTO_SIGNED_IN,mAutoStartSignInFlow);
     }
 
     @Override
     protected void onStart() {
+        Log.d(TAG,"onStart "+ this.getClass());
 
         super.onStart();
+        disconnected();
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(getString(R.string.preference_key_file), Context.MODE_PRIVATE);
+        signedIn = sharedPreferences.getBoolean(SIGNED_IN, false);
+        Log.d(TAG,"signedIn (var): " +signedIn);
         if (signedIn) {
             googleApiClient.connect();
 
@@ -170,25 +242,23 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
 
     @Override
     protected void onStop() {
+        Log.d(TAG,"onStop " + this.getClass());
         googleApiClient.disconnect();
         super.onStop();
     }
 
     @Override
     public void onConnected(Bundle bundle) {
-        mAutoStartSignInFlow=true;
+        Log.d(TAG,"onConnected " + this.getClass());
+        //mAutoStartSignInFlow=true;
         mEmail =Plus.AccountApi.getAccountName(googleApiClient);
 
 
         startTask(mEmail,SCOPE).execute();
-
-
-
-
-
-        hideSignIn();
-
+        connected();
     }
+
+
 
     private AsyncTask<Void,Void,Void> startTask(final String accountName, final String scope) {
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -196,7 +266,27 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
             protected Void doInBackground(Void... params) {
                 try {
                     token = GoogleAuthUtil.getToken(getApplicationContext(), accountName, scope);
+                    //Log.d(TAG,"Token: " + token);
                     //TODO: connect to backend server
+                    String uri="https://www.googleapis.com/oauth2/v1/tokeninfo?id_token=" + token;
+
+                    AndroidHttpClient androidHttpClient = AndroidHttpClient.newInstance("");
+                    try {
+                        HttpGet httpGet = new HttpGet(uri);
+                        String result = null;
+                        HttpResponse response;
+                        response = androidHttpClient.execute(httpGet);
+                        result = EntityUtils.toString(response.getEntity());
+                        //Log.d(TAG,result);
+                        int responseCode=response.getStatusLine().getStatusCode();
+                        String responseReason = response.getStatusLine().getReasonPhrase();
+                        //Log.d(TAG,"Response code= " + response.getStatusLine().getStatusCode());
+
+                    } finally {
+                        androidHttpClient.close();
+                    }
+
+
                 } catch (UserRecoverableAuthException userRecoverableException) {
                     // GooglePlayServices.apk is either old, disabled, or not present, which is
                     // recoverable, so we need to show the user some UI through the activity.
@@ -219,11 +309,13 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
 
     @Override
     public void onConnectionSuspended(int i) {
+        Log.d(TAG,"onConnectionSuspended " + this.getClass());
         googleApiClient.connect();
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d(TAG,"onConnectionFailed " + this.getClass());
         if (mResolvingConnectionFailure) {
 
             // already resolving
@@ -249,7 +341,7 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
             }
 
         }
-        displaySignIn();
+        disconnected();
 
     }
 
@@ -268,6 +360,43 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
 
     }
 
-    public void displaySignIn(){}
-    public void hideSignIn(){}
+    public void disconnected(){
+        if (signInButton!=null) {
+            signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
+        }
+        if (signOutButton!=null) {
+            signOutButton.setVisibility(View.GONE);
+        }
+
+    }
+    public void connected(){
+        if (signInButton!=null) {
+            signInButton.setVisibility(View.GONE);// Put code here to display the sign-in button
+        }
+        if (signOutButton!=null) {
+            signOutButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG,"onResume " + this.getClass());
+        super.onResume();
+
+
+    }
+
+    @Override
+    protected void onPause() {
+
+        Log.d(TAG,"onPause " + this.getClass());
+        Log.d(TAG,"signedIn: " +googleApiClient.isConnected());
+
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(getString(R.string.preference_key_file), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(SIGNED_IN, googleApiClient.isConnected());
+        editor.commit();
+        super.onPause();
+    }
 }

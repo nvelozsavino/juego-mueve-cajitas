@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends BaseActivity{
+public class PuzzleActivity extends BaseActivity{
 
     private static final String TAG="Juego.MainActivity";
     private static final String MOVES_COUNTER_KEY = "movesCount";
@@ -70,8 +70,9 @@ public class MainActivity extends BaseActivity{
     private Puzzle puzzle;
     //private LinearLayout frame;
 
-
-    private void initViews(){
+    @Override
+    protected void initViews(){
+        super.initViews();
         selectImageButton = (Button) findViewById(R.id.selectImage);
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         //frame = (LinearLayout) findViewById(R.id.frame);
