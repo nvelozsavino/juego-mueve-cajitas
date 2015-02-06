@@ -226,8 +226,9 @@ public class Piece extends View {
 
 
         if (bitmapContainer!=null && bitmapContainer.getBitmap()!=null) {
-
-            canvas.drawBitmap(bitmapContainer.getBitmap(), rInit, r, paint);
+            Rect rect = new Rect(rInit);
+            rect.inset(paddingX,paddingY);
+            canvas.drawBitmap(bitmapContainer.getBitmap(), rect, r, paint);
 
         }
 

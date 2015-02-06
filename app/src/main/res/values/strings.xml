@@ -28,7 +28,7 @@
     <string name="multiplayer_quick_match">Quick Match</string>
     <string name="multiplayer_check_games">Check Games</string>
     <string name="preference_key_file">com.pocotopocopo.juego.PREFERENCE_FILE_KEY</string>
-
-
+    <string name="title_activity_bitmap_cropper">BitmapCropperActivity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

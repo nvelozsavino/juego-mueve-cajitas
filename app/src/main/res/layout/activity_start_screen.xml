@@ -43,6 +43,7 @@
             android:text="@string/game_size_3x3"
             android:id="@+id/gameSize3x3Button" />
 
+
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"

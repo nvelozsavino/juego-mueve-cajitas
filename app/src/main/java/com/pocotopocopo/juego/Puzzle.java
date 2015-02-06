@@ -26,8 +26,8 @@ public class Puzzle extends ViewGroup {
     private static final int defaultPieceHeight=50;
     private static final int defaultBorderPaddingX=10;
     private static final int defaultBorderPaddingY=10;
-    private static final int defaultPiecePaddingX=3;
-    private static final int defaultPiecePaddingY=3;
+    private static final int defaultPiecePaddingX=1;
+    private static final int defaultPiecePaddingY=1;
 
     private int rows=defaultRows;
     private int cols=defaultCols;
