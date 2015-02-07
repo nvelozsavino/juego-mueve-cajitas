@@ -1,7 +1,6 @@
 package com.pocotopocopo.juego;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -58,9 +57,8 @@ public class PuzzleActivity extends BaseActivity{
 //    private Button liveFeedButton;
     private Handler handler;
     private SurfaceTexture dummySurfaceTexture;
-    private int soundId;
-
-
+    private int clickId;
+    private boolean startedGame=false;
 
     //private GoogleApiClient googleApiClient;
 
@@ -194,14 +192,21 @@ public class PuzzleActivity extends BaseActivity{
         maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         volume = actVolume/maxVolume;
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC,10);
+        soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC,0);
         soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
             public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
                 loadedSound= true;
+                if (!startedGame){
+                    chrono.start();
+                    startedGame=true;
+                }
             }
         });
-        soundId = soundPool.load(getApplicationContext(),R.raw.click,1);
+        loadedSound=false;
+        clickId = soundPool.load(getApplicationContext(),R.raw.click,1);
+//        loadedSound=false;
+//        musicId = soundPool.load(getApplicationContext(),R.raw.music,2);
     }
 
     @Override
@@ -213,7 +218,7 @@ public class PuzzleActivity extends BaseActivity{
 
         initViews();
         loadSounds();
-        chrono.start();
+
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
 //        frame.addView((puzzle));
@@ -259,7 +264,7 @@ public class PuzzleActivity extends BaseActivity{
             public void onPieceMoved() {
                 moveCounterText.setText(getString(R.string.moves_text,++moveCounter));
                 if (loadedSound){
-                    soundPool.play(soundId,volume,volume,1,0,1f);
+                    soundPool.play(clickId,volume,volume,2,0,1f);
                 }
             }
 
@@ -306,6 +311,13 @@ public class PuzzleActivity extends BaseActivity{
                     break;
             }
         }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        soundPool.unload(clickId);
+        super.onDestroy();
     }
 
     @Override
