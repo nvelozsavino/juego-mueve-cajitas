@@ -56,7 +56,9 @@ public class BitmapCropper extends ActionBarActivity {
             Log.d(TAG,"resultBitmap =  no null");
             Intent intent = new Intent();
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
-            resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
+            Log.d(TAG,"bitmap before compression = " + resultBitmap.getByteCount());
+            resultBitmap.compress(Bitmap.CompressFormat.JPEG, 50, bs);
+            Log.d(TAG,"bitmap after compression = " + resultBitmap.getByteCount());
             intent.putExtra(BITMAP_KEY, bs.toByteArray());
             setResult(Activity.RESULT_OK, intent);
             Log.d(TAG,"cree todo el intent y el result");

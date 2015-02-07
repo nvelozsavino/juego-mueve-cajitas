@@ -81,6 +81,7 @@ public class PuzzleActivity extends BaseActivity{
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
+        moveCounterText.setText(getString(R.string.moves_text,0));
         chrono = (MilliSecondChronometer)findViewById(R.id.timerView);
 
 //        resolvableText = (TextView)findViewById(R.id.resolvableText);
@@ -190,6 +191,7 @@ public class PuzzleActivity extends BaseActivity{
         Log.d(TAG,"setContentView");
 
         initViews();
+
         chrono.start();
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -234,7 +236,7 @@ public class PuzzleActivity extends BaseActivity{
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
             public void onPieceMoved() {
-                moveCounterText.setText("Movimientos: " + (++moveCounter));
+                moveCounterText.setText(getString(R.string.moves_text,++moveCounter));
             }
 
             @Override
