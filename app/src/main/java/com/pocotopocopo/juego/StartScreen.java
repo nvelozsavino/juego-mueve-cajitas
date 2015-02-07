@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.google.android.gms.common.SignInButton;
@@ -24,13 +25,15 @@ public class StartScreen extends BaseActivity {
 
     public static final String SHOW_NUMBERS = "showNumbers";
 
-    private Button gameSize3x3Button;
-    private Button gameSize4x4Button;
-    private Button gameSize5x5Button;
-    private Button gameSize6x6Button;
-    private Button gameSizeCustomButton;
+//    private Button gameSize3x3Button;
+//    private Button gameSize4x4Button;
+//    private Button gameSize5x5Button;
+//    private Button gameSize6x6Button;
+//    private Button gameSizeCustomButton;
 
     private RadioGroup gameModeRadioGroup;
+    private RadioGroup gameSizeGroup;
+    private Button startGameButton;
 
 
 
@@ -49,12 +52,13 @@ public class StartScreen extends BaseActivity {
     @Override
     protected void initViews(){
         super.initViews();
-        gameSize3x3Button= (Button)findViewById(R.id.gameSize3x3Button);
-        gameSize4x4Button= (Button)findViewById(R.id.gameSize4x4Button);
-        gameSize5x5Button= (Button)findViewById(R.id.gameSize5x5Button);
-        gameSize6x6Button= (Button)findViewById(R.id.gameSize6x6Button);
-        gameSizeCustomButton= (Button)findViewById(R.id.gameSizeCustomButton);
-
+//        gameSize3x3Button= (RadioButton)findViewById(R.id.gameSize3x3Button);
+//        gameSize4x4Button= (Button)findViewById(R.id.gameSize4x4Button);
+//        gameSize5x5Button= (Button)findViewById(R.id.gameSize5x5Button);
+//        gameSize6x6Button= (Button)findViewById(R.id.gameSize6x6Button);
+//        gameSizeCustomButton= (Button)findViewById(R.id.gameSizeCustomButton);
+        startGameButton = (Button) findViewById(R.id.startGameButton);
+        gameSizeGroup = (RadioGroup) findViewById(R.id.gameSizeGroup);
         gameModeRadioGroup=(RadioGroup)findViewById(R.id.gameModeRadioGroup);
 
         showNumbersCheckBox = (CheckBox)findViewById(R.id.showNumbersCheckBox);
@@ -121,38 +125,62 @@ public class StartScreen extends BaseActivity {
     }
 
     private void initListeners(){
-        gameSize3x3Button.setOnClickListener(new View.OnClickListener() {
+//        gameSize3x3Button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startGame(3,3);
+//            }
+//        });
+//        gameSize4x4Button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startGame(4,4);
+//            }
+//        });
+//        gameSize5x5Button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startGame(5,5);
+//            }
+//        });
+//        gameSize6x6Button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startGame(6,6);
+//            }
+//        });
+//        gameSizeCustomButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // TODO: create a dialog asking for the size
+//                startGame(4,4);
+//            }
+//        });
+        startGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startGame(3,3);
-            }
-        });
-        gameSize4x4Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startGame(4,4);
-            }
-        });
-        gameSize5x5Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startGame(5,5);
-            }
-        });
-        gameSize6x6Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startGame(6,6);
-            }
-        });
-        gameSizeCustomButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: create a dialog asking for the size
-                startGame(4,4);
-            }
-        });
+                int gameSizeId = gameSizeGroup.getCheckedRadioButtonId();
+                switch (gameSizeId){
+                    case R.id.gameSize3x3Button:
+                        startGame(3,3);
+                        break;
+                    case R.id.gameSize4x4Button:
+                        startGame(4,4);
+                        break;
+                    case R.id.gameSize5x5Button:
+                        startGame(5,5);
+                        break;
+                    case R.id.gameSize6x6Button:
+                        startGame(6,6);
+                        break;
+                    case R.id.gameSizeCustomButton:
+                        startGame(4,4);
+                        break;
 
+
+                }
+            }
+        });
 
 
         backgroundRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {

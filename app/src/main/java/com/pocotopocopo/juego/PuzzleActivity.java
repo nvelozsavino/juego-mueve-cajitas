@@ -22,14 +22,11 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +50,7 @@ public class PuzzleActivity extends BaseActivity{
     private byte[] cameraData = null;
     private boolean liveFeedEnabled=false;
     private boolean liveFeedState=false;
-    private Button liveFeedButton;
+//    private Button liveFeedButton;
     private Handler handler;
     private SurfaceTexture dummySurfaceTexture;
 
@@ -63,13 +60,13 @@ public class PuzzleActivity extends BaseActivity{
 
 
     private BitmapContainer bitmapContainer;
-    private Button selectImageButton;
+//    private Button selectImageButton;
 //    private Button selectImageButton2;
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int RESULT_LOAD_IMG = 2;
     static final int RESULT_LOAD_IMG2 = 3;
-    static final int REQUEST_IMAGE_CROP = 4;
+
 
     private Puzzle puzzle;
     //private LinearLayout frame;
@@ -77,45 +74,45 @@ public class PuzzleActivity extends BaseActivity{
     @Override
     protected void initViews(){
         super.initViews();
-        selectImageButton = (Button) findViewById(R.id.selectImage);
+//        selectImageButton = (Button) findViewById(R.id.selectImage);
 //        selectImageButton2 = (Button) findViewById(R.id.selectImage2);
 
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
 //        resolvableText = (TextView)findViewById(R.id.resolvableText);
-        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
+//        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
 
     }
-
-    private void setClickListeners(){
-        liveFeedButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                puzzle.update();
-                if (!liveFeedEnabled) {
-                    liveFeedEnabled = startLiveFeed();
-                } else {
-                    stopLiveFeed();
-
-                }
-            }
-        });
-        selectImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                openImageIntent();
-                startSelectImage();
-            }
-        });
-//        selectImageButton2.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-////                openImageIntent();
-//                startSelectImage2();
-//            }
-//        });
-    }
+//
+//    private void setClickListeners(){
+////        liveFeedButton.setOnClickListener(new View.OnClickListener() {
+////            @Override
+////            public void onClick(View v) {
+////                puzzle.update();
+////                if (!liveFeedEnabled) {
+////                    liveFeedEnabled = startLiveFeed();
+////                } else {
+////                    stopLiveFeed();
+////
+////                }
+////            }
+////        });
+////        selectImageButton.setOnClickListener(new View.OnClickListener() {
+////            @Override
+////            public void onClick(View v) {
+//////                openImageIntent();
+////                startSelectImage();
+////            }
+////        });
+////        selectImageButton2.setOnClickListener(new View.OnClickListener() {
+////            @Override
+////            public void onClick(View v) {
+//////                openImageIntent();
+////                startSelectImage2();
+////            }
+////        });
+//    }
 
 //    private void startSelectImage2(){
 //        stopLiveFeed();
@@ -195,7 +192,7 @@ public class PuzzleActivity extends BaseActivity{
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
 //        frame.addView((puzzle));
         handler = new Handler(Looper.getMainLooper());
-        setClickListeners();
+//        setClickListeners();
 
         dummySurfaceTexture=new SurfaceTexture(0);
 
@@ -307,40 +304,29 @@ public class PuzzleActivity extends BaseActivity{
                     puzzle.setBitmapContainer(bitmapContainer);
                     puzzle.update();
                 }else{
-                    requestImageCrop(this,bitmap);
+                    Intent intent = BitmapCropper.requestImageCrop(this,bitmap);
+                    startActivityForResult(intent, BitmapCropper.REQUEST_IMAGE_CROP);
                 }
+            }else{
+                puzzle.setNumbersVisible(true);
             }
 
         }
-
-        if (requestCode == REQUEST_IMAGE_CROP && resultCode == RESULT_OK){
-            Log.d(TAG,"Activity Result Request Image crop");
-            byte[] byteArray = data.getByteArrayExtra(BitmapCropperActivity.BITMAP_KEY);
-            Log.d(TAG,"tengo el byte array");
-            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
-            Log.d(TAG,"tengo el bitmap");
-            if (bitmap!=null) {
+        if (requestCode == BitmapCropper.REQUEST_IMAGE_CROP && resultCode == RESULT_OK) {
+            Bitmap bitmap = BitmapCropper.getBitmapCropped(data);
+            if (bitmap != null) {
                 bitmapContainer.setBitmap(bitmap);
                 puzzle.setBitmapContainer(bitmapContainer);
                 puzzle.update();
-            }else{
-                Log.d(TAG,"bitmap era null");
+            } else {
+                puzzle.setNumbersVisible(true);
+                Log.d(TAG, "bitmap era null");
             }
         }
 
     }
 
-    public void requestImageCrop (Context context, Bitmap bitmap){
-        Intent intent = new Intent(context,BitmapCropperActivity.class);
-        ByteArrayOutputStream bs = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,50,bs);
-        Log.d(TAG, "bitmap count nuevo = " + bitmap.getByteCount());
 
-        intent.putExtra(BitmapCropperActivity.BITMAP_KEY,bs.toByteArray());
-        Log.d(TAG,"puse el bitmap en el intent");
-        startActivityForResult(intent, REQUEST_IMAGE_CROP);
-        Log.d(TAG,"startie la actividad");
-    }
 
     private Bitmap activityResultChooseImage2(Intent data, int rewWidth, int reqHeight){
         Log.d(TAG,"activityResultChooseImage2");

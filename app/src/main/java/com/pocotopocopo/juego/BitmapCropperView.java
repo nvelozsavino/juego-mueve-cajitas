@@ -203,7 +203,8 @@ public class BitmapCropperView extends View {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        Log.d(TAG,"onSizeChanged");
+//        Log.d(TAG,"onSizeChanged");
+        updateSizes();
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -214,23 +215,33 @@ public class BitmapCropperView extends View {
 //        rectSize = getWidth() < getHeight()? getWidth():getHeight();
 //        Log.d(TAG,"rectSize = " + rectSize);
 //        rect.set(0,0,rectSize,rectSize);
-        Log.d(TAG,"width = " +getWidth() + " - height = " +getHeight());
+        updateSizes();
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
+    private void updateSizes (){
+//        Log.d(TAG,"width = " +getWidth() + " - height = " +getHeight());
         bitmapScaleFactor = getWidth()/bitmapWidth < getHeight()/bitmapHeight ? getWidth()/bitmapWidth : getHeight()/bitmapHeight;
 //        float bitmapScaleFactor = bitmapWidth/getWidth() > bitmapHeight/getHeight() ? bitmapWidth/getWidth() : bitmapHeight/getHeight();
-        Log.d(TAG,"bitmapScaleFactor = " + bitmapScaleFactor);
+//        Log.d(TAG,"bitmapScaleFactor = " + bitmapScaleFactor);
         if (bitmapWidth>bitmapHeight){
-            mLeft = 0f;
-            mTop = (getHeight()/2-bitmapHeight*bitmapScaleFactor/2);
-            mRight = getWidth();
-            mBottom = (getHeight()/2+bitmapHeight*bitmapScaleFactor/2);
+//            mLeft = 0f;
+//            mTop = (getHeight()/2-bitmapHeight*bitmapScaleFactor/2);
+//            mRight = getWidth();
+//            mBottom = (getHeight()/2+bitmapHeight*bitmapScaleFactor/2);
             rectSize = (int)(bitmapHeight*bitmapScaleFactor);
         }else{
-            mLeft = (getWidth()/2-bitmapWidth*bitmapScaleFactor/2);
-            mTop = 0;
-            mRight = (getWidth()/2+bitmapWidth*bitmapScaleFactor/2);
-            mBottom = getHeight();
+//            mLeft = (getWidth()/2-bitmapWidth*bitmapScaleFactor/2);
+//            mTop = 0;
+//            mRight = (getWidth()/2+bitmapWidth*bitmapScaleFactor/2);
+//            mBottom = getHeight();
             rectSize = (int)(bitmapWidth*bitmapScaleFactor);
         }
+        mLeft = (getWidth()/2-bitmapWidth*bitmapScaleFactor/2);
+        mTop = (getHeight()/2-bitmapHeight*bitmapScaleFactor/2);
+        mRight = (getWidth()/2+bitmapWidth*bitmapScaleFactor/2);
+        mBottom = (getHeight()/2+bitmapHeight*bitmapScaleFactor/2);
+
         rect.set((int)mLeft,(int)mTop,(int)mLeft+rectSize,(int)mTop+rectSize);
         Log.d(TAG,"[ " + mLeft + " , " + mTop + " , " + mRight + " , " + mBottom + "]");
         try {
@@ -239,12 +250,7 @@ public class BitmapCropperView extends View {
             Log.d(TAG,e.getMessage());
         }
         updateRect();
-
-//        invalidate();
-        Log.d(TAG,"onLayout");
-        super.onLayout(changed, left, top, right, bottom);
     }
-
     @Override
     protected void onFinishInflate() {
         Log.d(TAG,"onFinishInflate");

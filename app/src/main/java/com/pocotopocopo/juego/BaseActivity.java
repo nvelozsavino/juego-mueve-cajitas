@@ -44,7 +44,7 @@ public abstract class BaseActivity extends Activity implements GoogleApiClient.C
     public static final String AUTO_SIGNED_IN="autoSignedIn";
     private static final String SCOPE = "audience:server:client_id:844436793955-05qq7b1u4g82gq4mljjg0na9bbk6no1t.apps.googleusercontent.com";
 
-    private static final String TAG="BaseActivity";
+    private static final String TAG="Juego.BaseActivity";
 
     private static int RC_SIGN_IN = 9001;
 

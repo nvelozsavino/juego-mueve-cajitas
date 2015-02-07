@@ -20,7 +20,7 @@ import android.widget.ImageView;
 import java.io.ByteArrayOutputStream;
 
 
-public class BitmapCropperActivity extends ActionBarActivity {
+public class BitmapCropper extends ActionBarActivity {
     private BitmapCropperView imgView;
 
     public static final String BITMAP_KEY = "BitmapKey";
@@ -32,6 +32,7 @@ public class BitmapCropperActivity extends ActionBarActivity {
     private float mLastTouchX,mLastTouchY;
     private Button cropButton;
     private Button cancelButton;
+    public static final int REQUEST_IMAGE_CROP = 4;
 
 
 
@@ -64,6 +65,25 @@ public class BitmapCropperActivity extends ActionBarActivity {
         }
 
         finish();
+    }
+
+    public static Intent requestImageCrop (Context context, Bitmap bitmap){
+        Intent intent = new Intent(context,BitmapCropper.class);
+        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,50,bs);
+//        Log.d(TAG, "bitmap count nuevo = " + bitmap.getByteCount());
+        intent.putExtra(BitmapCropper.BITMAP_KEY,bs.toByteArray());
+//        Log.d(TAG,"puse el bitmap en el intent");
+        return intent;
+    }
+
+    public static Bitmap getBitmapCropped (Intent data){
+//            Log.d(TAG,"Activity Result Request Image crop");
+            byte[] byteArray = data.getByteArrayExtra(BitmapCropper.BITMAP_KEY);
+//            Log.d(TAG,"tengo el byte array");
+            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+            return bitmap;
+//            Log.d(TAG,"tengo el bitmap");
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
