@@ -14,6 +14,8 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -39,8 +41,10 @@ public class PuzzleActivity extends BaseActivity{
     private static final String POS_KEY = "posNumbers";
     private static final String LIVEFEED_KEY = "liveFeed";
     private static final String OUTPUTFILE_KEY = "outputFileKey";
-
-
+    private AudioManager audioManager;
+    private SoundPool soundPool;
+    private float volume,actVolume,maxVolume;
+    private boolean loadedSound=false;
     private Uri outputFileUri;
     private TextView moveCounterText;
     private MilliSecondChronometer chrono;
@@ -54,6 +58,7 @@ public class PuzzleActivity extends BaseActivity{
 //    private Button liveFeedButton;
     private Handler handler;
     private SurfaceTexture dummySurfaceTexture;
+    private int soundId;
 
 
 
@@ -183,6 +188,22 @@ public class PuzzleActivity extends BaseActivity{
         startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
     }
 
+    private void loadSounds(){
+        audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+        actVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        volume = actVolume/maxVolume;
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC,10);
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                loadedSound= true;
+            }
+        });
+        soundId = soundPool.load(getApplicationContext(),R.raw.click,1);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -191,7 +212,7 @@ public class PuzzleActivity extends BaseActivity{
         Log.d(TAG,"setContentView");
 
         initViews();
-
+        loadSounds();
         chrono.start();
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -237,6 +258,9 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onPieceMoved() {
                 moveCounterText.setText(getString(R.string.moves_text,++moveCounter));
+                if (loadedSound){
+                    soundPool.play(soundId,volume,volume,1,0,1f);
+                }
             }
 
             @Override
