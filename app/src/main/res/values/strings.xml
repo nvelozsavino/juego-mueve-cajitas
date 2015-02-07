@@ -22,7 +22,7 @@
     <string name="game_size_6x6">6x6</string>
     <string name="game_size_custom">\?x\?</string>
     <string name="sign_out">Sign Out</string>
-    <string name="congratulation_text">Congratulations, you win!!</string>
+    <string name="congratulation_text">Congratulations, you win!!\nYour time is: </string>
     <string name="title_activity_multiplayer">MultiplayerActivity</string>
     <string name="multiplayer_start_match">Start Match</string>
     <string name="multiplayer_quick_match">Quick Match</string>

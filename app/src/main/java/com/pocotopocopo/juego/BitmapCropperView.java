@@ -37,10 +37,9 @@ public class BitmapCropperView extends View {
     private Bitmap imageBitmap;
     private Paint paint;
     private Rect rect;
-    private int rectTop;
-    private int rectLeft;
+    private float rectTop, rectLeft;
 
-    private int rectSize = 1;
+    private float rectSize = 1f;
     private final static String TAG = "Juego.BitmapCropperView";
     private float bitmapWidth;
     private float bitmapHeight;
@@ -69,11 +68,11 @@ public class BitmapCropperView extends View {
         }
     }
 
-
-    public BitmapCropperView(Context context) {
-        super(context);
-//        init(null, 0);
-    }
+//
+//    public BitmapCropperView(Context context) {
+//        super(context);
+////        init(null, 0);
+//    }
 
     public BitmapCropperView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -87,59 +86,15 @@ public class BitmapCropperView extends View {
         Log.d(TAG,"cree el ScaleGestureDetector");
 //  init(attrs, 0);
     }
-//
-//    public BitmapCropperView(Context context, AttributeSet attrs, int defStyle) {
-//        super(context, attrs, defStyle);
-//        init(attrs, defStyle);
-//    }
-//
-//    private void init(AttributeSet attrs, int defStyle) {
-//        // Load attributes
-//        final TypedArray a = getContext().obtainStyledAttributes(
-//                attrs, R.styleable.BitmapCropperView, defStyle, 0);
-//
-//        mExampleString = a.getString(
-//                R.styleable.BitmapCropperView_exampleString);
-//        mExampleColor = a.getColor(
-//                R.styleable.BitmapCropperView_exampleColor,
-//                mExampleColor);
-//        // Use getDimensionPixelSize or getDimensionPixelOffset when dealing with
-//        // values that should fall on pixel boundaries.
-//        mExampleDimension = a.getDimension(
-//                R.styleable.BitmapCropperView_exampleDimension,
-//                mExampleDimension);
-//
-//        if (a.hasValue(R.styleable.BitmapCropperView_exampleDrawable)) {
-//            mExampleDrawable = a.getDrawable(
-//                    R.styleable.BitmapCropperView_exampleDrawable);
-//            mExampleDrawable.setCallback(this);
-//        }
-//
-//        a.recycle();
-//
-//        // Set up a default TextPaint object
-//        mTextPaint = new TextPaint();
-//        mTextPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
-//        mTextPaint.setTextAlign(Paint.Align.LEFT);
-//
-//        // Update TextPaint and text measurements from attributes
-//        invalidateTextPaintAndMeasurements();
-//    }
-//
-//    private void invalidateTextPaintAndMeasurements() {
-//        mTextPaint.setTextSize(mExampleDimension);
-//        mTextPaint.setColor(mExampleColor);
-//        mTextWidth = mTextPaint.measureText(mExampleString);
-//
-//        Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
-//        mTextHeight = fontMetrics.bottom;
-//    }
 
     public Bitmap getCroppedImage(){
         Log.d(TAG,"getCroppedImage()");
         float x = (rectLeft-mLeft)/bitmapScaleFactor;
         float y = (rectTop-mTop)/bitmapScaleFactor;
+        x=x<0?0:x;
+        y=y<0?0:y;
         float size = rectSize*mScaleFactor/bitmapScaleFactor;
+
         Log.d(TAG,"bitmapScaleFactor = " + bitmapScaleFactor);
         Log.d(TAG,"x = " + x + " , y = " + y + " , size = " + size);
         Log.d(TAG,"bitmapWidth = " + imageBitmap.getWidth() + " , bitmapHeight = " + imageBitmap.getHeight());
@@ -149,50 +104,22 @@ public class BitmapCropperView extends View {
     }
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG,"onDraw");
-
+//        Log.d(TAG,"onDraw");
+        int strokeWidth= 3;
         canvas.drawBitmap(imageBitmap,null,rectBitmap,paint);
         Log.d(TAG,"pinte el bitmap");
         paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(2);
+        paint.setStrokeWidth(strokeWidth);
         paint.setStyle(Paint.Style.STROKE);
 //        paint.setAlpha(50);
         canvas.drawRect(rect,paint);
         Rect rect1 = new Rect(rect);
-        rect1.inset(2,2);
+        rect1.inset(strokeWidth,strokeWidth);
         paint.setColor(Color.YELLOW);
         canvas.drawRect(rect1,paint);
-
-
-
-
-
-        Log.d(TAG,"pinte rectangulo e imagen");
+//        Log.d(TAG,"pinte rectangulo e imagen");
         super.onDraw(canvas);
 
-//
-//        // TODO: consider storing these as member variables to reduce
-//        // allocations per draw cycle.
-//        int paddingLeft = getPaddingLeft();
-//        int paddingTop = getPaddingTop();
-//        int paddingRight = getPaddingRight();
-//        int paddingBottom = getPaddingBottom();
-//
-//        int contentWidth = getWidth() - paddingLeft - paddingRight;
-//        int contentHeight = getHeight() - paddingTop - paddingBottom;
-//
-//        // Draw the text.
-//        canvas.drawText(mExampleString,
-//                paddingLeft + (contentWidth - mTextWidth) / 2,
-//                paddingTop + (contentHeight + mTextHeight) / 2,
-//                mTextPaint);
-//
-//        // Draw the example drawable on top of the text.
-//        if (mExampleDrawable != null) {
-//            mExampleDrawable.setBounds(paddingLeft, paddingTop,
-//                    paddingLeft + contentWidth, paddingTop + contentHeight);
-//            mExampleDrawable.draw(canvas);
-//        }
     }
 
     @Override
@@ -222,27 +149,14 @@ public class BitmapCropperView extends View {
     private void updateSizes (){
 //        Log.d(TAG,"width = " +getWidth() + " - height = " +getHeight());
         bitmapScaleFactor = getWidth()/bitmapWidth < getHeight()/bitmapHeight ? getWidth()/bitmapWidth : getHeight()/bitmapHeight;
-//        float bitmapScaleFactor = bitmapWidth/getWidth() > bitmapHeight/getHeight() ? bitmapWidth/getWidth() : bitmapHeight/getHeight();
-//        Log.d(TAG,"bitmapScaleFactor = " + bitmapScaleFactor);
-        if (bitmapWidth>bitmapHeight){
-//            mLeft = 0f;
-//            mTop = (getHeight()/2-bitmapHeight*bitmapScaleFactor/2);
-//            mRight = getWidth();
-//            mBottom = (getHeight()/2+bitmapHeight*bitmapScaleFactor/2);
-            rectSize = (int)(bitmapHeight*bitmapScaleFactor);
-        }else{
-//            mLeft = (getWidth()/2-bitmapWidth*bitmapScaleFactor/2);
-//            mTop = 0;
-//            mRight = (getWidth()/2+bitmapWidth*bitmapScaleFactor/2);
-//            mBottom = getHeight();
-            rectSize = (int)(bitmapWidth*bitmapScaleFactor);
-        }
+
+        rectSize = bitmapWidth>bitmapHeight? bitmapHeight*bitmapScaleFactor : bitmapWidth*bitmapScaleFactor;
         mLeft = (getWidth()/2-bitmapWidth*bitmapScaleFactor/2);
         mTop = (getHeight()/2-bitmapHeight*bitmapScaleFactor/2);
         mRight = (getWidth()/2+bitmapWidth*bitmapScaleFactor/2);
         mBottom = (getHeight()/2+bitmapHeight*bitmapScaleFactor/2);
 
-        rect.set((int)mLeft,(int)mTop,(int)mLeft+rectSize,(int)mTop+rectSize);
+        rect.set((int)mLeft,(int)mTop,(int)(mLeft+rectSize),(int)(mTop+rectSize));
         Log.d(TAG,"[ " + mLeft + " , " + mTop + " , " + mRight + " , " + mBottom + "]");
         try {
             rectBitmap.set((int) mLeft, (int) mTop, (int) mRight, (int) mBottom);
@@ -356,13 +270,13 @@ public class BitmapCropperView extends View {
     }
 
     public void updateRect(){
-        rectLeft = rectLeft < (int)mLeft? (int)mLeft:rectLeft;
-        rectTop= rectTop < (int)mTop? (int)mTop:rectTop;
+        rectLeft = rectLeft < mLeft? mLeft:rectLeft;
+        rectTop= rectTop < mTop? mTop:rectTop;
 
-        rectLeft = rectLeft+rectSize*mScaleFactor > mRight ? (int)(mRight-rectSize*mScaleFactor) : rectLeft;
-        rectTop= rectTop+rectSize*mScaleFactor > mBottom ? (int)(mBottom-rectSize*mScaleFactor) : rectTop;
+        rectLeft = rectLeft+rectSize*mScaleFactor > mRight ? (mRight-rectSize*mScaleFactor) : rectLeft;
+        rectTop= rectTop+rectSize*mScaleFactor > mBottom ? (mBottom-rectSize*mScaleFactor) : rectTop;
 
-        rect.set(rectLeft,rectTop,(int)(rectLeft+rectSize*mScaleFactor),(int)(rectTop+rectSize*mScaleFactor));
+        rect.set((int)rectLeft,(int)rectTop,(int)(rectLeft+rectSize*mScaleFactor),(int)(rectTop+rectSize*mScaleFactor));
 
         invalidate();
     }

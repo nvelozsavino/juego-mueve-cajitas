@@ -43,6 +43,7 @@ public class PuzzleActivity extends BaseActivity{
 
     private Uri outputFileUri;
     private TextView moveCounterText;
+    private MilliSecondChronometer chrono;
 //    private TextView resolvableText;
 
     private int moveCounter = 0;
@@ -80,6 +81,8 @@ public class PuzzleActivity extends BaseActivity{
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
+        chrono = (MilliSecondChronometer)findViewById(R.id.timerView);
+
 //        resolvableText = (TextView)findViewById(R.id.resolvableText);
 //        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
 
@@ -187,7 +190,7 @@ public class PuzzleActivity extends BaseActivity{
         Log.d(TAG,"setContentView");
 
         initViews();
-
+        chrono.start();
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
 //        frame.addView((puzzle));
@@ -236,13 +239,16 @@ public class PuzzleActivity extends BaseActivity{
 
             @Override
             public void onPuzzleSolved() {
-                Toast toast = Toast.makeText(getApplicationContext(),R.string.congratulation_text ,Toast.LENGTH_LONG);
+                chrono.stop();
+
+                Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.congratulation_text)  + chrono.getText().toString() ,Toast.LENGTH_LONG);
                 toast.show();
                 if (camera!=null){
                     stopLiveFeed();
                 }
             }
         });
+
 
         if (savedInstanceState!=null){
             moveCounter=savedInstanceState.getInt(MOVES_COUNTER_KEY);
