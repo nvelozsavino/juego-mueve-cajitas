@@ -33,4 +33,9 @@
     <string name="start_game">Start Game</string>
     <string name="moves_text">Movimientos: %1$d</string>
 
+    <string name="crop_text">Seleccionar</string>
+    <string name="cancel_text">Cancelar</string>
+    <string name="new_image_text">Nueva Imagen</string>
+
+
 </resources>

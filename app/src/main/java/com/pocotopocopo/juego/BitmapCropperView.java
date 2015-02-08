@@ -17,13 +17,11 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 
 
-/**
- * TODO: document your custom view class.
- */
+
 public class BitmapCropperView extends View {
-//    private String mExampleString; // TODO: use a default from R.string...
-//    private int mExampleColor = Color.RED; // TODO: use a default from R.color...
-//    private float mExampleDimension = 0; // TODO: use a default from R.dimen...
+//    private String mExampleString;
+//    private int mExampleColor = Color.RED;
+//    private float mExampleDimension = 0;
 //    private Drawable mExampleDrawable;
 //
 //    private TextPaint mTextPaint;
@@ -190,7 +188,7 @@ public class BitmapCropperView extends View {
         bitmapHeight= imageBitmap.getHeight();
         bitmapWidth= imageBitmap.getWidth();
         Log.d(TAG,"bitmap Width = " + bitmapWidth + " - bitmap Height = " + bitmapHeight);
-
+        requestLayout();
 
     }
 

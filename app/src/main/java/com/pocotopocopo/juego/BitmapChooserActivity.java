@@ -31,6 +31,7 @@ public class BitmapChooserActivity extends Activity {
     private float mLastTouchX,mLastTouchY;
     private Button cropButton;
     private Button cancelButton;
+    private Button newImageButton;
     public static final int REQUEST_IMAGE_CROP = 4;
     public static final int RESULT_LOAD_IMG = 2;
     private GameInfo gameInfo;
@@ -62,14 +63,21 @@ public class BitmapChooserActivity extends Activity {
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
             Log.d(TAG,"bitmap before compression = " + resultBitmap.getByteCount());
             resultBitmap.compress(Bitmap.CompressFormat.JPEG, 50, bs);
-            Log.d(TAG,"bitmap after compression = " + resultBitmap.getByteCount());
+            Log.d(TAG, "bitmap after compression = " + resultBitmap.getByteCount());
             gameInfo.setBitmap(resultBitmap);
-            intent.putExtra(GameConstants.GAME_INFO,gameInfo);
-            Log.d(TAG,"cree todo el intent y el result");
+            intent.putExtra(GameConstants.GAME_INFO, gameInfo);
+
+            Log.d(TAG, "cree todo el intent y el result");
+            Log.d(TAG, nextActivity.toString());
+            startActivity(intent);
+            finish();
+            //return;
         }else{
             Log.e(TAG,"Error, resultBitmap = null");
+            finish();
+
         }
-        finish();
+
     }
 
     public static Intent requestImageCrop (Context context, Bitmap bitmap){
@@ -98,6 +106,7 @@ public class BitmapChooserActivity extends Activity {
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
         cropButton = (Button)findViewById(R.id.cropButton);
         cancelButton= (Button)findViewById(R.id.cancelButton);
+        newImageButton=(Button)findViewById(R.id.newImageButton);
 
         cropButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,6 +122,12 @@ public class BitmapChooserActivity extends Activity {
             }
         });
 
+        newImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSelectImage();
+            }
+        });
 
         if (savedInstanceState!=null){
 
@@ -143,7 +158,9 @@ public class BitmapChooserActivity extends Activity {
                 return;
             }
         } else {
-            //TODO: load instance state
+            gameInfo=savedInstanceState.getParcelable(GameConstants.GAME_INFO);
+
+
         }
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -154,6 +171,20 @@ public class BitmapChooserActivity extends Activity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Bitmap bitmap = gameInfo.getBitmap();
+        if (bitmap!=null){
+            imgView.setImageBitmap(bitmap);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(GameConstants.GAME_INFO,gameInfo);
+    }
 
     private void startSelectImage() {
 
@@ -190,7 +221,7 @@ public class BitmapChooserActivity extends Activity {
 //                    startActivityForResult(intent, BitmapChooserActivity.REQUEST_IMAGE_CROP);
 //                }
                 imgView.setImageBitmap(bitmap);
-                imgView.invalidate();
+                gameInfo.setBitmap(bitmap);
             }else{
                 Log.e(TAG, "Error, no image result");
                 finish();

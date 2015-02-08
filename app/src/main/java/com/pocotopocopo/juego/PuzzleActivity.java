@@ -188,32 +188,56 @@ public class PuzzleActivity extends BaseActivity{
 //        startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
 //    }
 
-        // Camera.
-        final List<Intent> cameraIntents = new ArrayList<>();
-        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        final PackageManager packageManager = getPackageManager();
-        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
-        for(ResolveInfo res : listCam) {
-            final String packageName = res.activityInfo.packageName;
-            final Intent intent = new Intent(captureIntent);
-            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-            intent.setPackage(packageName);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-            cameraIntents.add(intent);
-        }
+//        // Camera.
+//        final List<Intent> cameraIntents = new ArrayList<>();
+//        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+//        final PackageManager packageManager = getPackageManager();
+//        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+//        for(ResolveInfo res : listCam) {
+//            final String packageName = res.activityInfo.packageName;
+//            final Intent intent = new Intent(captureIntent);
+//            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+//            intent.setPackage(packageName);
+//            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+//            cameraIntents.add(intent);
+//        }
+//
+//        // Filesystem.
+//        final Intent galleryIntent = new Intent();
+//        galleryIntent.setType("image/*");
+//        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+//
+//        // Chooser of filesystem options.
+//        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Source");
+//
+//        // Add the camera options.
+//        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
+//
+//        startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
+//    }
 
-        // Filesystem.
-        final Intent galleryIntent = new Intent();
-        galleryIntent.setType("image/*");
-        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
 
-        // Chooser of filesystem options.
-        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Source");
-
-        // Add the camera options.
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
-
-        startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
+    private void loadSounds(){
+        audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+        actVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        volume = actVolume/maxVolume;
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC,0);
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                loadedSound= true;
+                if (!startedGame){
+                    chrono.start();
+                    startedGame=true;
+                }
+            }
+        });
+        loadedSound=false;
+        clickId = soundPool.load(getApplicationContext(),R.raw.click,1);
+//        loadedSound=false;
+//        musicId = soundPool.load(getApplicationContext(),R.raw.music,2);
     }
 
     @Override
@@ -271,7 +295,7 @@ public class PuzzleActivity extends BaseActivity{
         Log.d(TAG,"bitmapcontainer = null");
 
         puzzle.setBitmapContainer(bitmapContainer);
-        bitmapContainer.setBitmap(null);
+        bitmapContainer.setBitmap(gameInfo.getBitmap());
 
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
@@ -304,7 +328,8 @@ public class PuzzleActivity extends BaseActivity{
 
 
             bitmapContainer.setBitmap(gameInfo.getBitmap());
-            puzzle.setPositions(gameInfo.getPieceOrder());
+            puzzle.setPositions(posArray);
+            puzzle.update();
 //
 //            Log.d(TAG,"moveCounter = " +moveCounter );
 //            bitmapContainer.setBitmap((Bitmap)savedInstanceState.getParcelable(BITMAP_KEY));
@@ -317,6 +342,7 @@ public class PuzzleActivity extends BaseActivity{
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
 //            outputFileUri = (Uri)savedInstanceState.getParcelable(OUTPUTFILE_KEY);
         } else {
+            puzzle.update();
 //            switch (backgroundMode){
 //                default:
 //                case PLAIN:
@@ -349,7 +375,7 @@ public class PuzzleActivity extends BaseActivity{
 //        super.onActivityResult(requestCode,resultCode,data);
 //        Log.d(TAG,"onActivityResult " + requestCode + " - " +resultCode);
 //        if (requestCode==REQUEST_IMAGE_CAPTURE && resultCode==RESULT_OK){
-//            Log.d(TAG,"todo ok");
+//            Log.d(TAG,"ok");
 //            Bundle extras = data.getExtras();
 //            Bitmap bitmap = (Bitmap) extras.get("data");
 //            Log.d(TAG,"bitmapContainer loaded? " + (bitmap!=null));

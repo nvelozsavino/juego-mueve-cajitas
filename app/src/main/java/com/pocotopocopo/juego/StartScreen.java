@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 public class StartScreen extends BaseActivity {
@@ -30,7 +31,7 @@ public class StartScreen extends BaseActivity {
     private RadioGroup backgroundRadioGroup;
 //    private RadioButton backgroundPlainRadioButton;
 //    private RadioButton backgroundImageRadioButton;
-//    private RadioButton backgroundVideoRadioButton;
+    private RadioButton backgroundVideoRadioButton;
 
 
 
@@ -55,7 +56,7 @@ public class StartScreen extends BaseActivity {
         backgroundRadioGroup=(RadioGroup)findViewById(R.id.backgroundRadioGroup);
 //        backgroundPlainRadioButton=(RadioButton)findViewById(R.id.backgroundPlainRadioButton);
 //        backgroundImageRadioButton=(RadioButton)findViewById(R.id.backgroundImageRadioButton);
-//        backgroundVideoRadioButton=(RadioButton)findViewById(R.id.backgroundVideoRadioButton);
+        backgroundVideoRadioButton=(RadioButton)findViewById(R.id.backgroundVideoRadioButton);
 
 
 
@@ -98,19 +99,21 @@ public class StartScreen extends BaseActivity {
         boolean showNumbers=showNumbersCheckBox.isChecked();
         GameActivity activityClass;
         Class<? extends Activity> actualIntentClass;
-        if (backgroundMode.equals(BackgroundMode.IMAGE)){
-            activityClass=GameActivity.BITMAP_CHOOSER;
-            actualIntentClass=activityClass.getActivityClass();
+        if (gameMode.equals(GameMode.MULTIPLAYER)) {
+            activityClass = GameActivity.MULTIPLAYER;
         } else {
-            if (gameMode.equals(GameMode.MULTIPLAYER)) {
-                activityClass = GameActivity.MULTIPLAYER;
-            } else {
-                activityClass = GameActivity.PUZZLE;
-            }
+            activityClass = GameActivity.PUZZLE;
+        }
+        if (backgroundMode.equals(BackgroundMode.IMAGE)){
+            actualIntentClass=GameActivity.BITMAP_CHOOSER.getActivityClass();
+        } else {
             actualIntentClass=activityClass.getActivityClass();
         }
         GameInfo gameInfo = new GameInfo(rows,cols,backgroundMode,gameMode,showNumbers);
         Intent startGame = new Intent(getApplicationContext(), actualIntentClass);
+        if (backgroundMode.equals(BackgroundMode.IMAGE)){
+            startGame.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+        }
         startGame.putExtra(GameConstants.GAME_INFO,gameInfo);
         startGame.putExtra(GameConstants.NEXT_ACTIVITY,activityClass);
         Log.d(TAG, "Signed In: " + googleApiClient.isConnected());
@@ -146,7 +149,7 @@ public class StartScreen extends BaseActivity {
 //        gameSizeCustomButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
-//                // TODO: create a dialog asking for the size
+//                //
 //                startGame(4,4);
 //            }
 //        });
@@ -169,6 +172,7 @@ public class StartScreen extends BaseActivity {
                         break;
                     case R.id.gameSizeCustomButton:
                         startGame(4,4);
+                        //TODO: create a dialog asking for the size
                         break;
 
 
@@ -190,6 +194,22 @@ public class StartScreen extends BaseActivity {
                     case R.id.backgroundImageRadioButton:
                         showNumbersCheckBox.setEnabled(true);
                         break;
+                }
+            }
+        });
+        gameModeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId){
+                    case R.id.gameModeMultiplayerRadioButton:
+                        if (backgroundRadioGroup.getCheckedRadioButtonId()==R.id.backgroundVideoRadioButton){
+                            backgroundRadioGroup.check(R.id.backgroundImageRadioButton);
+                            backgroundVideoRadioButton.setChecked(false);
+                        }
+                        backgroundVideoRadioButton.setEnabled(false);
+                        break;
+                    default:
+                        backgroundVideoRadioButton.setEnabled(true);
                 }
             }
         });

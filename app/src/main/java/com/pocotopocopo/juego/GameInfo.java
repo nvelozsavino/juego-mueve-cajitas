@@ -1,8 +1,11 @@
 package com.pocotopocopo.juego;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by nico on 07/02/15.
@@ -13,7 +16,7 @@ public class GameInfo implements Parcelable {
     private GameMode gameMode;
     private int[] pieceOrder=null;
     private boolean numbersVisible =true;
-    private Bitmap bitmap=null;
+    private byte[] bitmapBytes;
     private String bitmapUrl=null;
 
     public GameInfo(int rows, int cols, BackgroundMode backgroundMode, GameMode gameMode,boolean numbersVisible, Bitmap bitmap){
@@ -22,7 +25,7 @@ public class GameInfo implements Parcelable {
         this.backgroundMode=backgroundMode;
         this.gameMode=gameMode;
         this.numbersVisible = numbersVisible;
-        this.bitmap=bitmap;
+        setBitmap(bitmap);
     }
 
     public GameInfo(int rows, int cols, BackgroundMode backgroundMode, GameMode gameMode){
@@ -71,11 +74,18 @@ public class GameInfo implements Parcelable {
     }
 
     public Bitmap getBitmap() {
-        return bitmap;
+        return getBitmap(bitmapBytes);
     }
 
     public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
+        if (bitmap!=null) {
+            ByteArrayOutputStream bs = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, bs);
+//        Log.d(TAG, "bitmap count nuevo = " + bitmap.getByteCount());
+            bitmapBytes = bs.toByteArray();
+        } else{
+         bitmapBytes=null;
+        }
     }
 
     public String getBitmapUrl() {
@@ -102,6 +112,14 @@ public class GameInfo implements Parcelable {
         this.cols = cols;
     }
 
+    private Bitmap getBitmap(byte[] bitmapBytes){
+        if (bitmapBytes!=null) {
+            return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+        } else {
+            return null;
+        }
+    }
+
     private GameInfo(Parcel in){
         rows=in.readInt();
         cols=in.readInt();
@@ -109,8 +127,9 @@ public class GameInfo implements Parcelable {
         gameMode = (GameMode)in.readSerializable();
         pieceOrder=in.createIntArray();
         numbersVisible =in.readByte()!=0;
-        bitmap=in.readParcelable(Bitmap.class.getClassLoader());
+        bitmapBytes = in.createByteArray();
         bitmapUrl=in.readString();
+
     }
 
     public static final Creator<GameInfo> CREATOR = new Creator<GameInfo>() {
@@ -138,7 +157,7 @@ public class GameInfo implements Parcelable {
         dest.writeSerializable(gameMode);
         dest.writeIntArray(pieceOrder);
         dest.writeByte((byte) (numbersVisible ? 1 : 0));
-        dest.writeParcelable(bitmap,flags);
+        dest.writeByteArray(bitmapBytes);
         dest.writeString(bitmapUrl);
     }
 }
