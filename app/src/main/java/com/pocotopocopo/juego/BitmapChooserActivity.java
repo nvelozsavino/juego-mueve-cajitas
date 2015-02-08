@@ -230,6 +230,8 @@ public class BitmapChooserActivity extends Activity {
                 return;
             }
 
+        } else {
+            finish();
         }
     }
 

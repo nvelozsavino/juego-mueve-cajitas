@@ -2,6 +2,7 @@ package com.pocotopocopo.juego;
 
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -36,6 +37,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+enum GameStatus {
+    STARTING, PLAYING, PAUSED, FINISHED;
+}
+
 
 public class PuzzleActivity extends BaseActivity{
 
@@ -45,6 +50,8 @@ public class PuzzleActivity extends BaseActivity{
     private static final String POS_KEY = "posNumbers";
     private static final String LIVEFEED_KEY = "liveFeed";
     private static final String OUTPUTFILE_KEY = "outputFileKey";
+    private static final String GAME_STATUS_KEY= "gameStatusKey";
+    private static final String TIME_ELAPSED_KEY = "timeElapsedKey";
     private AudioManager audioManager;
     private SoundPool soundPool;
     private float volume,actVolume,maxVolume;
@@ -64,10 +71,14 @@ public class PuzzleActivity extends BaseActivity{
     private SurfaceTexture dummySurfaceTexture;
     private int clickId;
     private boolean startedGame=false;
-    private TextView countDownText;
-    CountDownTimer countDownTimer;
-    private GameInfo gameInfo;
 
+
+    private GameInfo gameInfo;
+    private GameStatus gameStatus;
+
+    private Dialog countDownDialog;
+    private Dialog pauseDialog;
+    private Dialog winDialog;
     //private GoogleApiClient googleApiClient;
 
 
@@ -99,129 +110,6 @@ public class PuzzleActivity extends BaseActivity{
 //        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
 
     }
-//
-//    private void setClickListeners(){
-////        liveFeedButton.setOnClickListener(new View.OnClickListener() {
-////            @Override
-////            public void onClick(View v) {
-////                puzzle.update();
-////                if (!liveFeedEnabled) {
-////                    liveFeedEnabled = startLiveFeed();
-////                } else {
-////                    stopLiveFeed();
-////
-////                }
-////            }
-////        });
-////        selectImageButton.setOnClickListener(new View.OnClickListener() {
-////            @Override
-////            public void onClick(View v) {
-//////                openImageIntent();
-////                startSelectImage();
-////            }
-////        });
-////        selectImageButton2.setOnClickListener(new View.OnClickListener() {
-////            @Override
-////            public void onClick(View v) {
-//////                openImageIntent();
-////                startSelectImage2();
-////            }
-////        });
-//    }
-
-//    private void startSelectImage2(){
-//        stopLiveFeed();
-//        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-//                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//        startActivityForResult(galleryIntent, RESULT_LOAD_IMG2);
-//    }
-//    private void startSelectImage() {
-//        stopLiveFeed();
-//
-////                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-////                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-////                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-////                }
-//        // Create intent to Open Image applications like Gallery, Google Photos
-//        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-//                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//// Start the Intent
-//        startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
-//    }
-//
-//
-//    private void openImageIntent() {
-//
-//// Determine Uri of camera image to save.
-//        final File root = new File(Environment.getExternalStorageDirectory() + File.separator + "MyDir" + File.separator);
-//        root.mkdirs();
-//            final String fName = "img_"+ System.currentTimeMillis() + ".jpg";
-////
-////        final String fName;
-////        try {
-////            ;
-////        } catch (IOException e) {
-////            Log.d(TAG, "algo paso con el nombre " + e.toString());
-////        }
-//        final File sdImageMainDirectory = new File(root, fName);
-//        outputFileUri = Uri.fromFile(sdImageMainDirectory);
-//
-//        // Camera.
-//        final List<Intent> cameraIntents = new ArrayList<>();
-//        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-//        final PackageManager packageManager = getPackageManager();
-//        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
-//        for(ResolveInfo res : listCam) {
-//            final String packageName = res.activityInfo.packageName;
-//            final Intent intent = new Intent(captureIntent);
-//            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-//            intent.setPackage(packageName);
-//            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-//            cameraIntents.add(intent);
-//        }
-//
-//        // Filesystem.
-//        final Intent galleryIntent = new Intent();
-//        galleryIntent.setType("image/*");
-//        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-//
-//        // Chooser of filesystem options.
-//        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Source");
-//
-//        // Add the camera options.
-//        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
-//
-//        startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
-//    }
-
-//        // Camera.
-//        final List<Intent> cameraIntents = new ArrayList<>();
-//        final Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-//        final PackageManager packageManager = getPackageManager();
-//        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
-//        for(ResolveInfo res : listCam) {
-//            final String packageName = res.activityInfo.packageName;
-//            final Intent intent = new Intent(captureIntent);
-//            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-//            intent.setPackage(packageName);
-//            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-//            cameraIntents.add(intent);
-//        }
-//
-//        // Filesystem.
-//        final Intent galleryIntent = new Intent();
-//        galleryIntent.setType("image/*");
-//        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-//
-//        // Chooser of filesystem options.
-//        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Source");
-//
-//        // Add the camera options.
-//        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[]{}));
-//
-//        startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
-//    }
-
 
     private void loadSounds(){
         audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
@@ -249,29 +137,51 @@ public class PuzzleActivity extends BaseActivity{
     @Override
     public void onBackPressed() {
 //        super.onBackPressed();
+        if (gameStatus.equals(GameStatus.PLAYING)) {
+            pauseGame();
+        }
+//        chrono.resume();
+    }
+
+    private void pauseGame(){
+        gameStatus=GameStatus.PAUSED;
         chrono.pause();
-        final Dialog pauseDialog = new Dialog(PuzzleActivity.this);
+        pauseDialog = new Dialog(PuzzleActivity.this);
+
         pauseDialog.setContentView(R.layout.pause_screen_layout);
         pauseDialog.setTitle(R.string.paused_text);
-        pauseDialog.setCancelable(false);
+        pauseDialog.setCancelable(true);
+        pauseDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                chrono.resume();
+                gameStatus=GameStatus.PLAYING;
+                Log.d(TAG,"prueba");
+            }
+        });
         Button resumeButton = (Button)pauseDialog.findViewById(R.id.resumeButton);
         Button exitGameButton = (Button)pauseDialog.findViewById(R.id.exitGameButton);
         resumeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chrono.resume();
                 pauseDialog.cancel();
             }
         });
         exitGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pauseDialog.cancel();
+                //pauseDialog.cancel();
                 finish();
             }
         });
         pauseDialog.show();
-//        chrono.resume();
+    }
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (!hasFocus && gameStatus.equals(GameStatus.PLAYING)){
+            pauseGame();
+        }
     }
 
     @Override
@@ -307,37 +217,7 @@ public class PuzzleActivity extends BaseActivity{
             finish();
             return;
         }
-        final Dialog countDownDialog = new Dialog(PuzzleActivity.this);
-        countDownDialog.setContentView(R.layout.count_down);
-        countDownDialog.setCancelable(false);
-        countDownDialog.setTitle(R.string.game_start_in);
-        countDownText = (TextView) countDownDialog.findViewById(R.id.countDownText);
 
-        countDownTimer = new CountDownTimer(4000,200) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                try{
-                    int time = (int)(millisUntilFinished/1000);
-                    countDownText.setText(Integer.toString(time));
-                }catch(Exception e){
-                    Log.d(TAG,e.getMessage());
-                }
-
-
-            }
-
-            @Override
-            public void onFinish() {
-                countDownDialog.cancel();
-                chrono.start();
-            }
-        };
-        Log.d(TAG,"cree el countdowntimer");
-        countDownDialog.show();
-        Log.d(TAG,"mostre el dialog");
-
-        countDownTimer.start();
-        Log.d(TAG,"arranque el countdown timer");
 //        chrono.start();
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -377,36 +257,12 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onPuzzleSolved() {
                 chrono.stop();
+                gameStatus=GameStatus.FINISHED;
                 if (camera!=null){
                     stopLiveFeed();
                 }
 
-                final Dialog winDialog = new Dialog(PuzzleActivity.this);
-                winDialog.setCancelable(false);
-                winDialog.setContentView(R.layout.win_screen_layout);
-                winDialog.setTitle(R.string.congratulation_text);
-                TextView movesWinText = (TextView) winDialog.findViewById(R.id.movesWinText);
-                TextView timeWinText = (TextView) winDialog.findViewById(R.id.timeWinText);
-                ImageView winImage = (ImageView) winDialog.findViewById(R.id.winImage);
-                Button exitButton = (Button)winDialog.findViewById(R.id.exitWinScreenButton);
-                Bitmap bitmap = puzzle.getBitmapContainer().getBitmap();
-                if (bitmap==null){
-                    Bitmap bitmapTrophy = BitmapFactory.decodeResource(getResources(),R.drawable.trophy);
-                    winImage.setImageBitmap(bitmapTrophy);
-                }else{
-
-                    winImage.setImageBitmap(puzzle.getBitmapContainer().getBitmap());
-                }
-                movesWinText.setText(getString(R.string.moves_text,moveCounter));
-                timeWinText.setText(getString(R.string.time_text_win,chrono.getText().toString()));
-                exitButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        winDialog.cancel();
-                        finish();
-                    }
-                });
-                winDialog.show();
+                showWinDialog();
 //                Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.congratulation_text)  + chrono.getText().toString() ,Toast.LENGTH_LONG);
 //                toast.show();
 
@@ -435,9 +291,37 @@ public class PuzzleActivity extends BaseActivity{
             moveCounter=savedInstanceState.getInt(MOVES_COUNTER_KEY);
             moveCounterText.setText("Movimientos = " + moveCounter);
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
+            gameStatus=(GameStatus)savedInstanceState.getSerializable(GAME_STATUS_KEY);
+            Long time = savedInstanceState.getLong(TIME_ELAPSED_KEY,-1L);
+
+            if (time!=-1L) {
+                chrono.setTimeElapsed(time);
+            }
+            switch (gameStatus){
+                case PAUSED:
+                    pauseGame();
+                    break;
+                case STARTING:
+                    startCountdown();
+                    break;
+                case FINISHED:
+                    showWinDialog();
+                    break;
+                case PLAYING:
+                    chrono.resume();
+                    break;
+                default:
+
+            }
 //            outputFileUri = (Uri)savedInstanceState.getParcelable(OUTPUTFILE_KEY);
         } else {
+
+            if (backgroundMode.equals(BackgroundMode.VIDEO)){
+                liveFeedState=true;
+            }
             puzzle.update();
+            gameStatus=GameStatus.STARTING;
+            startCountdown();
 //            switch (backgroundMode){
 //                default:
 //                case PLAIN:
@@ -457,131 +341,92 @@ public class PuzzleActivity extends BaseActivity{
 //            }
         }
 
+
+    }
+
+    private void showWinDialog(){
+        winDialog = new Dialog(PuzzleActivity.this);
+        winDialog.setCancelable(false);
+        winDialog.setContentView(R.layout.win_screen_layout);
+        winDialog.setTitle(R.string.congratulation_text);
+        TextView movesWinText = (TextView) winDialog.findViewById(R.id.movesWinText);
+        TextView timeWinText = (TextView) winDialog.findViewById(R.id.timeWinText);
+        ImageView winImage = (ImageView) winDialog.findViewById(R.id.winImage);
+        Button exitButton = (Button)winDialog.findViewById(R.id.exitWinScreenButton);
+        Bitmap bitmap = puzzle.getBitmapContainer().getBitmap();
+        if (bitmap==null){
+            Bitmap bitmapTrophy = BitmapFactory.decodeResource(getResources(),R.drawable.trophy);
+            winImage.setImageBitmap(bitmapTrophy);
+        }else{
+
+            winImage.setImageBitmap(puzzle.getBitmapContainer().getBitmap());
+        }
+        movesWinText.setText(getString(R.string.moves_text,moveCounter));
+        timeWinText.setText(getString(R.string.time_text_win,chrono.getText().toString()));
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                winDialog.cancel();
+                finish();
+            }
+        });
+        winDialog.show();
+    }
+
+    private void startCountdown(){
+        countDownDialog = new Dialog(PuzzleActivity.this);
+
+        countDownDialog.setContentView(R.layout.count_down);
+        countDownDialog.setCancelable(false);
+        countDownDialog.setTitle(R.string.game_start_in);
+        final TextView countDownText = (TextView) countDownDialog.findViewById(R.id.countDownText);
+        CountDownTimer countDownTimer;
+        countDownTimer = new CountDownTimer(4000,200) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                try{
+                    int time = (int)(millisUntilFinished/1000);
+                    countDownText.setText(Integer.toString(time));
+                }catch(Exception e){
+                    Log.d(TAG,e.getMessage());
+                }
+
+
+            }
+
+
+            @Override
+            public void onFinish() {
+                countDownDialog.dismiss();
+                //countDownDialog.cancel();
+                chrono.start();
+                gameStatus=GameStatus.PLAYING;
+            }
+        };
+
+        Log.d(TAG,"cree el countdowntimer");
+        countDownDialog.show();
+        Log.d(TAG,"mostre el dialog");
+
+        countDownTimer.start();
+        Log.d(TAG,"arranque el countdown timer");
     }
 
     @Override
     protected void onDestroy() {
         soundPool.unload(clickId);
+        if (countDownDialog!=null && countDownDialog.isShowing()){
+            countDownDialog.dismiss();
+        }
+        if (pauseDialog!=null && pauseDialog.isShowing()){
+            pauseDialog.dismiss();
+        }
+        if (winDialog!=null && winDialog.isShowing()){
+            winDialog.dismiss();
+        }
         super.onDestroy();
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode,resultCode,data);
-//        Log.d(TAG,"onActivityResult " + requestCode + " - " +resultCode);
-//        if (requestCode==REQUEST_IMAGE_CAPTURE && resultCode==RESULT_OK){
-//            Log.d(TAG,"ok");
-//            Bundle extras = data.getExtras();
-//            Bitmap bitmap = (Bitmap) extras.get("data");
-//            Log.d(TAG,"bitmapContainer loaded? " + (bitmap!=null));
-//            Bitmap oldBitmap= bitmapContainer.getBitmap();
-//            bitmapContainer.setBitmap(bitmap);
-////            puzzle.setBitmapContainer(bitmapContainer);
-//            if(oldBitmap==null){
-//                Log.d(TAG,"oldBitmap = null");
-//                puzzle.update();
-//
-//            }
-//        }
-//        if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK
-//                && null != data) {
-//
-//            Bitmap bitmap =  activityResultChooseImage2(data, puzzle.getWidth(), puzzle.getHeight());
-//            if (bitmap!=null) {
-//                if (bitmap.getWidth()==bitmap.getHeight()) {
-//                    bitmapContainer.setBitmap(bitmap);
-//                    puzzle.setBitmapContainer(bitmapContainer);
-//                    puzzle.update();
-//                }else{
-//                    Intent intent = BitmapChooserActivity.requestImageCrop(this, bitmap);
-//                    startActivityForResult(intent, BitmapChooserActivity.REQUEST_IMAGE_CROP);
-//                }
-//            }else{
-//                puzzle.setNumbersVisible(true);
-//            }
-//
-//        }
-//        if (requestCode == BitmapChooserActivity.REQUEST_IMAGE_CROP && resultCode == RESULT_OK) {
-//            Bitmap bitmap = BitmapChooserActivity.getBitmapCropped(data);
-//            if (bitmap != null) {
-//                bitmapContainer.setBitmap(bitmap);
-//                puzzle.setBitmapContainer(bitmapContainer);
-//                puzzle.update();
-//            } else {
-//                puzzle.setNumbersVisible(true);
-//                Log.d(TAG, "bitmap era null");
-//            }
-//        }
-//
-//    }
-//
-//
-//
-//    private Bitmap activityResultChooseImage2(Intent data, int rewWidth, int reqHeight){
-//        Log.d(TAG,"activityResultChooseImage2");
-//        Uri selectedImage = data.getData();
-//        String[] filePathColumn = { MediaStore.Images.Media.DATA };
-//
-//        // Get the cursor
-//        Cursor cursor = getContentResolver().query(selectedImage,
-//                filePathColumn, null, null, null);
-//        // Move to first row
-//        cursor.moveToFirst();
-//
-//        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-//        String imgDecodableString = cursor.getString(columnIndex);
-//        cursor.close();
-//        Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
-//
-//        return bitmap;
-//
-//    }
-//
-//    private Bitmap activityResultChooseImage (Intent data, int rewWidth, int reqHeight){
-//        final boolean isCamera;
-//        if(data == null)
-//        {
-//            isCamera = true;
-//        }
-//        else
-//        {
-//            final String action = data.getAction();
-//            if(action == null)
-//            {
-//                isCamera = false;
-//            }
-//            else
-//            {
-//                isCamera = action.equals(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-//            }
-//
-//        }
-//
-//        Uri selectedImageUri;
-//        if(isCamera)
-//        {
-//            selectedImageUri = outputFileUri;
-//        }
-//        else
-//        {
-//            selectedImageUri = data == null ? null : data.getData();
-//        }
-//        String[] filePathColumn = { MediaStore.Images.Media.DATA };
-//
-//        // Get the cursor
-//        Cursor cursor = getContentResolver().query(selectedImageUri,
-//                filePathColumn, null, null, null);
-//        // Move to first row
-//        cursor.moveToFirst();
-//
-//        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-//        String imgDecodableString = cursor.getString(columnIndex);
-//        cursor.close();
-//        Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
-//
-//        return bitmap;
-//
-//    }
 
     private boolean startLiveFeed(){
         if (camera!=null){
@@ -673,6 +518,8 @@ public class PuzzleActivity extends BaseActivity{
         //outState.putParcelable(BITMAP_KEY,puzzle.getBitmapContainer().getBitmap());
         //outState.putIntArray(POS_KEY,puzzle.getPositions());
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
+        outState.putSerializable(GAME_STATUS_KEY,gameStatus);
+        outState.putLong(TIME_ELAPSED_KEY, chrono.getTimeElapsed());
 //        outState.putParcelable(OUTPUTFILE_KEY,outputFileUri);
         super.onSaveInstanceState(outState);
 
