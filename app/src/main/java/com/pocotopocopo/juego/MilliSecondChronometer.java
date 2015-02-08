@@ -8,12 +8,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.TextView;
 import java.text.DecimalFormat;
 
 public class MilliSecondChronometer extends TextView {
     @SuppressWarnings("unused")
-    private static final String TAG = "MilliSecondChronometer";
+    private static final String TAG = "Juego.MilliSecondChronometer";
 
     public interface OnChronometerTickListener {
 
@@ -32,7 +33,7 @@ public class MilliSecondChronometer extends TextView {
 
     private long timeElapsed;
     private long pausedTime=0;
-    private long pausedTimeIni;
+//    private long pausedTimeIni;
 
 
 
@@ -75,34 +76,49 @@ public class MilliSecondChronometer extends TextView {
     }
 
     public void start() {
+        Log.d(TAG, "start");
+        pausedTime=0;
         mBase = SystemClock.elapsedRealtime();
         mStarted = true;
         updateRunning();
     }
 
     public void stop() {
+        Log.d(TAG, "stop");
         mStarted = false;
         updateRunning();
     }
     public void pause(){
-        if (mStarted && !mPaused){
-            pausedTimeIni=System.currentTimeMillis();
+        Log.d(TAG, "pause");
+//        if (mStarted && !mPaused){
+            Log.d(TAG,"mbase = " + mBase);
+            pausedTime = getTimeElapsed();
+            Log.d(TAG,"pausedTime = " + pausedTime);
+//            pausedTimeIni=System.currentTimeMillis();
             mPaused=true;
             stop();
-
-
-
-        }
+//        }
     }
     public void resume(){
-        if (!mStarted && mPaused){
-            pausedTime = System.currentTimeMillis()-pausedTimeIni;
+            Log.d(TAG, "resume");
+//        if (!mStarted && mPaused){
+            mBase = SystemClock.elapsedRealtime();
+            Log.d(TAG,"mbase = " + mBase);
+//            pausedTime = System.currentTimeMillis()-pausedTimeIni;
             mStarted = true;
             mPaused=false;
             updateRunning();
-        }
+//        }
     }
 
+    public long getPausedTime() {
+        pausedTime = getTimeElapsed();
+        return pausedTime;
+    }
+
+    public void setPausedTime(long pausedTime) {
+        this.pausedTime = pausedTime;
+    }
 
     public void setStarted(boolean started) {
         mStarted = started;
@@ -124,7 +140,7 @@ public class MilliSecondChronometer extends TextView {
     }
 
     private synchronized void updateText(long now) {
-        timeElapsed = now - mBase-pausedTime;
+        timeElapsed = (now - mBase) + pausedTime;
 
         DecimalFormat df = new DecimalFormat("00");
 

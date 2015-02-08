@@ -70,6 +70,7 @@ public class PuzzleActivity extends BaseActivity{
     private Handler handler;
     private SurfaceTexture dummySurfaceTexture;
     private int clickId;
+    private int beepId;
     private boolean startedGame=false;
 
 
@@ -129,7 +130,10 @@ public class PuzzleActivity extends BaseActivity{
             }
         });
         loadedSound=false;
-        clickId = soundPool.load(getApplicationContext(),R.raw.click,1);
+        clickId = soundPool.load(getApplicationContext(),R.raw.click,2);
+        loadedSound=false;
+        beepId = soundPool.load(getApplicationContext(),R.raw.beep,1);
+
 //        loadedSound=false;
 //        musicId = soundPool.load(getApplicationContext(),R.raw.music,2);
     }
@@ -138,19 +142,22 @@ public class PuzzleActivity extends BaseActivity{
     public void onBackPressed() {
 //        super.onBackPressed();
         if (gameStatus.equals(GameStatus.PLAYING)) {
+
             pauseGame();
+
         }
 //        chrono.resume();
     }
 
     private void pauseGame(){
+        Log.d(TAG,"pauseGame");
         gameStatus=GameStatus.PAUSED;
         chrono.pause();
         pauseDialog = new Dialog(PuzzleActivity.this);
 
         pauseDialog.setContentView(R.layout.pause_screen_layout);
         pauseDialog.setTitle(R.string.paused_text);
-        pauseDialog.setCancelable(true);
+        pauseDialog.setCancelable(false);
         pauseDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
@@ -174,6 +181,7 @@ public class PuzzleActivity extends BaseActivity{
                 finish();
             }
         });
+        pauseDialog.setCancelable(true);
         pauseDialog.show();
     }
     @Override
@@ -289,13 +297,15 @@ public class PuzzleActivity extends BaseActivity{
 //            puzzle.setPositions(savedInstanceState.getIntArray(POS_KEY));
 //            Log.d(TAG,"resetie las posiciones");
             moveCounter=savedInstanceState.getInt(MOVES_COUNTER_KEY);
-            moveCounterText.setText("Movimientos = " + moveCounter);
+            moveCounterText.setText(getString(R.string.moves_text,moveCounter));
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
             gameStatus=(GameStatus)savedInstanceState.getSerializable(GAME_STATUS_KEY);
             Long time = savedInstanceState.getLong(TIME_ELAPSED_KEY,-1L);
 
+            Log.d(TAG,"gameStatus = " + gameStatus.toString());
+
             if (time!=-1L) {
-                chrono.setTimeElapsed(time);
+                chrono.setPausedTime(time);
             }
             switch (gameStatus){
                 case PAUSED:
@@ -381,12 +391,15 @@ public class PuzzleActivity extends BaseActivity{
         countDownDialog.setTitle(R.string.game_start_in);
         final TextView countDownText = (TextView) countDownDialog.findViewById(R.id.countDownText);
         CountDownTimer countDownTimer;
-        countDownTimer = new CountDownTimer(4000,200) {
+        countDownTimer = new CountDownTimer(3600,200) {
             @Override
             public void onTick(long millisUntilFinished) {
                 try{
                     int time = (int)(millisUntilFinished/1000);
                     countDownText.setText(Integer.toString(time));
+                    if (millisUntilFinished%1000>800){
+                        soundPool.play(beepId,volume,volume,2,0,1f);
+                    }
                 }catch(Exception e){
                     Log.d(TAG,e.getMessage());
                 }
@@ -398,6 +411,7 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onFinish() {
                 countDownDialog.dismiss();
+                soundPool.play(beepId,volume,volume,2,0,0.25f);
                 //countDownDialog.cancel();
                 chrono.start();
                 gameStatus=GameStatus.PLAYING;
@@ -519,7 +533,7 @@ public class PuzzleActivity extends BaseActivity{
         //outState.putIntArray(POS_KEY,puzzle.getPositions());
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
         outState.putSerializable(GAME_STATUS_KEY,gameStatus);
-        outState.putLong(TIME_ELAPSED_KEY, chrono.getTimeElapsed());
+        outState.putLong(TIME_ELAPSED_KEY, chrono.getPausedTime());
 //        outState.putParcelable(OUTPUTFILE_KEY,outputFileUri);
         super.onSaveInstanceState(outState);
 

@@ -3,7 +3,7 @@
     android:orientation="vertical" android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:padding="50dp">
+    android:padding="20dp">
 
     <!--<TextView-->
         <!--android:layout_width="wrap_content"-->
@@ -15,6 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/resumeButton"
+        android:layout_gravity="center_horizontal"
         android:text="@string/resume_button_text"/>
 
     <!--<Button-->
@@ -27,6 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/exitGameButton"
+        android:layout_gravity="center_horizontal"
         android:text="@string/exit_button_text"/>
 
 
