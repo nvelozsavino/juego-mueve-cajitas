@@ -22,21 +22,26 @@
     <string name="game_size_6x6">6x6</string>
     <string name="game_size_custom">\?x\?</string>
     <string name="sign_out">Sign Out</string>
-    <string name="congratulation_text">Congratulations, you win!!\nYour time is: </string>
+    <string name="congratulation_text">Congratulations, you win!!</string>
     <string name="title_activity_multiplayer">MultiplayerActivity</string>
     <string name="multiplayer_start_match">Start Match</string>
     <string name="multiplayer_quick_match">Quick Match</string>
     <string name="multiplayer_check_games">Check Games</string>
     <string name="preference_key_file">com.pocotopocopo.juego.PREFERENCE_FILE_KEY</string>
-    <string name="title_activity_bitmap_cropper">Recortar Imagen</string>
+    <string name="title_activity_bitmap_cropper">Crop Image</string>
     <string name="hello_world">Hello world!</string>
     <string name="start_game">Start Game</string>
-    <string name="moves_text">Movimientos: %1$d</string>
-
-    <string name="crop_text">Seleccionar</string>
-    <string name="cancel_text">Cancelar</string>
-    <string name="new_image_text">Nueva Imagen</string>
+    <string name="moves_text">Moves: %1$d</string>
+    <string name="time_text_win">Your final time is: %1$s</string>
+    <string name="crop_text">Select</string>
+    <string name="cancel_text">Cancel</string>
+    <string name="new_image_text">New Image</string>
     <string name="game_start_in">Get Ready!!</string>
+    <string name="resume_button_text">Resume</string>
+    <string name="exit_button_text">Exit</string>
+    <string name="paused_text">Paused Game</string>
+
+
 
 
 </resources>

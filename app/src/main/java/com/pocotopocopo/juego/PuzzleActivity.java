@@ -25,6 +25,8 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -244,6 +246,34 @@ public class PuzzleActivity extends BaseActivity{
     }
 
     @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+        chrono.pause();
+        final Dialog pauseDialog = new Dialog(PuzzleActivity.this);
+        pauseDialog.setContentView(R.layout.pause_screen_layout);
+        pauseDialog.setTitle(R.string.paused_text);
+        pauseDialog.setCancelable(false);
+        Button resumeButton = (Button)pauseDialog.findViewById(R.id.resumeButton);
+        Button exitGameButton = (Button)pauseDialog.findViewById(R.id.exitGameButton);
+        resumeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chrono.resume();
+                pauseDialog.cancel();
+            }
+        });
+        exitGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pauseDialog.cancel();
+                finish();
+            }
+        });
+        pauseDialog.show();
+//        chrono.resume();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
@@ -342,12 +372,30 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onPuzzleSolved() {
                 chrono.stop();
-
-                Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.congratulation_text)  + chrono.getText().toString() ,Toast.LENGTH_LONG);
-                toast.show();
                 if (camera!=null){
                     stopLiveFeed();
                 }
+
+                final Dialog winDialog = new Dialog(PuzzleActivity.this);
+                winDialog.setCancelable(false);
+                winDialog.setContentView(R.layout.win_screen_layout);
+                winDialog.setTitle(R.string.congratulation_text);
+                TextView movesWinText = (TextView) winDialog.findViewById(R.id.movesWinText);
+                TextView timeWinText = (TextView) winDialog.findViewById(R.id.timeWinText);
+                Button exitButton = (Button)winDialog.findViewById(R.id.exitWinScreenButton);
+                movesWinText.setText(getString(R.string.moves_text,moveCounter));
+                timeWinText.setText(getString(R.string.time_text_win,chrono.getText().toString()));
+                exitButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        winDialog.cancel();
+                        finish();
+                    }
+                });
+                winDialog.show();
+//                Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.congratulation_text)  + chrono.getText().toString() ,Toast.LENGTH_LONG);
+//                toast.show();
+
             }
         });
 

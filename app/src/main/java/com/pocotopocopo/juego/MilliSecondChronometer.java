@@ -24,11 +24,17 @@ public class MilliSecondChronometer extends TextView {
     private boolean mVisible;
     private boolean mStarted;
     private boolean mRunning;
+    private boolean mPaused=false;
+
     private OnChronometerTickListener mOnChronometerTickListener;
 
     private static final int TICK_WHAT = 2;
 
     private long timeElapsed;
+    private long pausedTime=0;
+    private long pausedTimeIni;
+
+
 
     public MilliSecondChronometer(Context context) {
         this (context, null, 0);
@@ -78,6 +84,24 @@ public class MilliSecondChronometer extends TextView {
         mStarted = false;
         updateRunning();
     }
+    public void pause(){
+        if (mStarted && !mPaused){
+            pausedTimeIni=System.currentTimeMillis();
+            mPaused=true;
+            stop();
+
+
+
+        }
+    }
+    public void resume(){
+        if (!mStarted && mPaused){
+            pausedTime = System.currentTimeMillis()-pausedTimeIni;
+            mStarted = true;
+            mPaused=false;
+            updateRunning();
+        }
+    }
 
 
     public void setStarted(boolean started) {
@@ -100,7 +124,7 @@ public class MilliSecondChronometer extends TextView {
     }
 
     private synchronized void updateText(long now) {
-        timeElapsed = now - mBase;
+        timeElapsed = now - mBase-pausedTime;
 
         DecimalFormat df = new DecimalFormat("00");
 
@@ -162,6 +186,9 @@ public class MilliSecondChronometer extends TextView {
 
     public long getTimeElapsed() {
         return timeElapsed;
+    }
+    public void setTimeElapsed(long timeElapsed) {
+        this.timeElapsed = timeElapsed;
     }
 
 }
