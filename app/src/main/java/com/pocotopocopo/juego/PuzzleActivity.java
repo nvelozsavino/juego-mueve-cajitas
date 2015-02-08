@@ -27,6 +27,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -382,7 +383,15 @@ public class PuzzleActivity extends BaseActivity{
                 winDialog.setTitle(R.string.congratulation_text);
                 TextView movesWinText = (TextView) winDialog.findViewById(R.id.movesWinText);
                 TextView timeWinText = (TextView) winDialog.findViewById(R.id.timeWinText);
+                ImageView winImage = (ImageView) winDialog.findViewById(R.id.winImage);
                 Button exitButton = (Button)winDialog.findViewById(R.id.exitWinScreenButton);
+                Bitmap bitmap = puzzle.getBitmapContainer().getBitmap();
+                if (bitmap==null){
+                    winImage.setImageDrawable(getDrawable(R.drawable.trophy));
+                }else{
+
+                    winImage.setImageBitmap(puzzle.getBitmapContainer().getBitmap());
+                }
                 movesWinText.setText(getString(R.string.moves_text,moveCounter));
                 timeWinText.setText(getString(R.string.time_text_win,chrono.getText().toString()));
                 exitButton.setOnClickListener(new View.OnClickListener() {
