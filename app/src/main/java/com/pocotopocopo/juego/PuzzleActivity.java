@@ -27,37 +27,27 @@ import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 
-enum GameStatus {
-    STARTING, PLAYING, PAUSED, FINISHED;
-}
-
 
 public class PuzzleActivity extends BaseActivity{
 
     private static final String TAG="Juego.MainActivity";
     private static final String MOVES_COUNTER_KEY = "movesCount";
-    private static final String BITMAP_KEY = "bitmapContainer";
-    private static final String POS_KEY = "posNumbers";
     private static final String LIVEFEED_KEY = "liveFeed";
-    private static final String OUTPUTFILE_KEY = "outputFileKey";
     private static final String GAME_STATUS_KEY= "gameStatusKey";
     private static final String TIME_ELAPSED_KEY = "timeElapsedKey";
     private AudioManager audioManager;
     private SoundPool soundPool;
     private float volume,actVolume,maxVolume;
     private boolean loadedSound=false;
-    private Uri outputFileUri;
     private TextView moveCounterText;
     private MilliSecondChronometer chrono;
     private ImageView soundButton;
-//    private TextView resolvableText;
 
     private int moveCounter = 0;
     private Camera camera=null;
     private byte[] cameraData = null;
     private boolean liveFeedEnabled=false;
     private boolean liveFeedState=false;
-//    private Button liveFeedButton;
     private Handler handler;
     private SurfaceTexture dummySurfaceTexture;
     private int clickId;
@@ -72,29 +62,18 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog pauseDialog;
     private Dialog winDialog;
     private boolean soundEnabled=true;
-    //private GoogleApiClient googleApiClient;
 
 
     private BitmapContainer bitmapContainer;
-//    private Button selectImageButton;
-//    private Button selectImageButton2;
-
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-//    static final int RESULT_LOAD_IMG = 2;
-    static final int RESULT_LOAD_IMG2 = 3;
 
 
     private Puzzle puzzle;
-    //private LinearLayout frame;
 
     @Override
     protected void initViews(){
         super.initViews();
-//        selectImageButton = (Button) findViewById(R.id.selectImage);
-//        selectImageButton2 = (Button) findViewById(R.id.selectImage2);
 
         puzzle = (Puzzle)findViewById(R.id.puzzle);
-        //frame = (LinearLayout) findViewById(R.id.frame);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         moveCounterText.setText(getString(R.string.moves_text,0));
         chrono = (MilliSecondChronometer)findViewById(R.id.timerView);
@@ -106,10 +85,6 @@ public class PuzzleActivity extends BaseActivity{
             soundButton.setImageResource(R.drawable.sound_on);
         }
         soundButton.invalidate();
-
-//        resolvableText = (TextView)findViewById(R.id.resolvableText);
-//        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
-
     }
 
     private void loadSounds(){
@@ -140,11 +115,9 @@ public class PuzzleActivity extends BaseActivity{
 
     @Override
     public void onBackPressed() {
-//        super.onBackPressed();
         if (gameStatus.equals(GameStatus.PLAYING)) {
             pauseGame();
         }
-//        chrono.resume();
     }
 
     private void pauseGame(){
@@ -197,7 +170,7 @@ public class PuzzleActivity extends BaseActivity{
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
-        Log.d(TAG,"setContentView");
+        Log.d(TAG, "setContentView");
 
         initViews();
         loadSounds();
@@ -222,12 +195,7 @@ public class PuzzleActivity extends BaseActivity{
             return;
         }
 
-//        chrono.start();
-//        puzzle = new BoxPuzzle(this, cols, rows);
-//        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
-//        frame.addView((puzzle));
         handler = new Handler(Looper.getMainLooper());
-//        setClickListeners();
 
         dummySurfaceTexture=new SurfaceTexture(0);
 
@@ -236,7 +204,6 @@ public class PuzzleActivity extends BaseActivity{
         int cols = gameInfo.getCols();
         int rows= gameInfo.getRows();
         boolean numbersVisible = gameInfo.isNumbersVisible();
-        GameMode gameMode = gameInfo.getGameMode();
         BackgroundMode backgroundMode = gameInfo.getBackgroundMode();
 
         puzzle.setSize(cols, rows);
@@ -244,7 +211,7 @@ public class PuzzleActivity extends BaseActivity{
 
 
         puzzle.setBitmapContainer(bitmapContainer);
-        Log.d(TAG,"bitmapcontainer = null");
+        Log.d(TAG, "bitmapcontainer = null");
 
         puzzle.setBitmapContainer(bitmapContainer);
         bitmapContainer.setBitmap(gameInfo.getBitmap());
@@ -252,37 +219,32 @@ public class PuzzleActivity extends BaseActivity{
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
             public void onPieceMoved() {
-                moveCounterText.setText(getString(R.string.moves_text,++moveCounter));
-                if (loadedSound && soundEnabled){
-
-                    soundPool.play(clickId,volume,volume,2,0,1f);
+                moveCounterText.setText(getString(R.string.moves_text, ++moveCounter));
+                if (loadedSound && soundEnabled) {
+                    soundPool.play(clickId, volume, volume, 2, 0, 1f);
                 }
             }
 
             @Override
             public void onPuzzleSolved() {
                 chrono.stop();
-                gameStatus=GameStatus.FINISHED;
-                if (camera!=null){
+                gameStatus = GameStatus.FINISHED;
+                if (camera != null) {
                     stopLiveFeed();
                 }
-
                 showWinDialog();
-//                Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.congratulation_text)  + chrono.getText().toString() ,Toast.LENGTH_LONG);
-//                toast.show();
-
             }
         });
 
         soundButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (soundEnabled){
+                if (soundEnabled) {
                     soundButton.setImageResource(R.drawable.sound_on);
-                    soundEnabled=false;
-                }else{
+                    soundEnabled = false;
+                } else {
                     soundButton.setImageResource(R.drawable.sound_off);
-                    soundEnabled=true;
+                    soundEnabled = true;
                 }
                 soundButton.invalidate();
             }
@@ -299,13 +261,6 @@ public class PuzzleActivity extends BaseActivity{
             bitmapContainer.setBitmap(gameInfo.getBitmap());
             puzzle.setPositions(posArray);
             puzzle.update();
-//
-//            Log.d(TAG,"moveCounter = " +moveCounter );
-//            bitmapContainer.setBitmap((Bitmap)savedInstanceState.getParcelable(BITMAP_KEY));
-//            //puzzle.setBitmapContainer();
-//            Log.d(TAG,"Resetie el bitmapContainer" );
-//            puzzle.setPositions(savedInstanceState.getIntArray(POS_KEY));
-//            Log.d(TAG,"resetie las posiciones");
             moveCounter=savedInstanceState.getInt(MOVES_COUNTER_KEY);
             moveCounterText.setText(getString(R.string.moves_text,moveCounter));
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
@@ -333,7 +288,6 @@ public class PuzzleActivity extends BaseActivity{
                 default:
 
             }
-//            outputFileUri = (Uri)savedInstanceState.getParcelable(OUTPUTFILE_KEY);
         } else {
 
             if (backgroundMode.equals(BackgroundMode.VIDEO)){
@@ -342,10 +296,7 @@ public class PuzzleActivity extends BaseActivity{
             puzzle.update();
             gameStatus=GameStatus.STARTING;
             startCountdown();
-
         }
-
-
     }
 
     private void showWinDialog(){
@@ -403,13 +354,11 @@ public class PuzzleActivity extends BaseActivity{
 
             }
 
-
             @Override
             public void onFinish() {
                 countDownDialog.dismiss();
                 if (loadedSound && soundEnabled) {
                     soundPool.play(beepId, volume, volume, 2, 0, 0.25f);
-                    //countDownDialog.cancel();
                 }
                 chrono.start();
                 gameStatus=GameStatus.PLAYING;
@@ -455,8 +404,6 @@ public class PuzzleActivity extends BaseActivity{
                 public void onPreviewFrame(byte[] data, Camera camera) {
                     cameraData=data;
                     handler.post(liveFeed);
-
-
                 }
             });
 
@@ -491,15 +438,10 @@ public class PuzzleActivity extends BaseActivity{
                 matrix.postRotate(90);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
                 Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap , 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-
-
                 Bitmap oldBitmap= bitmapContainer.getBitmap();
-
                 bitmapContainer.setBitmap(rotatedBitmap);
-//                puzzle.setBitmapContainer(bitmapContainer);
                 if(oldBitmap==null){
                     puzzle.update();
-
                 }
             }
         }
@@ -507,7 +449,6 @@ public class PuzzleActivity extends BaseActivity{
 
     @Override
     protected void onResume() {
-
         super.onResume();
         if (liveFeedState){
             liveFeedEnabled=startLiveFeed();
@@ -518,7 +459,6 @@ public class PuzzleActivity extends BaseActivity{
     protected void onPause() {
         liveFeedState=liveFeedEnabled;
         stopLiveFeed();
-
         super.onPause();
     }
 
@@ -527,16 +467,10 @@ public class PuzzleActivity extends BaseActivity{
         gameInfo.setPieceOrder(puzzle.getPositions());
         outState.putParcelable(GameConstants.GAME_INFO,gameInfo);
         outState.putInt(MOVES_COUNTER_KEY,moveCounter);
-        //outState.putParcelable(BITMAP_KEY,puzzle.getBitmapContainer().getBitmap());
-        //outState.putIntArray(POS_KEY,puzzle.getPositions());
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
         outState.putSerializable(GAME_STATUS_KEY,gameStatus);
         outState.putLong(TIME_ELAPSED_KEY, chrono.getPausedTime());
-//        outState.putParcelable(OUTPUTFILE_KEY,outputFileUri);
         super.onSaveInstanceState(outState);
 
     }
-
-
-
 }
