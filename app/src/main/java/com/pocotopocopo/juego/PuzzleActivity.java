@@ -1,12 +1,8 @@
 package com.pocotopocopo.juego;
 
 import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -20,22 +16,16 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 enum GameStatus {
     STARTING, PLAYING, PAUSED, FINISHED;
@@ -59,6 +49,7 @@ public class PuzzleActivity extends BaseActivity{
     private Uri outputFileUri;
     private TextView moveCounterText;
     private MilliSecondChronometer chrono;
+    private ImageView soundButton;
 //    private TextView resolvableText;
 
     private int moveCounter = 0;
@@ -80,6 +71,7 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog countDownDialog;
     private Dialog pauseDialog;
     private Dialog winDialog;
+    private boolean soundEnabled=true;
     //private GoogleApiClient googleApiClient;
 
 
@@ -106,6 +98,14 @@ public class PuzzleActivity extends BaseActivity{
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         moveCounterText.setText(getString(R.string.moves_text,0));
         chrono = (MilliSecondChronometer)findViewById(R.id.timerView);
+        soundButton = (ImageView)findViewById(R.id.soundButton);
+        if (soundEnabled){
+
+            soundButton.setImageResource(R.drawable.sound_off);
+        }else{
+            soundButton.setImageResource(R.drawable.sound_on);
+        }
+        soundButton.invalidate();
 
 //        resolvableText = (TextView)findViewById(R.id.resolvableText);
 //        liveFeedButton = (Button)findViewById(R.id.liveFeedButton);
@@ -195,8 +195,7 @@ public class PuzzleActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
-        //TODO tambien cuando se salva se tiene que salvar el tiempo
-        //TODO ponerle boton de mute
+        //TODO salvar la instacia de la ultima vez si se puso en mute o no
         //TODO mejorar imagen de todo
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
@@ -257,7 +256,8 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onPieceMoved() {
                 moveCounterText.setText(getString(R.string.moves_text,++moveCounter));
-                if (loadedSound){
+                if (loadedSound && soundEnabled){
+
                     soundPool.play(clickId,volume,volume,2,0,1f);
                 }
             }
@@ -277,6 +277,19 @@ public class PuzzleActivity extends BaseActivity{
             }
         });
 
+        soundButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (soundEnabled){
+                    soundButton.setImageResource(R.drawable.sound_on);
+                    soundEnabled=false;
+                }else{
+                    soundButton.setImageResource(R.drawable.sound_off);
+                    soundEnabled=true;
+                }
+                soundButton.invalidate();
+            }
+        });
 
         if (savedInstanceState!=null){
 
@@ -397,8 +410,10 @@ public class PuzzleActivity extends BaseActivity{
                 try{
                     int time = (int)(millisUntilFinished/1000);
                     countDownText.setText(Integer.toString(time));
-                    if (millisUntilFinished%1000>800){
-                        soundPool.play(beepId,volume,volume,2,0,1f);
+                    if (millisUntilFinished%1000>800) {
+                        if (loadedSound && soundEnabled) {
+                            soundPool.play(beepId, volume, volume, 2, 0, 1f);
+                        }
                     }
                 }catch(Exception e){
                     Log.d(TAG,e.getMessage());
@@ -411,8 +426,10 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onFinish() {
                 countDownDialog.dismiss();
-                soundPool.play(beepId,volume,volume,2,0,0.25f);
-                //countDownDialog.cancel();
+                if (loadedSound && soundEnabled) {
+                    soundPool.play(beepId, volume, volume, 2, 0, 0.25f);
+                    //countDownDialog.cancel();
+                }
                 chrono.start();
                 gameStatus=GameStatus.PLAYING;
             }
