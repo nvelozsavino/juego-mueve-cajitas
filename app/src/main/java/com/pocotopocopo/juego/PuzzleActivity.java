@@ -265,13 +265,10 @@ public class PuzzleActivity extends BaseActivity{
             moveCounterText.setText(getString(R.string.moves_text,moveCounter));
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
             gameStatus=(GameStatus)savedInstanceState.getSerializable(GAME_STATUS_KEY);
-            Long time = savedInstanceState.getLong(TIME_ELAPSED_KEY,-1L);
+            long time = savedInstanceState.getLong(TIME_ELAPSED_KEY);
 
             Log.d(TAG,"gameStatus = " + gameStatus.toString());
-
-            if (time!=-1L) {
-                chrono.setPausedTime(time);
-            }
+            chrono.setPausedTime(time);
             switch (gameStatus){
                 case PAUSED:
                     pauseGame();
