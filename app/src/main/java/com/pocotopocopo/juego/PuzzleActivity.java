@@ -1,5 +1,6 @@
 package com.pocotopocopo.juego;
 
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -59,7 +61,8 @@ public class PuzzleActivity extends BaseActivity{
     private SurfaceTexture dummySurfaceTexture;
     private int clickId;
     private boolean startedGame=false;
-
+    private TextView countDownText;
+    CountDownTimer countDownTimer;
     private GameInfo gameInfo;
 
     //private GoogleApiClient googleApiClient;
@@ -229,7 +232,7 @@ public class PuzzleActivity extends BaseActivity{
             public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
                 loadedSound= true;
                 if (!startedGame){
-                    chrono.start();
+//                    chrono.start();
                     startedGame=true;
                 }
             }
@@ -269,8 +272,38 @@ public class PuzzleActivity extends BaseActivity{
             finish();
             return;
         }
+        final Dialog countDownDialog = new Dialog(PuzzleActivity.this);
+        countDownDialog.setContentView(R.layout.count_down);
+        countDownDialog.setCancelable(false);
+        countDownDialog.setTitle(R.string.game_start_in);
+        countDownText = (TextView) countDownDialog.findViewById(R.id.countDownText);
 
-        chrono.start();
+        countDownTimer = new CountDownTimer(4000,200) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                try{
+                    int time = (int)(millisUntilFinished/1000);
+                    countDownText.setText(Integer.toString(time));
+                }catch(Exception e){
+                    Log.d(TAG,e.getMessage());
+                }
+
+
+            }
+
+            @Override
+            public void onFinish() {
+                countDownDialog.cancel();
+                chrono.start();
+            }
+        };
+        Log.d(TAG,"cree el countdowntimer");
+        countDownDialog.show();
+        Log.d(TAG,"mostre el dialog");
+
+        countDownTimer.start();
+        Log.d(TAG,"arranque el countdown timer");
+//        chrono.start();
 //        puzzle = new BoxPuzzle(this, cols, rows);
 //        puzzle.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
 //        frame.addView((puzzle));
@@ -566,6 +599,7 @@ public class PuzzleActivity extends BaseActivity{
     protected void onPause() {
         liveFeedState=liveFeedEnabled;
         stopLiveFeed();
+
         super.onPause();
     }
 

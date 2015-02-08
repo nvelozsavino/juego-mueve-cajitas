@@ -36,6 +36,7 @@
     <string name="crop_text">Seleccionar</string>
     <string name="cancel_text">Cancelar</string>
     <string name="new_image_text">Nueva Imagen</string>
+    <string name="game_start_in">Get Ready!!</string>
 
 
 </resources>
