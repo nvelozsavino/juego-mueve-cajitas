@@ -1,8 +1,10 @@
 package com.pocotopocopo.juego;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -13,7 +15,6 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -21,7 +22,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -35,12 +35,14 @@ public class PuzzleActivity extends BaseActivity{
     private static final String LIVEFEED_KEY = "liveFeed";
     private static final String GAME_STATUS_KEY= "gameStatusKey";
     private static final String TIME_ELAPSED_KEY = "timeElapsedKey";
+
+    private static final String SOUND_ENABLED_KEY = "SoundEnabledKey";
     private AudioManager audioManager;
     private SoundPool soundPool;
     private float volume,actVolume,maxVolume;
     private boolean loadedSound=false;
     private TextView moveCounterText;
-    private MilliSecondChronometer chrono;
+    private ChronometerView chrono;
     private ImageView soundButton;
 
     private int moveCounter = 0;
@@ -61,7 +63,7 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog countDownDialog;
     private Dialog pauseDialog;
     private Dialog winDialog;
-    private boolean soundEnabled=true;
+    private boolean soundEnabled;
 
 
     private BitmapContainer bitmapContainer;
@@ -76,7 +78,7 @@ public class PuzzleActivity extends BaseActivity{
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         moveCounterText.setText(getString(R.string.moves_text,0));
-        chrono = (MilliSecondChronometer)findViewById(R.id.timerView);
+        chrono = (ChronometerView)findViewById(R.id.timerView);
         soundButton = (ImageView)findViewById(R.id.soundButton);
         if (soundEnabled){
 
@@ -132,7 +134,7 @@ public class PuzzleActivity extends BaseActivity{
         pauseDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                chrono.resume();
+                chrono.start();
                 gameStatus=GameStatus.PLAYING;
                 Log.d(TAG,"prueba");
             }
@@ -165,7 +167,7 @@ public class PuzzleActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
-        //TODO salvar la instacia de la ultima vez si se puso en mute o no
+
         //TODO mejorar imagen de todo
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
@@ -175,6 +177,8 @@ public class PuzzleActivity extends BaseActivity{
         initViews();
         loadSounds();
 
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
 
         Log.d(TAG, "capturando intent");
@@ -227,9 +231,9 @@ public class PuzzleActivity extends BaseActivity{
 
             @Override
             public void onPuzzleSolved() {
-                chrono.stop();
-                gameStatus = GameStatus.FINISHED;
-                if (camera != null) {
+                chrono.pause();
+                gameStatus=GameStatus.FINISHED;
+                if (camera!=null){
                     stopLiveFeed();
                 }
                 showWinDialog();
@@ -239,13 +243,14 @@ public class PuzzleActivity extends BaseActivity{
         soundButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (soundEnabled) {
+                if (soundEnabled){
                     soundButton.setImageResource(R.drawable.sound_on);
-                    soundEnabled = false;
-                } else {
+                    soundEnabled=false;
+                }else{
                     soundButton.setImageResource(R.drawable.sound_off);
-                    soundEnabled = true;
+                    soundEnabled=true;
                 }
+
                 soundButton.invalidate();
             }
         });
@@ -266,9 +271,7 @@ public class PuzzleActivity extends BaseActivity{
             liveFeedState=savedInstanceState.getBoolean(LIVEFEED_KEY);
             gameStatus=(GameStatus)savedInstanceState.getSerializable(GAME_STATUS_KEY);
             long time = savedInstanceState.getLong(TIME_ELAPSED_KEY);
-
-            Log.d(TAG,"gameStatus = " + gameStatus.toString());
-            chrono.setPausedTime(time);
+            chrono.pause(time);
             switch (gameStatus){
                 case PAUSED:
                     pauseGame();
@@ -280,11 +283,15 @@ public class PuzzleActivity extends BaseActivity{
                     showWinDialog();
                     break;
                 case PLAYING:
-                    chrono.resume();
+                    chrono.start();
                     break;
                 default:
 
             }
+
+
+            Log.d(TAG,"gameStatus = " + gameStatus.toString());
+
         } else {
 
             if (backgroundMode.equals(BackgroundMode.VIDEO)){
@@ -314,7 +321,7 @@ public class PuzzleActivity extends BaseActivity{
             winImage.setImageBitmap(puzzle.getBitmapContainer().getBitmap());
         }
         movesWinText.setText(getString(R.string.moves_text,moveCounter));
-        timeWinText.setText(getString(R.string.time_text_win,chrono.getText().toString()));
+        timeWinText.setText(getString(R.string.time_text_win,chrono.getTimeText()));
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -456,6 +463,12 @@ public class PuzzleActivity extends BaseActivity{
     protected void onPause() {
         liveFeedState=liveFeedEnabled;
         stopLiveFeed();
+
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(SOUND_ENABLED_KEY,soundEnabled);
+        editor.commit();
+
         super.onPause();
     }
 
@@ -466,7 +479,7 @@ public class PuzzleActivity extends BaseActivity{
         outState.putInt(MOVES_COUNTER_KEY,moveCounter);
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
         outState.putSerializable(GAME_STATUS_KEY,gameStatus);
-        outState.putLong(TIME_ELAPSED_KEY, chrono.getPausedTime());
+        outState.putLong(TIME_ELAPSED_KEY, chrono.getTime());
         super.onSaveInstanceState(outState);
 
     }

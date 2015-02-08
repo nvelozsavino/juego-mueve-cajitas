@@ -56,24 +56,24 @@ public class MilliSecondChronometer extends TextView {
         updateText(mBase);
     }
 
-    public void setBase(long base) {
-        mBase = base;
-        dispatchChronometerTick();
-        updateText(SystemClock.elapsedRealtime());
-    }
+//    public void setBase(long base) {
+//        mBase = base;
+//        dispatchChronometerTick();
+//        updateText(SystemClock.elapsedRealtime());
+//    }
 
     public long getBase() {
         return mBase;
     }
 
-    public void setOnChronometerTickListener(
-            OnChronometerTickListener listener) {
-        mOnChronometerTickListener = listener;
-    }
+//    public void setOnChronometerTickListener(
+//            OnChronometerTickListener listener) {
+//        mOnChronometerTickListener = listener;
+//    }
 
-    public OnChronometerTickListener getOnChronometerTickListener() {
-        return mOnChronometerTickListener;
-    }
+//    public OnChronometerTickListener getOnChronometerTickListener() {
+//        return mOnChronometerTickListener;
+//    }
 
     public void start() {
         Log.d(TAG, "start");
@@ -118,6 +118,7 @@ public class MilliSecondChronometer extends TextView {
 
     public void setPausedTime(long pausedTime) {
         this.pausedTime = pausedTime;
+        updateRunning();
     }
 
     public void setStarted(boolean started) {

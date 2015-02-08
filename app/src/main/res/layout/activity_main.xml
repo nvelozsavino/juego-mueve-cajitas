@@ -19,7 +19,7 @@
         android:layout_gravity="right"/>
 
 
-    <com.pocotopocopo.juego.MilliSecondChronometer
+    <com.pocotopocopo.juego.ChronometerView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/timerView"
@@ -30,7 +30,7 @@
 
     <com.pocotopocopo.juego.Puzzle
         android:layout_width="match_parent"
-        android:layout_height="268dp"
+        android:layout_height="match_parent"
         boxpuzzle:rows="4"
         boxpuzzle:cols="4"
         android:id="@+id/puzzle"
