@@ -142,9 +142,7 @@ public class PuzzleActivity extends BaseActivity{
     public void onBackPressed() {
 //        super.onBackPressed();
         if (gameStatus.equals(GameStatus.PLAYING)) {
-
             pauseGame();
-
         }
 //        chrono.resume();
     }
@@ -157,7 +155,7 @@ public class PuzzleActivity extends BaseActivity{
 
         pauseDialog.setContentView(R.layout.pause_screen_layout);
         pauseDialog.setTitle(R.string.paused_text);
-        pauseDialog.setCancelable(false);
+        pauseDialog.setCancelable(true);
         pauseDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
@@ -181,7 +179,6 @@ public class PuzzleActivity extends BaseActivity{
                 finish();
             }
         });
-        pauseDialog.setCancelable(true);
         pauseDialog.show();
     }
     @Override
@@ -332,23 +329,7 @@ public class PuzzleActivity extends BaseActivity{
             puzzle.update();
             gameStatus=GameStatus.STARTING;
             startCountdown();
-//            switch (backgroundMode){
-//                default:
-//                case PLAIN:
-//                    liveFeedState=false;
-//                    bitmapContainer.setBitmap(null);
-//                    break;
-//                case IMAGE:
-//                    puzzle.update();
-//                    liveFeedState=false;
-////                    openImageIntent();
-//                    startSelectImage();
-//                    break;
-//                case VIDEO:
-//                    puzzle.update();
-//                    liveFeedEnabled=startLiveFeed();
-//                    break;
-//            }
+
         }
 
 
