@@ -106,8 +106,11 @@ public class BitmapCropperView extends View {
     protected void onDraw(Canvas canvas) {
 //        Log.d(TAG,"onDraw");
         int strokeWidth= 3;
-        canvas.drawBitmap(imageBitmap,null,rectBitmap,paint);
-        Log.d(TAG,"pinte el bitmap");
+        if (imageBitmap!=null) {
+            canvas.drawBitmap(imageBitmap, null, rectBitmap, paint);
+
+            Log.d(TAG, "pinte el bitmap");
+        }
         paint.setColor(Color.BLACK);
         paint.setStrokeWidth(strokeWidth);
         paint.setStyle(Paint.Style.STROKE);

@@ -61,7 +61,7 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".BitmapCropper"
+            android:name=".BitmapChooserActivity"
             android:parentActivityName=".PuzzleActivity"
             android:label="@string/title_activity_bitmap_cropper" >
         </activity>

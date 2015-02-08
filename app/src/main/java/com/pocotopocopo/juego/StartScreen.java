@@ -1,31 +1,20 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
-
-import com.google.android.gms.common.SignInButton;
 
 public class StartScreen extends BaseActivity {
 
     private static final String TAG = "Juego.StartScreen";
-    public static final String COLS_KEY = "colsNumber";
-    public static final String ROWS_KEY = "rowsNumber";
-    public static final String GAME_MODE= "gameMode";
-    public static final String BACKGROUND_MODE= "backgroundMode";
 
 
-    public static final String SHOW_NUMBERS = "showNumbers";
-
-//    private Button gameSize3x3Button;
+    //    private Button gameSize3x3Button;
 //    private Button gameSize4x4Button;
 //    private Button gameSize5x5Button;
 //    private Button gameSize6x6Button;
@@ -107,20 +96,25 @@ public class StartScreen extends BaseActivity {
                 break;
         }
         boolean showNumbers=showNumbersCheckBox.isChecked();
-        Class<?> activityClass;
-        if (gameMode.equals(GameMode.MULTIPLAYER)){
-            activityClass=MultiplayerActivity.class;
+        GameActivity activityClass;
+        Class<? extends Activity> actualIntentClass;
+        if (backgroundMode.equals(BackgroundMode.IMAGE)){
+            activityClass=GameActivity.BITMAP_CHOOSER;
+            actualIntentClass=activityClass.getActivityClass();
         } else {
-            activityClass=PuzzleActivity.class;
+            if (gameMode.equals(GameMode.MULTIPLAYER)) {
+                activityClass = GameActivity.MULTIPLAYER;
+            } else {
+                activityClass = GameActivity.PUZZLE;
+            }
+            actualIntentClass=activityClass.getActivityClass();
         }
-        Intent startGame = new Intent(getApplicationContext(), activityClass);
-        startGame.putExtra(COLS_KEY, cols);
-        startGame.putExtra(ROWS_KEY, rows);
-        startGame.putExtra(BACKGROUND_MODE,backgroundMode);
-        startGame.putExtra(GAME_MODE,gameMode);
-        startGame.putExtra(SHOW_NUMBERS,showNumbers);
+        GameInfo gameInfo = new GameInfo(rows,cols,backgroundMode,gameMode,showNumbers);
+        Intent startGame = new Intent(getApplicationContext(), actualIntentClass);
+        startGame.putExtra(GameConstants.GAME_INFO,gameInfo);
+        startGame.putExtra(GameConstants.NEXT_ACTIVITY,activityClass);
         Log.d(TAG, "Signed In: " + googleApiClient.isConnected());
-        //startGame.putExtra(BaseActivity.SIGNED_IN,googleApiClient.isConnected());
+
         startActivity(startGame);
     }
 
