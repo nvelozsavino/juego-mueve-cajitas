@@ -10,7 +10,6 @@
     android:measureWithLargestChild="false"
     android:baselineAligned="false"
     android:gravity="center_vertical|center_horizontal">
-
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="wrap_content"
@@ -33,8 +32,8 @@
 
 
     <ImageView
-        android:layout_width="187dp"
-        android:layout_height="200dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/logoImage"
         android:layout_gravity="center_horizontal"
         android:src="@drawable/logo"
@@ -95,44 +94,44 @@
 
         </RadioGroup>
         <!--<Button-->
-            <!--style="?android:attr/buttonStyleSmall"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/game_size_3x3"-->
-            <!--android:id="@+id/gameSize3x3Button" />-->
+        <!--style="?android:attr/buttonStyleSmall"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/game_size_3x3"-->
+        <!--android:id="@+id/gameSize3x3Button" />-->
 
 
         <!--<Button-->
-            <!--style="?android:attr/buttonStyleSmall"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/game_size_4x4"-->
-            <!--android:id="@+id/gameSize4x4Button"-->
-            <!--android:layout_gravity="right" />-->
+        <!--style="?android:attr/buttonStyleSmall"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/game_size_4x4"-->
+        <!--android:id="@+id/gameSize4x4Button"-->
+        <!--android:layout_gravity="right" />-->
 
         <!--<Button-->
-            <!--style="?android:attr/buttonStyleSmall"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/game_size_5x5"-->
-            <!--android:id="@+id/gameSize5x5Button"-->
-            <!--android:layout_gravity="center_horizontal" />-->
+        <!--style="?android:attr/buttonStyleSmall"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/game_size_5x5"-->
+        <!--android:id="@+id/gameSize5x5Button"-->
+        <!--android:layout_gravity="center_horizontal" />-->
 
         <!--<Button-->
-            <!--style="?android:attr/buttonStyleSmall"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/game_size_6x6"-->
-            <!--android:id="@+id/gameSize6x6Button"-->
-            <!--android:layout_gravity="center_horizontal" />-->
+        <!--style="?android:attr/buttonStyleSmall"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/game_size_6x6"-->
+        <!--android:id="@+id/gameSize6x6Button"-->
+        <!--android:layout_gravity="center_horizontal" />-->
 
         <!--<Button-->
-            <!--style="?android:attr/buttonStyleSmall"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/game_size_custom"-->
-            <!--android:id="@+id/gameSizeCustomButton"-->
-            <!--android:enabled="false" />-->
+        <!--style="?android:attr/buttonStyleSmall"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/game_size_custom"-->
+        <!--android:id="@+id/gameSizeCustomButton"-->
+        <!--android:enabled="false" />-->
     </LinearLayout>
 
     <TextView
@@ -227,6 +226,5 @@
         android:layout_height="wrap_content"
         android:text = "@string/start_game"
         android:id="@+id/startGameButton"/>
-
 
 </LinearLayout>

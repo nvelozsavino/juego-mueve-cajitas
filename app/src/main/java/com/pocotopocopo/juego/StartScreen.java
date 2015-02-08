@@ -2,11 +2,13 @@ package com.pocotopocopo.juego;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -24,6 +26,7 @@ public class StartScreen extends BaseActivity {
     private RadioGroup gameModeRadioGroup;
     private RadioGroup gameSizeGroup;
     private Button startGameButton;
+    private ImageView logo;
 
 
 
@@ -50,6 +53,7 @@ public class StartScreen extends BaseActivity {
         startGameButton = (Button) findViewById(R.id.startGameButton);
         gameSizeGroup = (RadioGroup) findViewById(R.id.gameSizeGroup);
         gameModeRadioGroup=(RadioGroup)findViewById(R.id.gameModeRadioGroup);
+        logo = (ImageView)findViewById(R.id.logoImage);
 
         showNumbersCheckBox = (CheckBox)findViewById(R.id.showNumbersCheckBox);
 
@@ -121,64 +125,46 @@ public class StartScreen extends BaseActivity {
         startActivity(startGame);
     }
 
+    private void startGame(){
+        int gameSizeId = gameSizeGroup.getCheckedRadioButtonId();
+        switch (gameSizeId){
+            case R.id.gameSize3x3Button:
+                startGame(3,3);
+                break;
+            case R.id.gameSize4x4Button:
+                startGame(4,4);
+                break;
+            case R.id.gameSize5x5Button:
+                startGame(5,5);
+                break;
+            case R.id.gameSize6x6Button:
+                startGame(6,6);
+                break;
+            case R.id.gameSizeCustomButton:
+                startGame(4,4);
+                //TODO: create a dialog asking for the size
+                break;
+
+
+        }
+    }
+
     private void initListeners(){
-//        gameSize3x3Button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startGame(3,3);
-//            }
-//        });
-//        gameSize4x4Button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startGame(4,4);
-//            }
-//        });
-//        gameSize5x5Button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startGame(5,5);
-//            }
-//        });
-//        gameSize6x6Button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startGame(6,6);
-//            }
-//        });
-//        gameSizeCustomButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //
-//                startGame(4,4);
-//            }
-//        });
+
         startGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int gameSizeId = gameSizeGroup.getCheckedRadioButtonId();
-                switch (gameSizeId){
-                    case R.id.gameSize3x3Button:
-                        startGame(3,3);
-                        break;
-                    case R.id.gameSize4x4Button:
-                        startGame(4,4);
-                        break;
-                    case R.id.gameSize5x5Button:
-                        startGame(5,5);
-                        break;
-                    case R.id.gameSize6x6Button:
-                        startGame(6,6);
-                        break;
-                    case R.id.gameSizeCustomButton:
-                        startGame(4,4);
-                        //TODO: create a dialog asking for the size
-                        break;
-
-
-                }
+                startGame();
             }
         });
+
+        logo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startGame();
+            }
+        });
+
 
 
         backgroundRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
