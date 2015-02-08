@@ -40,18 +40,7 @@ public class BitmapChooserActivity extends Activity {
     private int screenHeight;
 
 
-    public class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
 
-            // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
-
-            //invalidate();
-            return true;
-        }
-    }
 
     private void cropClick(){
         Log.d(TAG,"cropClick");
@@ -157,8 +146,15 @@ public class BitmapChooserActivity extends Activity {
                 finish();
                 return;
             }
+
+
+
         } else {
+            Log.d(TAG,"saveIntanceState");
             gameInfo=savedInstanceState.getParcelable(GameConstants.GAME_INFO);
+            imgView.setRectScaleFactor(savedInstanceState.getFloat(GameConstants.RECT_SCALE_FACTOR));
+            imgView.setRectLeftNorm(savedInstanceState.getFloat(GameConstants.RECT_LEFT_NORM));
+            imgView.setRectTopNorm(savedInstanceState.getFloat(GameConstants.RECT_TOP_NORM));
 
 
         }
@@ -182,8 +178,14 @@ public class BitmapChooserActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         outState.putParcelable(GameConstants.GAME_INFO,gameInfo);
+        outState.putFloat(GameConstants.RECT_SCALE_FACTOR,imgView.getRectScaleFactor());
+        outState.putFloat(GameConstants.RECT_LEFT_NORM,imgView.getRectLeftNorm());
+        outState.putFloat(GameConstants.RECT_TOP_NORM,imgView.getRectTopNorm());
+
+
+        super.onSaveInstanceState(outState);
+
     }
 
     private void startSelectImage() {

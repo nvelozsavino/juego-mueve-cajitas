@@ -11,4 +11,10 @@ public class GameConstants {
     public static final String NEXT_ACTIVITY = "NEXT_ACTIVITY";
     public static final String BACKGROUND_MODE= "backgroundMode";
     public static final String SHOW_NUMBERS = "showNumbers";
+    public static final String RECT_SCALE_FACTOR = "rectScaleFactorKey";
+    public static final String RECT_LEFT_NORM = "rectLeftNormKey";
+    public static final String RECT_TOP_NORM = "rectTopNormKey";
+
+
+
 }

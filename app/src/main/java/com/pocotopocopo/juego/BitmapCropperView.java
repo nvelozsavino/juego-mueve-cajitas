@@ -1,15 +1,12 @@
 package com.pocotopocopo.juego;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.support.v4.view.MotionEventCompat;
-import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -28,7 +25,7 @@ public class BitmapCropperView extends View {
 //    private float mTextWidth;
 //    private float mTextHeight;
     ScaleGestureDetector mScaleDetector;
-    private float mScaleFactor = 1.f;
+    private float rectScaleFactor = 1.f;
     private static Integer INVALID_POINTER_ID = null;
     private Integer mActivePointerId = INVALID_POINTER_ID;
     private float mLastTouchX,mLastTouchY;
@@ -42,25 +39,48 @@ public class BitmapCropperView extends View {
     private float bitmapWidth;
     private float bitmapHeight;
     private Rect rectBitmap;
-    private float bitmapScaleFactor;
+    private float bitmapScaleFactor= 1f;
     private float mLeft;
     private float mTop;
     private float mRight;
     private float mBottom;
+    private float rectLeftNorm;
+    private float rectTopNorm;
 
+    public float getRectScaleFactor() {
+        return rectScaleFactor;
+    }
 
+    public void setRectScaleFactor(float rectScaleFactor) {
+        this.rectScaleFactor = rectScaleFactor;
+    }
 
+    public float getRectLeftNorm() {
+        return rectLeftNorm;
+    }
+
+    public void setRectLeftNorm(float rectLeftNorm) {
+        this.rectLeftNorm = rectLeftNorm;
+    }
+
+    public float getRectTopNorm() {
+        return rectTopNorm;
+    }
+
+    public void setRectTopNorm(float rectTopNorm) {
+        this.rectTopNorm = rectTopNorm;
+    }
 
     public class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
+            rectScaleFactor *= detector.getScaleFactor();
 
             // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.01f, Math.min(mScaleFactor, 1.0f));
+            rectScaleFactor = Math.max(0.01f, Math.min(rectScaleFactor, 1.0f));
             updateRect();
-//            rectSize = mScaleFactor;
-//            rect.set(rectLeft,rectTop,(int)(rectLeft+rectSize*mScaleFactor),(int)(rectTop+rectSize*mScaleFactor));
+//            rectSize = rectScaleFactor;
+//            rect.set(rectLeft,rectTop,(int)(rectLeft+rectSize*rectScaleFactor),(int)(rectTop+rectSize*rectScaleFactor));
             invalidate();
             return true;
         }
@@ -91,7 +111,7 @@ public class BitmapCropperView extends View {
         float y = (rectTop-mTop)/bitmapScaleFactor;
         x=x<0?0:x;
         y=y<0?0:y;
-        float size = rectSize*mScaleFactor/bitmapScaleFactor;
+        float size = rectSize* rectScaleFactor /bitmapScaleFactor;
 
         Log.d(TAG,"bitmapScaleFactor = " + bitmapScaleFactor);
         Log.d(TAG,"x = " + x + " , y = " + y + " , size = " + size);
@@ -124,16 +144,17 @@ public class BitmapCropperView extends View {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Log.d(TAG,"onMeasure");
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//        Log.d(TAG,"onSizeChanged");
-        updateSizes();
+        Log.d(TAG,"onSizeChanged");
+
+
         super.onSizeChanged(w, h, oldw, oldh);
+        updateSizes();
+
+        rectLeft = rectLeftNorm*(mRight-mLeft) + mLeft;
+        rectTop = rectTopNorm*(mBottom-mTop) + mTop;
+        updateRect();
+        Log.d(TAG,"rectLeft = " + rectLeft + " , rectTop =" + rectTop + " , rectSize = " + rectSize + " , rectFactor = " + rectScaleFactor);
     }
 
     @Override
@@ -143,39 +164,36 @@ public class BitmapCropperView extends View {
 //        rectSize = getWidth() < getHeight()? getWidth():getHeight();
 //        Log.d(TAG,"rectSize = " + rectSize);
 //        rect.set(0,0,rectSize,rectSize);
+        Log.d(TAG,"onLayout()");
+        Log.d(TAG,"rectLeft = " + rectLeft + " , rectTop =" + rectTop + " , rectSize = " + rectSize + " , rectFactor = " + rectScaleFactor);
+
         updateSizes();
+//        rect.set((int)mLeft,(int)mTop,(int)(mLeft+rectSize),(int)(mTop+rectSize));
+        updateRect();
+        Log.d(TAG,"rectLeft = " + rectLeft + " , rectTop =" + rectTop + " , rectSize = " + rectSize + " , rectFactor = " + rectScaleFactor);
+
         super.onLayout(changed, left, top, right, bottom);
     }
 
     private void updateSizes (){
 //        Log.d(TAG,"width = " +getWidth() + " - height = " +getHeight());
         bitmapScaleFactor = getWidth()/bitmapWidth < getHeight()/bitmapHeight ? getWidth()/bitmapWidth : getHeight()/bitmapHeight;
-
-        rectSize = bitmapWidth>bitmapHeight? bitmapHeight*bitmapScaleFactor : bitmapWidth*bitmapScaleFactor;
+        rectSize = bitmapWidth > bitmapHeight ? bitmapHeight * bitmapScaleFactor : bitmapWidth * bitmapScaleFactor;
         mLeft = (getWidth()/2-bitmapWidth*bitmapScaleFactor/2);
         mTop = (getHeight()/2-bitmapHeight*bitmapScaleFactor/2);
         mRight = (getWidth()/2+bitmapWidth*bitmapScaleFactor/2);
         mBottom = (getHeight()/2+bitmapHeight*bitmapScaleFactor/2);
 
-        rect.set((int)mLeft,(int)mTop,(int)(mLeft+rectSize),(int)(mTop+rectSize));
+
         Log.d(TAG,"[ " + mLeft + " , " + mTop + " , " + mRight + " , " + mBottom + "]");
         try {
             rectBitmap.set((int) mLeft, (int) mTop, (int) mRight, (int) mBottom);
         }catch(Exception e){
             Log.d(TAG,e.getMessage());
         }
-        updateRect();
-    }
-    @Override
-    protected void onFinishInflate() {
-        Log.d(TAG,"onFinishInflate");
-        super.onFinishInflate();
-    }
 
-    @Override
-    protected int[] onCreateDrawableState(int extraSpace) {
-        Log.d(TAG,"onCreateDrawableState");
-        return super.onCreateDrawableState(extraSpace);
+//          updateRect();
+
     }
 
     public Bitmap getImageBitmap() {
@@ -194,7 +212,6 @@ public class BitmapCropperView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-//        return super.onTouchEvent(event);
         return onTouchView(event);
     }
 
@@ -271,13 +288,19 @@ public class BitmapCropperView extends View {
     }
 
     public void updateRect(){
+        rectLeft = Float.isNaN(rectLeft)? 0 : rectLeft;
+        rectTop = Float.isNaN(rectTop)? 0 : rectTop;
+
         rectLeft = rectLeft < mLeft? mLeft:rectLeft;
         rectTop= rectTop < mTop? mTop:rectTop;
 
-        rectLeft = rectLeft+rectSize*mScaleFactor > mRight ? (mRight-rectSize*mScaleFactor) : rectLeft;
-        rectTop= rectTop+rectSize*mScaleFactor > mBottom ? (mBottom-rectSize*mScaleFactor) : rectTop;
+        rectLeft = rectLeft+rectSize* rectScaleFactor > mRight ? (mRight-rectSize* rectScaleFactor) : rectLeft;
+        rectTop= rectTop+rectSize* rectScaleFactor > mBottom ? (mBottom-rectSize* rectScaleFactor) : rectTop;
 
-        rect.set((int)rectLeft,(int)rectTop,(int)(rectLeft+rectSize*mScaleFactor),(int)(rectTop+rectSize*mScaleFactor));
+        rect.set((int)rectLeft,(int)rectTop,(int)(rectLeft+rectSize* rectScaleFactor),(int)(rectTop+rectSize* rectScaleFactor));
+
+        rectLeftNorm = (mRight-mLeft) ==0? 0 :  (rectLeft-mLeft)/(mRight-mLeft);
+        rectTopNorm = (mBottom-mTop)==0? 0 : (rectTop-mTop)/(mBottom-mTop);
 
         invalidate();
     }
