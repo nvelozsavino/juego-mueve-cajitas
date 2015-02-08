@@ -1,8 +1,10 @@
 package com.pocotopocopo.juego;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -42,6 +44,8 @@ public class PuzzleActivity extends BaseActivity{
     private static final String OUTPUTFILE_KEY = "outputFileKey";
     private static final String GAME_STATUS_KEY= "gameStatusKey";
     private static final String TIME_ELAPSED_KEY = "timeElapsedKey";
+
+    private static final String SOUND_ENABLED_KEY = "SoundEnabledKey";
     private AudioManager audioManager;
     private SoundPool soundPool;
     private float volume,actVolume,maxVolume;
@@ -71,7 +75,7 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog countDownDialog;
     private Dialog pauseDialog;
     private Dialog winDialog;
-    private boolean soundEnabled=true;
+    private boolean soundEnabled;
     //private GoogleApiClient googleApiClient;
 
 
@@ -195,7 +199,7 @@ public class PuzzleActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
-        //TODO salvar la instacia de la ultima vez si se puso en mute o no
+
         //TODO mejorar imagen de todo
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
@@ -205,6 +209,8 @@ public class PuzzleActivity extends BaseActivity{
         initViews();
         loadSounds();
 
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
 
         Log.d(TAG, "capturando intent");
@@ -283,10 +289,16 @@ public class PuzzleActivity extends BaseActivity{
                 if (soundEnabled){
                     soundButton.setImageResource(R.drawable.sound_on);
                     soundEnabled=false;
+
                 }else{
                     soundButton.setImageResource(R.drawable.sound_off);
                     soundEnabled=true;
                 }
+                SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(SOUND_ENABLED_KEY,soundEnabled);
+                editor.commit();
+
                 soundButton.invalidate();
             }
         });
