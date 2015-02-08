@@ -276,6 +276,10 @@ public class PuzzleActivity extends BaseActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
+        //TODO tambien cuando se salva se tiene que salvar el tiempo
+        //TODO ponerle boton de mute
+        //TODO mejorar imagen de todo
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
