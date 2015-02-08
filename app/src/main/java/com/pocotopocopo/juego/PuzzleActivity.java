@@ -391,7 +391,8 @@ public class PuzzleActivity extends BaseActivity{
                 Button exitButton = (Button)winDialog.findViewById(R.id.exitWinScreenButton);
                 Bitmap bitmap = puzzle.getBitmapContainer().getBitmap();
                 if (bitmap==null){
-                    winImage.setImageDrawable(getDrawable(R.drawable.trophy));
+                    Bitmap bitmapTrophy = BitmapFactory.decodeResource(getResources(),R.drawable.trophy);
+                    winImage.setImageBitmap(bitmapTrophy);
                 }else{
 
                     winImage.setImageBitmap(puzzle.getBitmapContainer().getBitmap());
