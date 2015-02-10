@@ -1,14 +1,16 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -105,7 +107,10 @@ public class StartScreen extends BaseActivity {
         Class<? extends Activity> actualIntentClass;
         if (gameMode.equals(GameMode.MULTIPLAYER)) {
             activityClass = GameActivity.MULTIPLAYER;
+        } else if (gameMode.equals(GameMode.TRADITIONAL)){
+            activityClass = GameActivity.PUZZLE;
         } else {
+//            showTimeDialog();
             activityClass = GameActivity.PUZZLE;
         }
         if (backgroundMode.equals(BackgroundMode.IMAGE)){
@@ -124,6 +129,29 @@ public class StartScreen extends BaseActivity {
 
         startActivity(startGame);
     }
+
+//    private long showTimeDialog(){
+//        long time = 0;
+//        boolean clicked = false;
+//        Dialog timeDialog = new Dialog(StartScreen.this);
+//        timeDialog.setContentView(R.layout.select_time_dialog_widget);
+//
+//        final NumberPicker minutes = (NumberPicker) timeDialog.findViewById(R.id.minutesPicker);
+//        final NumberPicker seconds = (NumberPicker) timeDialog.findViewById(R.id.secondsPicker);
+//        Button okButton = (Button) timeDialog.findViewById(R.id.okTimeDialogButton);
+//        okButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                long time = (minutes.getValue()*60+seconds.getValue())*1000;
+//                ((StartScreen) Dialog.this.getOwnerActivity()).onTimeDialogOkListener(time);
+//            }
+//        });
+//
+//    }
+//    public long onTimeDialogOkListener(long time){
+//        return time;
+//    }
 
     private void startGame(){
         int gameSizeId = gameSizeGroup.getCheckedRadioButtonId();
