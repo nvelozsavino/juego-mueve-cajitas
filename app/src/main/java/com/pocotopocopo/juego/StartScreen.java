@@ -1,11 +1,17 @@
 package com.pocotopocopo.juego;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.FragmentManager;
+import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -13,8 +19,10 @@ import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
-public class StartScreen extends BaseActivity {
+public class StartScreen extends BaseActivity{
 
     private static final String TAG = "Juego.StartScreen";
 
@@ -29,6 +37,8 @@ public class StartScreen extends BaseActivity {
     private RadioGroup gameSizeGroup;
     private Button startGameButton;
     private ImageView logo;
+
+    private long timeForSpeed=-1;
 
 
 
@@ -110,7 +120,7 @@ public class StartScreen extends BaseActivity {
         } else if (gameMode.equals(GameMode.TRADITIONAL)){
             activityClass = GameActivity.PUZZLE;
         } else {
-//            showTimeDialog();
+            showTimeDialog();
             activityClass = GameActivity.PUZZLE;
         }
         if (backgroundMode.equals(BackgroundMode.IMAGE)){
@@ -128,6 +138,34 @@ public class StartScreen extends BaseActivity {
         Log.d(TAG, "Signed In: " + googleApiClient.isConnected());
 
         startActivity(startGame);
+    }
+
+    private void showTimeDialog(){
+        LayoutInflater li = LayoutInflater.from(this);
+        View view = li.inflate(R.layout.select_time_dialog_widget,null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder (StartScreen.this);
+        alertDialogBuilder.setView(view);
+        final NumberPicker minutesPicker = (NumberPicker) view.findViewById(R.id.minutesPicker);
+        final NumberPicker secondsPicker = (NumberPicker) view.findViewById(R.id.secondsPicker);
+
+        alertDialogBuilder.setCancelable(true)
+                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        timeForSpeed = (minutesPicker.getValue()*60+secondsPicker.getValue())*1000;
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        timeForSpeed = -1;
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+
     }
 
 //    private long showTimeDialog(){
@@ -237,8 +275,4 @@ public class StartScreen extends BaseActivity {
         initListeners();
 
     }
-
-
-
-
 }
