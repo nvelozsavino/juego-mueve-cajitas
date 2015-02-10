@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -17,6 +18,8 @@ import android.view.View;
 import android.widget.Button;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 
 public class BitmapChooserActivity extends Activity {
@@ -122,25 +125,40 @@ public class BitmapChooserActivity extends Activity {
 
         }
         Intent intent = getIntent();
-        if (intent!=null && intent.getExtras()!=null) {
-            Bundle extras = intent.getExtras();
-            Log.d(TAG, "Intent no es Null");
-            if (extras.containsKey(GameConstants.GAME_INFO) && extras.containsKey(GameConstants.NEXT_ACTIVITY)) {
-                gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
-                nextActivity = (GameActivity) extras.getSerializable(GameConstants.NEXT_ACTIVITY);
+        boolean fromOtherActivity=false;
+
+        if (intent!=null) {
+            String action=intent.getAction();
+            Bundle extras=intent.getExtras();
+            if (Intent.ACTION_SEND.equals(action)){
+                fromOtherActivity=true;
+                gameInfo = new GameInfo(3,3,BackgroundMode.IMAGE,GameMode.TRADITIONAL,false);
+                nextActivity = GameActivity.PUZZLE;
+                handleSendImage(intent);
             } else {
-                Log.e(TAG, "Error, invalid intent");
-                finish();
-                return;
+                if (extras != null) {
+
+                    Log.d(TAG, "Intent no es Null");
+                    if (extras.containsKey(GameConstants.GAME_INFO) && extras.containsKey(GameConstants.NEXT_ACTIVITY)) {
+                        gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
+                        nextActivity = (GameActivity) extras.getSerializable(GameConstants.NEXT_ACTIVITY);
+                    } else {
+                        Log.e(TAG, "Error, invalid intent");
+                        finish();
+                        return;
+                    }
+                } else {
+                    Log.e(TAG, "Error, null intent");
+                    finish();
+                    return;
+                }
             }
-        } else {
-            Log.e(TAG, "Error, null intent");
-            finish();
-            return;
         }
         if (savedInstanceState==null) {
             if (gameInfo.getBackgroundMode().equals(BackgroundMode.IMAGE)) {
-                startSelectImage();
+                if (!fromOtherActivity) {
+                    startSelectImage();
+                }
             } else {
                 Log.e(TAG, "Error, not right background");
                 finish();
@@ -165,6 +183,37 @@ public class BitmapChooserActivity extends Activity {
         screenHeight = size.y;
 
 
+    }
+
+    private class GetImageTask extends AsyncTask<Void,Void,Void>{
+        private Uri imageUri;
+        private Bitmap bitmap;
+
+        public GetImageTask(Uri imageUri){
+            this.imageUri=imageUri;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            int width, height;
+            width=height=Math.min(screenWidth,screenHeight);
+            bitmap =  compressBitmap(imageUri, width,height);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            setImage(bitmap);
+        }
+    }
+
+    void handleSendImage(Intent intent) {
+        final Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
+        if (imageUri != null) {
+            this.new GetImageTask(imageUri).execute();
+            // Update UI to reflect image being shared
+        }
     }
 
     @Override
@@ -197,7 +246,7 @@ public class BitmapChooserActivity extends Activity {
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-// Start the Intent
+//  Start the Intent
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
     }
 
@@ -207,41 +256,39 @@ public class BitmapChooserActivity extends Activity {
         Log.d(TAG,"onActivityResult");
         if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK
                 && null != data) {
+            Uri selectedImage = data.getData();
 
             int width, height;
 
             width=height=Math.min(screenWidth,screenHeight);
             Log.d(TAG,"w=" + width + " h="+height);
-            Bitmap bitmap =  compressBitmap(data, width,height);
-            if (bitmap!=null) {
-//                if (bitmap.getWidth()==bitmap.getHeight()) {
-//                    bitmapContainer.setBitmap(bitmap);
-//                    puzzle.setBitmapContainer(bitmapContainer);
-//                    puzzle.update();
-//                }else{
-//                    Intent intent = BitmapChooserActivity.requestImageCrop(this, bitmap);
-//                    startActivityForResult(intent, BitmapChooserActivity.REQUEST_IMAGE_CROP);
-//                }
-                imgView.setImageBitmap(bitmap);
-                gameInfo.setBitmap(bitmap);
-            }else{
-                Log.e(TAG, "Error, no image result");
-                finish();
-                return;
-            }
+            Bitmap bitmap =  compressBitmap(selectedImage, width,height);
+            setImage(bitmap);
 
         } else {
             finish();
         }
     }
 
-    private Bitmap compressBitmap(Intent data, int rewWidth, int reqHeight){
-        Log.d(TAG,"compressBitmap");
-        Uri selectedImage = data.getData();
+    private void setImage(Bitmap bitmap){
+        if (bitmap!=null) {
+            imgView.setImageBitmap(bitmap);
+            gameInfo.setBitmap(bitmap);
+        }else{
+            Log.e(TAG, "Error, no image result");
+            finish();
+            return;
+        }
+    }
+
+
+
+
+    private Bitmap compressBitmap(Uri imageUri, int rewWidth, int reqHeight){
         String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
         // Get the cursor
-        Cursor cursor = getContentResolver().query(selectedImage,
+        Cursor cursor = getContentResolver().query(imageUri,
                 filePathColumn, null, null, null);
         // Move to first row
         cursor.moveToFirst();
