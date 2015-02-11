@@ -144,6 +144,7 @@ public class PuzzleActivity extends BaseActivity{
         });
         Button resumeButton = (Button)pauseDialog.findViewById(R.id.resumeButton);
         Button exitGameButton = (Button)pauseDialog.findViewById(R.id.exitGameButton);
+        Button retryButton = (Button) pauseDialog.findViewById(R.id.retryButton);
         resumeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -155,6 +156,14 @@ public class PuzzleActivity extends BaseActivity{
             public void onClick(View v) {
                 //pauseDialog.cancel();
                 finish();
+            }
+        });
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pauseDialog.dismiss();
+                restartGame();
+
             }
         });
         pauseDialog.show();
@@ -261,10 +270,10 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onClick(View v) {
                 if (soundEnabled){
-                    soundButton.setImageResource(R.drawable.sound_on);
+                    soundButton.setImageResource(R.drawable.sound_off);
                     soundEnabled=false;
                 }else{
-                    soundButton.setImageResource(R.drawable.sound_off);
+                    soundButton.setImageResource(R.drawable.sound_on);
                     soundEnabled=true;
                 }
 
@@ -329,6 +338,7 @@ public class PuzzleActivity extends BaseActivity{
         TextView timeWinText = (TextView) winDialog.findViewById(R.id.timeWinText);
         ImageView winImage = (ImageView) winDialog.findViewById(R.id.winImage);
         Button exitButton = (Button)winDialog.findViewById(R.id.exitWinScreenButton);
+        Button retryButton = (Button) winDialog.findViewById(R.id.retryButton);
         Bitmap bitmap = puzzle.getBitmapContainer().getBitmap();
         if (bitmap==null){
             Bitmap bitmapTrophy = BitmapFactory.decodeResource(getResources(),R.drawable.trophy);
@@ -346,7 +356,25 @@ public class PuzzleActivity extends BaseActivity{
                 finish();
             }
         });
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                winDialog.cancel();
+                restartGame();
+            }
+        });
         winDialog.show();
+    }
+
+    public void restartGame(){
+        moveCounter=0;
+        moveCounterText.setText(getString(R.string.moves_text,moveCounter));
+
+        chrono.reset();
+        gameStatus = GameStatus.STARTING;
+        puzzle.randomizeBoard();
+        puzzle.update();
+        startCountdown();
     }
 
     private void startCountdown(){

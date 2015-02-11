@@ -18,12 +18,12 @@
         android:layout_gravity="center_horizontal"
         android:text="@string/resume_button_text"/>
 
-    <!--<Button-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/settingButton"-->
-        <!--android:text="@string/setting_button_text"/>-->
-    <!---->
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/retryButton"
+        android:text="@string/retry_button_text"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -40,6 +40,8 @@
     <string name="resume_button_text">Resume</string>
     <string name="exit_button_text">Exit</string>
     <string name="paused_text">Paused Game</string>
+    <string name="retry_button_text">Retry</string>
+    <string name="restart_button_text">Restart Game</string>
 
 
 
