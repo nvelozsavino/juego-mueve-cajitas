@@ -15,11 +15,10 @@ import android.util.Log;
 import android.view.Display;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 
 public class BitmapChooserActivity extends Activity {
@@ -32,15 +31,20 @@ public class BitmapChooserActivity extends Activity {
     private static Integer INVALID_POINTER_ID = null;
     private Integer mActivePointerId = INVALID_POINTER_ID;
     private float mLastTouchX,mLastTouchY;
-    private Button cropButton;
-    private Button cancelButton;
-    private Button newImageButton;
+    private ImageView cropButton;
+    private ImageView cancelButton;
+    private ImageView newImageButton;
+    private ImageView rotateCCW;
+    private ImageView rotateCW;
+
     public static final int REQUEST_IMAGE_CROP = 4;
     public static final int RESULT_LOAD_IMG = 2;
     private GameInfo gameInfo;
     private GameActivity nextActivity;
     private int screenWidth;
     private int screenHeight;
+    private static final float CCW = 90;
+    private static final float CW = -90;
 
 
 
@@ -96,9 +100,19 @@ public class BitmapChooserActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bitmap_cropper);
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
-        cropButton = (Button)findViewById(R.id.cropButton);
-        cancelButton= (Button)findViewById(R.id.cancelButton);
-        newImageButton=(Button)findViewById(R.id.newImageButton);
+        cropButton = (ImageView)findViewById(R.id.cropButton);
+        cancelButton= (ImageView)findViewById(R.id.cancelButton);
+        newImageButton=(ImageView)findViewById(R.id.newImageButton);
+        rotateCCW = (ImageView)findViewById(R.id.rotateCCW);
+        rotateCW = (ImageView)findViewById(R.id.rotateCW);
+
+        cropButton.setImageResource(R.drawable.ok_icon32);
+        cancelButton.setImageResource(R.drawable.cancelicon32);
+        newImageButton.setImageResource(R.drawable.openicon);
+        rotateCCW.setImageResource(R.drawable.rotateccw);
+        rotateCW.setImageResource(R.drawable.rotatecw);
+
+
 
         cropButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,6 +134,21 @@ public class BitmapChooserActivity extends Activity {
                 startSelectImage();
             }
         });
+
+        rotateCCW.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rotateImage(CCW);
+            }
+        });
+
+        rotateCW.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rotateImage(CW);
+            }
+        });
+
 
         if (savedInstanceState!=null){
 
@@ -183,6 +212,11 @@ public class BitmapChooserActivity extends Activity {
         screenHeight = size.y;
 
 
+    }
+
+    private void rotateImage(float rot){
+
+        imgView.rotateBitmap(rot);
     }
 
     private class GetImageTask extends AsyncTask<Void,Void,Void>{
