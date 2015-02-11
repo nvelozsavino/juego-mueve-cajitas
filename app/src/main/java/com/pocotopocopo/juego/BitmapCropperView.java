@@ -2,8 +2,10 @@ package com.pocotopocopo.juego;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.v4.view.MotionEventCompat;
@@ -46,6 +48,8 @@ public class BitmapCropperView extends View {
     private float mBottom;
     private float rectLeftNorm;
     private float rectTopNorm;
+    private GameInfo gameInfo;
+
 
     public float getRectScaleFactor() {
         return rectScaleFactor;
@@ -86,7 +90,15 @@ public class BitmapCropperView extends View {
         }
     }
 
-//
+    public GameInfo getGameInfo() {
+        return gameInfo;
+    }
+
+    public void setGameInfo(GameInfo gameInfo) {
+        this.gameInfo = gameInfo;
+    }
+
+    //
 //    public BitmapCropperView(Context context) {
 //        super(context);
 ////        init(null, 0);
@@ -216,6 +228,8 @@ public class BitmapCropperView extends View {
     }
 
 
+
+
     private boolean onTouchView(MotionEvent ev) {
         Log.d(TAG,"onTouchView");
         mScaleDetector.onTouchEvent(ev);
@@ -305,82 +319,25 @@ public class BitmapCropperView extends View {
         invalidate();
     }
 
-//    /**
-//     * Gets the example string attribute value.
-//     *
-//     * @return The example string attribute value.
-//     */
-//    public String getExampleString() {
-//        return mExampleString;
-//    }
-//
-//    /**
-//     * Sets the view's example string attribute value. In the example view, this string
-//     * is the text to draw.
-//     *
-//     * @param exampleString The example string attribute value to use.
-//     */
-//    public void setExampleString(String exampleString) {
-//        mExampleString = exampleString;
-//        invalidateTextPaintAndMeasurements();
-//    }
-//
-//    /**
-//     * Gets the example color attribute value.
-//     *
-//     * @return The example color attribute value.
-//     */
-//    public int getExampleColor() {
-//        return mExampleColor;
-//    }
-//
-//    /**
-//     * Sets the view's example color attribute value. In the example view, this color
-//     * is the font color.
-//     *
-//     * @param exampleColor The example color attribute value to use.
-//     */
-//    public void setExampleColor(int exampleColor) {
-//        mExampleColor = exampleColor;
-//        invalidateTextPaintAndMeasurements();
-//    }
-//
-//    /**
-//     * Gets the example dimension attribute value.
-//     *
-//     * @return The example dimension attribute value.
-//     */
-//    public float getExampleDimension() {
-//        return mExampleDimension;
-//    }
-//
-//    /**
-//     * Sets the view's example dimension attribute value. In the example view, this dimension
-//     * is the font size.
-//     *
-//     * @param exampleDimension The example dimension attribute value to use.
-//     */
-//    public void setExampleDimension(float exampleDimension) {
-//        mExampleDimension = exampleDimension;
-//        invalidateTextPaintAndMeasurements();
-//    }
-//
-//    /**
-//     * Gets the example drawable attribute value.
-//     *
-//     * @return The example drawable attribute value.
-//     */
-//    public Drawable getExampleDrawable() {
-//        return mExampleDrawable;
-//    }
-//
-//    /**
-//     * Sets the view's example drawable attribute value. In the example view, this drawable is
-//     * drawn above the text.
-//     *
-//     * @param exampleDrawable The example drawable attribute value to use.
-//     */
-//    public void setExampleDrawable(Drawable exampleDrawable) {
-//        mExampleDrawable = exampleDrawable;
-//    }
+    public void rotateBitmap(float rotation){
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotation);
+//        Log.d(TAG,"Antes: width = " + imageBitmap.getWidth() + " , height = " +imageBitmap.getHeight());
+        imageBitmap = Bitmap.createBitmap(imageBitmap,0,0,imageBitmap.getWidth(),imageBitmap.getHeight(),matrix,true);
+//        Log.d(TAG,"despues: width = " + imageBitmap.getWidth() + " , height = " +imageBitmap.getHeight());
+        bitmapHeight=imageBitmap.getHeight();
+        bitmapWidth=imageBitmap.getWidth();
+
+        updateSizes();
+        updateRect();
+    }
+
+    public void update(){
+        bitmapHeight=imageBitmap.getHeight();
+        bitmapWidth=imageBitmap.getWidth();
+
+        updateSizes();
+        updateRect();
+
+    }
 }

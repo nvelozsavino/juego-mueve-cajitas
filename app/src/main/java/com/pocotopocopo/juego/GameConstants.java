@@ -14,6 +14,7 @@ public class GameConstants {
     public static final String RECT_SCALE_FACTOR = "rectScaleFactorKey";
     public static final String RECT_LEFT_NORM = "rectLeftNormKey";
     public static final String RECT_TOP_NORM = "rectTopNormKey";
+    public static final String ROTATION = "rotationKey";
 
 
 
