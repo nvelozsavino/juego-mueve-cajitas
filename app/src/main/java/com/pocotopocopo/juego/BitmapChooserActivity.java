@@ -314,7 +314,6 @@ public class BitmapChooserActivity extends Activity {
         if (bitmap!=null) {
             imgView.setImageBitmap(bitmap);
             gameInfo.setBitmap(bitmap);
-            rotateImage(totalRotation,false);
         }else{
             Log.e(TAG, "Error, no image result");
             finish();
