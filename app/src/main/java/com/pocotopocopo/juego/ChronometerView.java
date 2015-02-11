@@ -1,6 +1,7 @@
 package com.pocotopocopo.juego;
 
 import android.content.Context;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -16,19 +17,37 @@ import java.text.SimpleDateFormat;
  * Created by nico on 08/02/15.
  */
 public class ChronometerView extends TextView {
-
+private CountDownTimer countDownTimer;
     public static enum ChronometerState {RUNNING, PAUSED}
     private long time=0;
     private long lastTime;
     private boolean mVisible;
+    private boolean countUp=true;
     private static final int TICK_WHAT = 2;
     private ChronometerState state=ChronometerState.PAUSED;
     private OnUpdateTextListener onUpdateTextListener;
+    private OnFinishListener onFinishListener;
+
+    public boolean isCountUp() {
+        return countUp;
+    }
+
+    public void setCountUp(boolean countUp) {
+        this.countUp = countUp;
+    }
+
+    public void setOnFinishListener(OnFinishListener onFinishListener) {
+        this.onFinishListener = onFinishListener;
+    }
 
     public void setOnUpdateTextListener(OnUpdateTextListener onUpdateTextListener) {
         this.onUpdateTextListener = onUpdateTextListener;
+
     }
 
+    public interface OnFinishListener{
+        public void onFinish();
+    }
     public interface OnUpdateTextListener{
         public void onUpdateText(String text);
 
@@ -94,6 +113,10 @@ public class ChronometerView extends TextView {
         return time;
     }
 
+    public void setTime(long time) {
+        this.time = time;
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         super .onDetachedFromWindow();
@@ -125,11 +148,21 @@ public class ChronometerView extends TextView {
     private synchronized void updateText() {
         long now = SystemClock.elapsedRealtime();
         if (state.equals(ChronometerState.RUNNING)) {
-
-            time += (now - lastTime);
-            lastTime = now;
+            if (countUp) {
+                time += (now - lastTime);
+                lastTime = now;
+            } else {
+                time -= (now - lastTime);
+                lastTime = now;
+            }
         }
 
+        if (time<=0 && state!=ChronometerState.PAUSED){
+            pause(0);
+            if (onFinishListener!=null){
+                onFinishListener.onFinish();
+            }
+        }
 
         DecimalFormat df = new DecimalFormat("00");
 

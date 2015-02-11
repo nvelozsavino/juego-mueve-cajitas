@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 
@@ -42,7 +43,6 @@ public class PuzzleActivity extends BaseActivity{
     private float volume,actVolume,maxVolume;
     private boolean loadedSound=false;
     private TextView moveCounterText;
-    private TextView chronoText;
     private ChronometerView chrono;
     private ImageView soundButton;
 
@@ -79,8 +79,8 @@ public class PuzzleActivity extends BaseActivity{
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         moveCounterText.setText(getString(R.string.moves_text,0));
-        chronoText = (TextView)findViewById(R.id.timerView);
-        chrono = new ChronometerView (this);
+        chrono= (ChronometerView)findViewById(R.id.timerView);
+
 
         soundButton = (ImageView)findViewById(R.id.soundButton);
         if (soundEnabled){
@@ -172,6 +172,8 @@ public class PuzzleActivity extends BaseActivity{
         //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
 
         //TODO mejorar imagen de todo
+        //TODO mandar el comando y el tiempo para que vaya en reversa
+
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
         setContentView(R.layout.activity_main);
@@ -181,7 +183,15 @@ public class PuzzleActivity extends BaseActivity{
         loadSounds();
 
 
+//        chrono.setCountUp(false);
+//        chrono.setTime(10000);
+        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
+            @Override
+            public void onFinish() {
+                Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
 
+            }
+        });
         SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
@@ -225,12 +235,7 @@ public class PuzzleActivity extends BaseActivity{
         puzzle.setBitmapContainer(bitmapContainer);
         bitmapContainer.setBitmap(gameInfo.getBitmap());
 
-        chrono.setOnUpdateTextListener(new ChronometerView.OnUpdateTextListener() {
-            @Override
-            public void onUpdateText(String text) {
-                chronoText.setText(text);
-            }
-        });
+
 
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
