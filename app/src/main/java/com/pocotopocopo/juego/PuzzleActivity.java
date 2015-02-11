@@ -42,6 +42,7 @@ public class PuzzleActivity extends BaseActivity{
     private float volume,actVolume,maxVolume;
     private boolean loadedSound=false;
     private TextView moveCounterText;
+    private TextView chronoText;
     private ChronometerView chrono;
     private ImageView soundButton;
 
@@ -78,7 +79,9 @@ public class PuzzleActivity extends BaseActivity{
         puzzle = (Puzzle)findViewById(R.id.puzzle);
         moveCounterText = (TextView)findViewById(R.id.moveCounterText);
         moveCounterText.setText(getString(R.string.moves_text,0));
-        chrono = (ChronometerView)findViewById(R.id.timerView);
+        chronoText = (TextView)findViewById(R.id.timerView);
+        chrono = new ChronometerView (this);
+
         soundButton = (ImageView)findViewById(R.id.soundButton);
         if (soundEnabled){
 
@@ -177,6 +180,8 @@ public class PuzzleActivity extends BaseActivity{
         initViews();
         loadSounds();
 
+
+
         SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
@@ -219,6 +224,13 @@ public class PuzzleActivity extends BaseActivity{
 
         puzzle.setBitmapContainer(bitmapContainer);
         bitmapContainer.setBitmap(gameInfo.getBitmap());
+
+        chrono.setOnUpdateTextListener(new ChronometerView.OnUpdateTextListener() {
+            @Override
+            public void onUpdateText(String text) {
+                chronoText.setText(text);
+            }
+        });
 
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override

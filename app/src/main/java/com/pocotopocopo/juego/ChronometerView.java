@@ -16,12 +16,24 @@ import java.text.SimpleDateFormat;
  * Created by nico on 08/02/15.
  */
 public class ChronometerView extends TextView {
+
     public static enum ChronometerState {RUNNING, PAUSED}
     private long time=0;
     private long lastTime;
     private boolean mVisible;
     private static final int TICK_WHAT = 2;
     private ChronometerState state=ChronometerState.PAUSED;
+    private OnUpdateTextListener onUpdateTextListener;
+
+    public void setOnUpdateTextListener(OnUpdateTextListener onUpdateTextListener) {
+        this.onUpdateTextListener = onUpdateTextListener;
+    }
+
+    public interface OnUpdateTextListener{
+        public void onUpdateText(String text);
+
+    }
+
 
     public ChronometerView(Context context) {
         super(context);
@@ -40,6 +52,7 @@ public class ChronometerView extends TextView {
 
     public void init(){
         updateText();
+
     }
 
     public void start(long time){
@@ -142,6 +155,9 @@ public class ChronometerView extends TextView {
         text += Integer.toString(milliseconds);
 
         setText(text);
+        if (onUpdateTextListener!=null) {
+            onUpdateTextListener.onUpdateText(text);
+        }
     }
 
 

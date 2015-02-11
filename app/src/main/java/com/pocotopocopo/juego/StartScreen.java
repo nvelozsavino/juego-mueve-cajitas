@@ -22,7 +22,7 @@ import android.widget.RadioGroup;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-public class StartScreen extends BaseActivity{
+public class StartScreen extends BaseActivity implements Dialog.OnDismissListener{
 
     private static final String TAG = "Juego.StartScreen";
 
@@ -39,6 +39,7 @@ public class StartScreen extends BaseActivity{
     private ImageView logo;
 
     private long timeForSpeed=-1;
+    private BoardSize boardSize;
 
 
 
@@ -83,22 +84,42 @@ public class StartScreen extends BaseActivity{
 
 
     private void startGame(int rows, int cols){
-        int gameModeId=gameModeRadioGroup.getCheckedRadioButtonId();
-        GameMode gameMode;
-        BackgroundMode backgroundMode;
-        switch (gameModeId){
-            default:
-            case R.id.gameModeTraditionalRadioButton:
-                gameMode=GameMode.TRADITIONAL;
-                break;
-            case R.id.gameModeSpeedRadioButton:
-                gameMode=GameMode.SPEED;
-                break;
-            case R.id.gameModeMultiplayerRadioButton:
-                gameMode=GameMode.MULTIPLAYER;
-                break;
-        }
+        boardSize = new BoardSize(rows,cols);
+        GameMode gameMode = getGameMode();
+        BackgroundMode backgroundMode = getBackgroundMode();
+        GameActivity activityClass = getActivityClass(gameMode);
+        Class<? extends Activity> actualIntentClass = getActualIntentClass(backgroundMode,activityClass);
 
+        boolean showNumbers=showNumbersCheckBox.isChecked();
+
+        GameInfo gameInfo = new GameInfo(rows,cols,backgroundMode,gameMode,showNumbers);
+        if (gameMode.equals(GameMode.SPEED)){
+            showTimeDialog();
+        }else {
+            startGame2(gameInfo, activityClass, backgroundMode, actualIntentClass, timeForSpeed);
+        }
+    }
+    private GameActivity getActivityClass(GameMode gameMode){
+        GameActivity activityClass;
+        if (gameMode.equals(GameMode.MULTIPLAYER)) {
+            activityClass = GameActivity.MULTIPLAYER;
+        } else {
+
+            activityClass = GameActivity.PUZZLE;
+        }
+        return activityClass;
+    }
+    private Class<? extends Activity> getActualIntentClass(BackgroundMode backgroundMode, GameActivity activityClass) {
+        Class<? extends Activity> actualIntentClass;
+        if (backgroundMode.equals(BackgroundMode.IMAGE)) {
+            actualIntentClass = GameActivity.BITMAP_CHOOSER.getActivityClass();
+        } else {
+            actualIntentClass = activityClass.getActivityClass();
+        }
+        return actualIntentClass;
+    }
+    private BackgroundMode getBackgroundMode(){
+        BackgroundMode backgroundMode;
         int backgroundModeId=backgroundRadioGroup.getCheckedRadioButtonId();
         switch (backgroundModeId){
             default:
@@ -111,24 +132,30 @@ public class StartScreen extends BaseActivity{
             case R.id.backgroundVideoRadioButton:
                 backgroundMode=BackgroundMode.VIDEO;
                 break;
+
         }
-        boolean showNumbers=showNumbersCheckBox.isChecked();
-        GameActivity activityClass;
-        Class<? extends Activity> actualIntentClass;
-        if (gameMode.equals(GameMode.MULTIPLAYER)) {
-            activityClass = GameActivity.MULTIPLAYER;
-        } else if (gameMode.equals(GameMode.TRADITIONAL)){
-            activityClass = GameActivity.PUZZLE;
-        } else {
-            showTimeDialog();
-            activityClass = GameActivity.PUZZLE;
-        }
-        if (backgroundMode.equals(BackgroundMode.IMAGE)){
-            actualIntentClass=GameActivity.BITMAP_CHOOSER.getActivityClass();
-        } else {
-            actualIntentClass=activityClass.getActivityClass();
-        }
-        GameInfo gameInfo = new GameInfo(rows,cols,backgroundMode,gameMode,showNumbers);
+        return backgroundMode;
+    }
+    private GameMode getGameMode(){
+      int gameModeId=gameModeRadioGroup.getCheckedRadioButtonId();
+      GameMode gameMode;
+
+      switch (gameModeId){
+          default:
+          case R.id.gameModeTraditionalRadioButton:
+              gameMode=GameMode.TRADITIONAL;
+              break;
+          case R.id.gameModeSpeedRadioButton:
+              gameMode=GameMode.SPEED;
+              break;
+          case R.id.gameModeMultiplayerRadioButton:
+              gameMode=GameMode.MULTIPLAYER;
+              break;
+      }
+      return gameMode;
+
+    }
+    private void startGame2(GameInfo gameInfo, GameActivity activityClass, BackgroundMode backgroundMode, Class<? extends Activity> actualIntentClass, long time){
         Intent startGame = new Intent(getApplicationContext(), actualIntentClass);
         if (backgroundMode.equals(BackgroundMode.IMAGE)){
             startGame.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
@@ -139,57 +166,54 @@ public class StartScreen extends BaseActivity{
 
         startActivity(startGame);
     }
-
     private void showTimeDialog(){
-        LayoutInflater li = LayoutInflater.from(this);
-        View view = li.inflate(R.layout.select_time_dialog_widget,null);
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder (StartScreen.this);
-        alertDialogBuilder.setView(view);
-        final NumberPicker minutesPicker = (NumberPicker) view.findViewById(R.id.minutesPicker);
-        final NumberPicker secondsPicker = (NumberPicker) view.findViewById(R.id.secondsPicker);
-
-        alertDialogBuilder.setCancelable(true)
-                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        timeForSpeed = (minutesPicker.getValue()*60+secondsPicker.getValue())*1000;
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        timeForSpeed = -1;
-                    }
-                });
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-
+        final Dialog dialog = new Dialog(StartScreen.this);
+        dialog.setContentView(R.layout.select_time_dialog_widget);
+        dialog.setCancelable(true);
+        final Button okButton  = (Button) dialog.findViewById(R.id.okTimeDialogButton);
+        final NumberPicker minutesPicker = (NumberPicker) dialog.findViewById(R.id.minutesPicker);
+        final NumberPicker secondsPicker = (NumberPicker) dialog.findViewById(R.id.secondsPicker);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                timeForSpeed = (minutesPicker.getValue()*60+secondsPicker.getValue())*1000;
+                dialog.dismiss();
+            }
+        });
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                timeForSpeed = -1;
+                dialog.dismiss();
+            }
+        });
+        dialog.setOnDismissListener(this);
+        dialog.show();
 
     }
 
-//    private long showTimeDialog(){
-//        long time = 0;
-//        boolean clicked = false;
-//        Dialog timeDialog = new Dialog(StartScreen.this);
-//        timeDialog.setContentView(R.layout.select_time_dialog_widget);
-//
-//        final NumberPicker minutes = (NumberPicker) timeDialog.findViewById(R.id.minutesPicker);
-//        final NumberPicker seconds = (NumberPicker) timeDialog.findViewById(R.id.secondsPicker);
-//        Button okButton = (Button) timeDialog.findViewById(R.id.okTimeDialogButton);
-//        okButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                long time = (minutes.getValue()*60+seconds.getValue())*1000;
-//                ((StartScreen) Dialog.this.getOwnerActivity()).onTimeDialogOkListener(time);
-//            }
-//        });
-//
-//    }
-//    public long onTimeDialogOkListener(long time){
-//        return time;
-//    }
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+       if (timeForSpeed!=-1){
+           GameMode gameMode = getGameMode();
+           BackgroundMode backgroundMode = getBackgroundMode();
+           GameActivity activityClass = getActivityClass(gameMode);
+           Class<? extends Activity> actualIntentClass = getActualIntentClass(backgroundMode,activityClass);
+           boolean showNumbers=showNumbersCheckBox.isChecked();
+           GameInfo gameInfo = new GameInfo(boardSize.rows,boardSize.cols,backgroundMode,gameMode,showNumbers);
+           startGame2(gameInfo, activityClass, backgroundMode, actualIntentClass, timeForSpeed);
+       }
+    }
+
+    public static class BoardSize{
+        public int rows;
+        public int cols;
+
+        public BoardSize(int rows, int cols) {
+            this.rows = rows;
+            this.cols = cols;
+        }
+    }
 
     private void startGame(){
         int gameSizeId = gameSizeGroup.getCheckedRadioButtonId();
