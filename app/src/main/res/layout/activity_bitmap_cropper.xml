@@ -5,13 +5,88 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="com.pocotopocopo.juego.BitmapChooserActivity">
 
-   <com.pocotopocopo.juego.BitmapCropperView
-       android:layout_width="match_parent"
-       android:layout_height="0dp"
-       android:id="@+id/bitmapCropperView"
-       android:layout_weight="1"/>
+    tools:context="com.pocotopocopo.juego.BitmapChooserActivity">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:layout_gravity="center">
+
+        <!--cols button-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            android:id="@+id/colsButtons">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/colsMinus"
+                android:src="@drawable/minus"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/colsText"
+                android:gravity="center"
+                android:text="4"
+                android:ems="2"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/colsPlus"
+                android:src="@drawable/plus"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <!--botones rows-->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/rowsButtons">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rowsPlus"
+                    android:src="@drawable/plus"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4"
+                    android:id="@+id/rowsText"
+                    android:gravity="center"
+                    android:ems="2"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rowsMinus"
+                    android:src="@drawable/minus"/>
+
+            </LinearLayout>
+
+            <com.pocotopocopo.juego.BitmapCropperView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/bitmapCropperView"/>
+
+        </LinearLayout>
+
+
+
+
+
+
+    </LinearLayout>
+    <!--botones de edicion-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,17 +96,17 @@
 
         <ImageView
             android:id="@+id/newImageButton"
-            android:layout_width="0dp"
+            android:layout_width="32dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
             <!--android:src="@drawable/openicon"/>-->
         <ImageView
-            android:layout_width="0dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/rotateCCW"/>
         <ImageView
-            android:layout_width="0dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/rotateCW"/>
@@ -40,7 +115,7 @@
 
         <ImageView
             android:id="@+id/cropButton"
-            android:layout_width="0dp"
+            android:layout_width="30dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"/>
             <!--android:src="@drawable/ok_icon32"/>-->
@@ -48,7 +123,7 @@
 
         <ImageView
             android:id="@+id/cancelButton"
-            android:layout_width="0dp"
+            android:layout_width="30dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"/>
             <!--android:src="@drawable/cancelicon32"/>-->

@@ -1,5 +1,6 @@
 package com.pocotopocopo.juego;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-
+import android.view.ViewGroup;
 
 
 public class BitmapCropperView extends View {
@@ -48,7 +49,8 @@ public class BitmapCropperView extends View {
     private float mBottom;
     private float rectLeftNorm;
     private float rectTopNorm;
-    private GameInfo gameInfo;
+    private int rows;
+    private int cols;
 
 
     public float getRectScaleFactor() {
@@ -90,15 +92,23 @@ public class BitmapCropperView extends View {
         }
     }
 
-    public GameInfo getGameInfo() {
-        return gameInfo;
+    public int getRows() {
+        return rows;
     }
 
-    public void setGameInfo(GameInfo gameInfo) {
-        this.gameInfo = gameInfo;
+    public void setRows(int rows) {
+        this.rows = rows;
     }
 
-    //
+    public int getCols() {
+        return cols;
+    }
+
+    public void setCols(int cols) {
+        this.cols = cols;
+    }
+
+//
 //    public BitmapCropperView(Context context) {
 //        super(context);
 ////        init(null, 0);
@@ -135,21 +145,43 @@ public class BitmapCropperView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
 //        Log.d(TAG,"onDraw");
+        paint.setAlpha(255);
         int strokeWidth= 3;
         if (imageBitmap!=null) {
             canvas.drawBitmap(imageBitmap, null, rectBitmap, paint);
 
-            Log.d(TAG, "pinte el bitmap");
+//            Log.d(TAG, "pinte el bitmap");
         }
         paint.setColor(Color.BLACK);
         paint.setStrokeWidth(strokeWidth);
         paint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(0,0,getWidth(),getHeight(),paint);
 //        paint.setAlpha(50);
         canvas.drawRect(rect,paint);
         Rect rect1 = new Rect(rect);
         rect1.inset(strokeWidth,strokeWidth);
         paint.setColor(Color.YELLOW);
         canvas.drawRect(rect1,paint);
+        paint.setColor(Color.WHITE);
+        paint.setAlpha(128);
+
+        int x0= rect.left;
+        int x1= rect.right;
+
+        float widthX = (x1-x0)/cols;
+        float y0= rect.top;
+        float y1= rect.bottom;
+        float widthY = (y1-y0)/rows;
+
+        for (int i=1; i <= cols; i++){
+            canvas.drawLine(x0+widthX*i,y0,x0+widthX*i,y1,paint);
+        }
+        for (int i=1; i <= rows; i++){
+            canvas.drawLine(x0,y0+widthY*i,x1,y0+widthY*i,paint);
+        }
+        canvas.drawLine(x0+widthX*(cols-1),y0+widthY*(rows-1),x1,y1,paint);
+        canvas.drawLine(x0+widthX*(cols-1),y1,x1,y0+widthY*(rows-1),paint);
+
 //        Log.d(TAG,"pinte rectangulo e imagen");
         super.onDraw(canvas);
 
@@ -171,23 +203,27 @@ public class BitmapCropperView extends View {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        Log.d(TAG,"onLayout, width = " + getWidth() + " , height = " + getHeight());
 //        finalWidth=getWidth();
 //        finalHeight=getHeight();
 //        rectSize = getWidth() < getHeight()? getWidth():getHeight();
 //        Log.d(TAG,"rectSize = " + rectSize);
 //        rect.set(0,0,rectSize,rectSize);
-        Log.d(TAG,"onLayout()");
-        Log.d(TAG,"rectLeft = " + rectLeft + " , rectTop =" + rectTop + " , rectSize = " + rectSize + " , rectFactor = " + rectScaleFactor);
+
+//        updateSizes();
+////        rect.set((int)mLeft,(int)mTop,(int)(mLeft+rectSize),(int)(mTop+rectSize));
+//        updateRect();
+        Log.d(TAG, "onlayout, changed " + changed + " , left = " + left + ", right = " + right + " , top = " + top + " , bottom = " + bottom);
+        Log.d(TAG,"onLayout, mLeft = " + mLeft + ", mRight = " + mRight + " , mTop = " + mTop + " , mBottom = " + mBottom);
+
 
         updateSizes();
-//        rect.set((int)mLeft,(int)mTop,(int)(mLeft+rectSize),(int)(mTop+rectSize));
         updateRect();
-        Log.d(TAG,"rectLeft = " + rectLeft + " , rectTop =" + rectTop + " , rectSize = " + rectSize + " , rectFactor = " + rectScaleFactor);
-
         super.onLayout(changed, left, top, right, bottom);
     }
 
     private void updateSizes (){
+        Log.d(TAG,"updateSizes(), bitmapSize = [" + bitmapWidth + "," + bitmapHeight + "]");
 //        Log.d(TAG,"width = " +getWidth() + " - height = " +getHeight());
         bitmapScaleFactor = getWidth()/bitmapWidth < getHeight()/bitmapHeight ? getWidth()/bitmapWidth : getHeight()/bitmapHeight;
         rectSize = bitmapWidth > bitmapHeight ? bitmapHeight * bitmapScaleFactor : bitmapWidth * bitmapScaleFactor;
@@ -219,19 +255,19 @@ public class BitmapCropperView extends View {
         bitmapWidth= imageBitmap.getWidth();
         Log.d(TAG,"bitmap Width = " + bitmapWidth + " - bitmap Height = " + bitmapHeight);
         requestLayout();
+        invalidate();
+
 
     }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return onTouchView(event);
     }
 
-
-
-
     private boolean onTouchView(MotionEvent ev) {
-        Log.d(TAG,"onTouchView");
+//        Log.d(TAG,"onTouchView");
         mScaleDetector.onTouchEvent(ev);
         final int action = MotionEventCompat.getActionMasked(ev);
 
@@ -327,9 +363,10 @@ public class BitmapCropperView extends View {
 //        Log.d(TAG,"despues: width = " + imageBitmap.getWidth() + " , height = " +imageBitmap.getHeight());
         bitmapHeight=imageBitmap.getHeight();
         bitmapWidth=imageBitmap.getWidth();
-
-        updateSizes();
-        updateRect();
+        requestLayout();
+        invalidate();
+//        updateSizes();
+//        updateRect();
     }
 
     public void update(){
@@ -340,4 +377,55 @@ public class BitmapCropperView extends View {
         updateRect();
 
     }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        Log.d(TAG,"onMeassure, width = " + getWidth() + " , height = " + getHeight());
+        Log.d(TAG,"onMeassure, width = " + widthMeasureSpec + " , height = " + heightMeasureSpec);
+        int specWidth = MeasureSpec.getSize(widthMeasureSpec);
+        int specHeight = MeasureSpec.getSize(heightMeasureSpec);
+
+        if (imageBitmap!=null) {
+            float scaleFactor = specWidth/bitmapWidth < specHeight/bitmapHeight ? specWidth/bitmapWidth : specHeight/bitmapHeight;
+            setMeasuredDimension((int)(bitmapWidth*scaleFactor),(int)(bitmapHeight*scaleFactor));
+//            setMeasuredDimension(measureWidth(widthMeasureSpec), measureHeight(heightMeasureSpec));
+        }else{
+            super.onMeasure(widthMeasureSpec,heightMeasureSpec);
+        }
+    }
+
+    private int measureWidth(int measureSpec) {
+
+        int preferred = imageBitmap.getWidth();
+
+        return getMeasurement(measureSpec, preferred);
+    }
+    private int measureHeight(int measureSpec) {
+        int preferred = imageBitmap.getHeight();
+        return getMeasurement(measureSpec, preferred);
+    }
+
+    private int getMeasurement(int measureSpec, int preferred) {
+        int specSize = MeasureSpec.getSize(measureSpec);
+        int measurement = 0;
+
+        switch (MeasureSpec.getMode(measureSpec)) {
+            case MeasureSpec.EXACTLY:
+                // This means the width of this view has been given.
+                measurement = specSize;
+                break;
+            case MeasureSpec.AT_MOST:
+                // Take the minimum of the preferred size and what
+                // we were told to be.
+                measurement = Math.min(preferred, specSize);
+                break;
+            default:
+                measurement = preferred;
+                break;
+        }
+
+        return measurement;
+    }
+
+
 }

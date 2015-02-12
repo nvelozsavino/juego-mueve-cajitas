@@ -211,6 +211,9 @@ public class BitmapChooserActivity extends Activity {
         display.getSize(size);
         screenWidth = size.x;
         screenHeight = size.y;
+        imgView.setCols(gameInfo.getCols());
+        imgView.setRows(gameInfo.getRows());
+
 
 
     }
