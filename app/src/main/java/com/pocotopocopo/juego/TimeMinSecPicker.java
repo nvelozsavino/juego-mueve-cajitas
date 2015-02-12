@@ -16,8 +16,8 @@ import android.widget.NumberPicker.Formatter;
 public class TimeMinSecPicker extends FrameLayout {
     private NumberPicker minutesPicker;
     private NumberPicker secondsPicker;
-    private int currentMinutes=0;
-    private int currentSeconds=0;
+    private int currentMinutes=1;
+    private int currentSeconds=30;
     private OnTimeChangedListener mOnTimeChangedListener;
 
     private static final OnTimeChangedListener NO_OP_CHANGE_LISTENER = new OnTimeChangedListener() {
