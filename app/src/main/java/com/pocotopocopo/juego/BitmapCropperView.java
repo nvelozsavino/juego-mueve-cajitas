@@ -98,6 +98,7 @@ public class BitmapCropperView extends View {
 
     public void setRows(int rows) {
         this.rows = rows;
+        invalidate();
     }
 
     public int getCols() {
@@ -106,6 +107,7 @@ public class BitmapCropperView extends View {
 
     public void setCols(int cols) {
         this.cols = cols;
+        invalidate();
     }
 
 //

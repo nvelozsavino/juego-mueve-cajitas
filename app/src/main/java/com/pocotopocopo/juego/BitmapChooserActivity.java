@@ -17,6 +17,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 
@@ -36,6 +37,14 @@ public class BitmapChooserActivity extends Activity {
     private ImageView newImageButton;
     private ImageView rotateCCW;
     private ImageView rotateCW;
+    private ImageView colsPlus;
+    private ImageView colsMinus;
+    private ImageView rowsPlus;
+    private ImageView rowsMinus;
+    private TextView colsText;
+    private TextView rowsText;
+
+
     private float totalRotation=0;
 
     public static final int REQUEST_IMAGE_CROP = 4;
@@ -46,7 +55,8 @@ public class BitmapChooserActivity extends Activity {
     private int screenHeight;
     private static final float CCW = 90;
     private static final float CW = -90;
-
+    private int cols=0;
+    private int rows = 0;
 
 
 
@@ -106,6 +116,13 @@ public class BitmapChooserActivity extends Activity {
         newImageButton=(ImageView)findViewById(R.id.newImageButton);
         rotateCCW = (ImageView)findViewById(R.id.rotateCCW);
         rotateCW = (ImageView)findViewById(R.id.rotateCW);
+        colsPlus = (ImageView) findViewById(R.id.colsPlus);
+        colsMinus = (ImageView) findViewById(R.id.colsMinus);
+        rowsPlus = (ImageView) findViewById(R.id.rowsPlus);
+        rowsMinus = (ImageView) findViewById(R.id.rowsMinus);
+        colsText = (TextView)findViewById(R.id.colsText);
+        rowsText = (TextView)findViewById(R.id.rowsText);
+
 
         cropButton.setImageResource(R.drawable.ok_icon32);
         cancelButton.setImageResource(R.drawable.cancelicon32);
@@ -115,41 +132,94 @@ public class BitmapChooserActivity extends Activity {
 
 
 
+
+
         cropButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cropClick();
             }
         });
-
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-
         newImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startSelectImage();
             }
         });
-
         rotateCCW.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 rotateImage(CCW,true);
             }
         });
-
         rotateCW.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 rotateImage(CW,true);
             }
         });
+        colsPlus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (cols<10) {
+                    cols++;
+                }else{
+                    cols=10;
+                }
+                gameInfo.setCols(cols);
+                imgView.setCols(cols);
+                colsText.setText(Integer.toString(cols));
+            }
+        });
 
+        colsMinus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (cols>3) {
+                    cols--;
+                }else{
+                    cols=3;
+                }
+                gameInfo.setCols(cols);
+                imgView.setCols(cols);
+                colsText.setText(Integer.toString(cols));
+            }
+
+        });
+        rowsPlus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (rows<10) {
+                    rows++;
+                }else{
+                    rows=10;
+                }
+                gameInfo.setRows(rows);
+                imgView.setRows(rows);
+                rowsText.setText(Integer.toString(rows));
+
+            }
+        });
+
+        rowsMinus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (rows>3) {
+                    rows--;
+                }else{
+                    rows=3;
+                }
+                gameInfo.setRows(rows);
+                imgView.setRows(rows);
+                rowsText.setText(Integer.toString(rows));
+            }
+        });
 
         if (savedInstanceState!=null){
 
@@ -171,6 +241,10 @@ public class BitmapChooserActivity extends Activity {
                     Log.d(TAG, "Intent no es Null");
                     if (extras.containsKey(GameConstants.GAME_INFO) && extras.containsKey(GameConstants.NEXT_ACTIVITY)) {
                         gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
+                        cols = gameInfo.getCols();
+                        rows = gameInfo.getRows();
+                        colsText.setText(Integer.toString(cols));
+                        rowsText.setText(Integer.toString(rows));
                         nextActivity = (GameActivity) extras.getSerializable(GameConstants.NEXT_ACTIVITY);
                     } else {
                         Log.e(TAG, "Error, invalid intent");

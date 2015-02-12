@@ -32,6 +32,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/colsText"
                 android:gravity="center"
+                android:layout_gravity="center_vertical"
                 android:text="4"
                 android:ems="2"/>
             <ImageView
@@ -96,17 +97,17 @@
 
         <ImageView
             android:id="@+id/newImageButton"
-            android:layout_width="32dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
             <!--android:src="@drawable/openicon"/>-->
         <ImageView
-            android:layout_width="30dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/rotateCCW"/>
         <ImageView
-            android:layout_width="30dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/rotateCW"/>
@@ -115,7 +116,7 @@
 
         <ImageView
             android:id="@+id/cropButton"
-            android:layout_width="30dp"
+            android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"/>
             <!--android:src="@drawable/ok_icon32"/>-->
@@ -123,7 +124,7 @@
 
         <ImageView
             android:id="@+id/cancelButton"
-            android:layout_width="30dp"
+            android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"/>
             <!--android:src="@drawable/cancelicon32"/>-->
