@@ -300,7 +300,9 @@ public class BitmapChooserActivity extends Activity {
             setImage(bitmap);
 
         } else {
-            finish();
+            if(imgView.getImageBitmap()==null){
+                finish();
+            }
         }
     }
 

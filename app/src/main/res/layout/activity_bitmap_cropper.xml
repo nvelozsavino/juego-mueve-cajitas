@@ -13,39 +13,45 @@
        android:id="@+id/bitmapCropperView"
        android:layout_weight="1"/>
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
 
         android:orientation="horizontal"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:weightSum="5">
 
         <ImageView
             android:id="@+id/newImageButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
             <!--android:src="@drawable/openicon"/>-->
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/rotateCCW"/>
+            android:id="@+id/rotateCCW"
+            android:layout_weight="1" />
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/rotateCW"/>
+            android:id="@+id/rotateCW"
+            android:layout_weight="1" />
 
         <!--android:text="@string/new_image_text"/>-->
 
         <ImageView
             android:id="@+id/cropButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
             <!--android:src="@drawable/ok_icon32"/>-->
             <!--android:text="@string/crop_text"/>-->
 
         <ImageView
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
             <!--android:src="@drawable/cancelicon32"/>-->
             <!--android:text="@string/cancel_text"/>-->
 
