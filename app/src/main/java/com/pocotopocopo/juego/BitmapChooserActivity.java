@@ -15,8 +15,12 @@ import android.util.Log;
 import android.view.Display;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
@@ -43,6 +47,12 @@ public class BitmapChooserActivity extends Activity {
     private ImageView rowsMinus;
     private TextView colsText;
     private TextView rowsText;
+
+    private RadioGroup gameModeRadioGroup;
+    private RadioButton gameModeTraditionalRadioButton;
+    private RadioButton gameModeSpeedRadioButton;
+    private RadioButton gameModeMultiplayerRadioButton;
+    private CheckBox showNumbersCheckBox;
 
 
     private float totalRotation=0;
@@ -123,13 +133,44 @@ public class BitmapChooserActivity extends Activity {
         colsText = (TextView)findViewById(R.id.colsText);
         rowsText = (TextView)findViewById(R.id.rowsText);
 
-
+/*
         cropButton.setImageResource(R.drawable.ok_icon32);
         cancelButton.setImageResource(R.drawable.cancelicon32);
         newImageButton.setImageResource(R.drawable.openicon);
         rotateCCW.setImageResource(R.drawable.rotateccw);
         rotateCW.setImageResource(R.drawable.rotatecw);
+        */
 
+        gameModeRadioGroup=(RadioGroup)findViewById(R.id.gameModeRadioGroup);
+        gameModeTraditionalRadioButton=(RadioButton)findViewById(R.id.gameModeTraditionalRadioButton);
+        gameModeSpeedRadioButton=(RadioButton)findViewById(R.id.gameModeSpeedRadioButton);
+        gameModeMultiplayerRadioButton=(RadioButton)findViewById(R.id.gameModeMultiplayerRadioButton);
+        showNumbersCheckBox = (CheckBox)findViewById(R.id.showNumbersCheckBox);
+
+        gameModeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId){
+                    default:
+                    case R.id.gameModeTraditionalRadioButton:
+                        gameInfo.setGameMode(GameMode.TRADITIONAL);
+                        break;
+                    case R.id.gameModeSpeedRadioButton:
+                        gameInfo.setGameMode(GameMode.SPEED);
+                        break;
+                    case R.id.gameModeMultiplayerRadioButton:
+                        gameInfo.setGameMode(GameMode.MULTIPLAYER);
+                        break;
+                }
+            }
+        });
+
+        showNumbersCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                gameInfo.setNumbersVisible(isChecked);
+            }
+        });
 
 
 
@@ -241,11 +282,8 @@ public class BitmapChooserActivity extends Activity {
                     Log.d(TAG, "Intent no es Null");
                     if (extras.containsKey(GameConstants.GAME_INFO) && extras.containsKey(GameConstants.NEXT_ACTIVITY)) {
                         gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
-                        cols = gameInfo.getCols();
-                        rows = gameInfo.getRows();
-                        colsText.setText(Integer.toString(cols));
-                        rowsText.setText(Integer.toString(rows));
                         nextActivity = (GameActivity) extras.getSerializable(GameConstants.NEXT_ACTIVITY);
+
                     } else {
                         Log.e(TAG, "Error, invalid intent");
                         finish();
@@ -285,13 +323,41 @@ public class BitmapChooserActivity extends Activity {
         display.getSize(size);
         screenWidth = size.x;
         screenHeight = size.y;
-        imgView.setCols(gameInfo.getCols());
-        imgView.setRows(gameInfo.getRows());
-
+        setAccordingGameInfo();
 
 
     }
 
+
+    private void setAccordingGameInfo(){
+        cols = gameInfo.getCols();
+        rows = gameInfo.getRows();
+        colsText.setText(Integer.toString(cols));
+        rowsText.setText(Integer.toString(rows));
+        showNumbersCheckBox.setChecked(gameInfo.isNumbersVisible());
+
+        switch (gameInfo.getGameMode()){
+            default:
+            case TRADITIONAL:
+                gameModeTraditionalRadioButton.setChecked(true);
+                gameModeSpeedRadioButton.setChecked(false);
+                gameModeMultiplayerRadioButton.setChecked(false);
+                break;
+            case SPEED:
+                gameModeTraditionalRadioButton.setChecked(false);
+                gameModeSpeedRadioButton.setChecked(true);
+                gameModeMultiplayerRadioButton.setChecked(false);
+
+                break;
+            case MULTIPLAYER:
+                gameModeTraditionalRadioButton.setChecked(false);
+                gameModeSpeedRadioButton.setChecked(false);
+                gameModeMultiplayerRadioButton.setChecked(true);
+                break;
+        }
+        imgView.setCols(gameInfo.getCols());
+        imgView.setRows(gameInfo.getRows());
+    }
 
     private void rotateImage(float rot, boolean updateTotalRotation){
         if (updateTotalRotation){
@@ -319,6 +385,7 @@ public class BitmapChooserActivity extends Activity {
         @Override
         protected void onPostExecute(Void aVoid) {
             setImage(bitmap);
+            setAccordingGameInfo();
         }
     }
 

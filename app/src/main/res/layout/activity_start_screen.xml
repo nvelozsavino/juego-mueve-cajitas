@@ -48,92 +48,45 @@
         android:id="@+id/gameSizeText"
         android:layout_gravity="center_horizontal" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+    <RadioGroup
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal"
+        android:id="@+id/gameSizeGroup"
         android:paddingBottom="10dp">
-        <RadioGroup
+        <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:id="@+id/gameSizeGroup"
-            android:paddingBottom="10dp">
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/game_size_3x3"
-                android:id="@+id/gameSize3x3Button"/>
+            android:text="@string/game_size_3x3"
+            android:id="@+id/gameSize3x3Button"/>
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/game_size_4x4"
-                android:id="@+id/gameSize4x4Button"
-                android:checked="true"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_size_4x4"
+            android:id="@+id/gameSize4x4Button"
+            android:checked="true"/>
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/game_size_5x5"
-                android:id="@+id/gameSize5x5Button"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_size_5x5"
+            android:id="@+id/gameSize5x5Button"/>
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/game_size_6x6"
-                android:id="@+id/gameSize6x6Button"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_size_6x6"
+            android:id="@+id/gameSize6x6Button"/>
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/game_size_custom"
-                android:id="@+id/gameSizeCustomButton"
-                android:enabled="false"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_size_custom"
+            android:id="@+id/gameSizeCustomButton"
+            android:enabled="false"/>
 
-        </RadioGroup>
-        <!--<Button-->
-        <!--style="?android:attr/buttonStyleSmall"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/game_size_3x3"-->
-        <!--android:id="@+id/gameSize3x3Button" />-->
-
-
-        <!--<Button-->
-        <!--style="?android:attr/buttonStyleSmall"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/game_size_4x4"-->
-        <!--android:id="@+id/gameSize4x4Button"-->
-        <!--android:layout_gravity="right" />-->
-
-        <!--<Button-->
-        <!--style="?android:attr/buttonStyleSmall"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/game_size_5x5"-->
-        <!--android:id="@+id/gameSize5x5Button"-->
-        <!--android:layout_gravity="center_horizontal" />-->
-
-        <!--<Button-->
-        <!--style="?android:attr/buttonStyleSmall"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/game_size_6x6"-->
-        <!--android:id="@+id/gameSize6x6Button"-->
-        <!--android:layout_gravity="center_horizontal" />-->
-
-        <!--<Button-->
-        <!--style="?android:attr/buttonStyleSmall"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/game_size_custom"-->
-        <!--android:id="@+id/gameSizeCustomButton"-->
-        <!--android:enabled="false" />-->
-    </LinearLayout>
+    </RadioGroup>
 
     <TextView
         android:layout_width="wrap_content"

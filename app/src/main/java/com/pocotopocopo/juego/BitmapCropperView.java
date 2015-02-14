@@ -49,8 +49,8 @@ public class BitmapCropperView extends View {
     private float mBottom;
     private float rectLeftNorm;
     private float rectTopNorm;
-    private int rows;
-    private int cols;
+    private int rows=3;
+    private int cols=3;
 
 
     public float getRectScaleFactor() {
