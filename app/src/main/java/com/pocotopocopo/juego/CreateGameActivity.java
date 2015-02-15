@@ -92,7 +92,7 @@ public class CreateGameActivity extends BaseActivity {
             Log.d(TAG, "cree todo el intent y el result");
             Log.d(TAG, nextActivity.toString());
             startActivity(intent);
-            finish();
+            //finish();
             //return;
         }else{
             Log.e(TAG,"Error, resultBitmap = null");
