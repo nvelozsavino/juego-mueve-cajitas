@@ -120,6 +120,14 @@ public class BitmapChooserActivity extends Activity {
         Log.d(TAG,"onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bitmap_cropper);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        screenWidth = size.x;
+        screenHeight = size.y;
+
+
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
         cropButton = (ImageView)findViewById(R.id.cropButton);
         cancelButton= (ImageView)findViewById(R.id.cancelButton);
@@ -318,11 +326,6 @@ public class BitmapChooserActivity extends Activity {
             totalRotation = savedInstanceState.getFloat(GameConstants.ROTATION);
 //            rotateImage(totalRotation,false);
         }
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        screenWidth = size.x;
-        screenHeight = size.y;
         setAccordingGameInfo();
 
 
@@ -369,15 +372,19 @@ public class BitmapChooserActivity extends Activity {
     private class GetImageTask extends AsyncTask<Void,Void,Void>{
         private Uri imageUri;
         private Bitmap bitmap;
+        private int width, height;
 
         public GetImageTask(Uri imageUri){
             this.imageUri=imageUri;
+            Log.d(TAG,"Screen w=" + width + " h="+height);
+            width=height=Math.min(screenWidth,screenHeight);
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            int width, height;
-            width=height=Math.min(screenWidth,screenHeight);
+
+
+
             bitmap =  compressBitmap(imageUri, width,height);
             return null;
         }
@@ -445,7 +452,7 @@ public class BitmapChooserActivity extends Activity {
             int width, height;
 
             width=height=Math.min(screenWidth,screenHeight);
-            Log.d(TAG,"w=" + width + " h="+height);
+            Log.d(TAG,"Screen w=" + width + " h="+height);
             Bitmap bitmap =  compressBitmap(selectedImage, width,height);
             setImage(bitmap);
 
@@ -471,20 +478,27 @@ public class BitmapChooserActivity extends Activity {
 
 
     private Bitmap compressBitmap(Uri imageUri, int rewWidth, int reqHeight){
-        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+        Log.d(TAG,"rewWidth: " + rewWidth+ ". reqHeight: " +reqHeight);
+        Cursor cursor = null;
+        try {
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-        // Get the cursor
-        Cursor cursor = getContentResolver().query(imageUri,
-                filePathColumn, null, null, null);
-        // Move to first row
-        cursor.moveToFirst();
+            // Get the cursor
+            cursor= getContentResolver().query(imageUri,
+                    filePathColumn, null, null, null);
+            // Move to first row
+            cursor.moveToFirst();
 
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        String imgDecodableString = cursor.getString(columnIndex);
-        cursor.close();
-        Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
-        Log.d(TAG,"w=" +bitmap.getWidth()+ " h="+bitmap.getHeight());
-        return bitmap;
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String imgDecodableString = cursor.getString(columnIndex);
+            Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
+            Log.d(TAG,"ImageDecodableString: " + imgDecodableString + ". w=" +bitmap.getWidth()+ " h="+bitmap.getHeight());
+            return bitmap;
+        } finally {
+            if (cursor!=null) {
+                cursor.close();
+            }
+        }
 
     }
 }
