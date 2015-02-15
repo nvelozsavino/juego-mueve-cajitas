@@ -127,15 +127,20 @@
             android:checked="false" />
     </RadioGroup>
 
-    <CheckBox
+    <!--<CheckBox-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/game_numbers_title"-->
+        <!--android:id="@+id/showNumbersCheckBox"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:checked="true"-->
+        <!--android:enabled="true" />-->
+
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/game_numbers_title"
         android:id="@+id/showNumbersCheckBox"
-        android:layout_gravity="center_horizontal"
-        android:checked="true"
-        android:enabled="true" />
-
+        android:layout_gravity="center_horizontal"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

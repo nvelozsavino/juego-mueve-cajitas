@@ -52,8 +52,8 @@ public class BitmapChooserActivity extends BaseActivity {
     private RadioButton gameModeTraditionalRadioButton;
     private RadioButton gameModeSpeedRadioButton;
     private RadioButton gameModeMultiplayerRadioButton;
-    private CheckBox showNumbersCheckBox;
-
+//    private CheckBox showNumbersCheckBox;
+    private ImageView showNumbersCheckBox;
 
     private float totalRotation=0;
 
@@ -67,6 +67,7 @@ public class BitmapChooserActivity extends BaseActivity {
     private static final float CW = -90;
     private int cols=0;
     private int rows = 0;
+    private boolean showNumbers=true;
 
 
 
@@ -153,12 +154,12 @@ public class BitmapChooserActivity extends BaseActivity {
         gameModeTraditionalRadioButton=(RadioButton)findViewById(R.id.gameModeTraditionalRadioButton);
         gameModeSpeedRadioButton=(RadioButton)findViewById(R.id.gameModeSpeedRadioButton);
         gameModeMultiplayerRadioButton=(RadioButton)findViewById(R.id.gameModeMultiplayerRadioButton);
-        showNumbersCheckBox = (CheckBox)findViewById(R.id.showNumbersCheckBox);
+        showNumbersCheckBox = (ImageView)findViewById(R.id.showNumbersCheckBox);
 
         gameModeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId){
+                switch (checkedId) {
                     default:
                     case R.id.gameModeTraditionalRadioButton:
                         gameInfo.setGameMode(GameMode.TRADITIONAL);
@@ -173,12 +174,18 @@ public class BitmapChooserActivity extends BaseActivity {
             }
         });
 
-        showNumbersCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        showNumbersCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                gameInfo.setNumbersVisible(isChecked);
+            public void onClick(View v) {
+                gameInfo.setNumbersVisible(updateShowNumbers(gameInfo.isNumbersVisible(),true));
             }
         });
+//        showNumbersCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                gameInfo.setNumbersVisible(isChecked);
+//            }
+//        });
 
 
 
@@ -204,7 +211,7 @@ public class BitmapChooserActivity extends BaseActivity {
         rotateCCW.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                rotateImage(CCW,true);
+                rotateImage(CCW, true);
             }
         });
         rotateCW.setOnClickListener(new View.OnClickListener() {
@@ -226,6 +233,7 @@ public class BitmapChooserActivity extends BaseActivity {
                 colsText.setText(Integer.toString(cols));
             }
         });
+
 
         colsMinus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -330,14 +338,26 @@ public class BitmapChooserActivity extends BaseActivity {
 
 
     }
+    private boolean updateShowNumbers(boolean showNumbers,boolean change) {
+        if (change){
+            showNumbers = !showNumbers;
+        }
+        if (!showNumbers) {
 
+            showNumbersCheckBox.setImageResource(R.drawable.noshownumbers32);
+        } else {
+
+            showNumbersCheckBox.setImageResource(R.drawable.shownumbers32);
+        }
+        return showNumbers;
+    }
 
     private void setAccordingGameInfo(){
         cols = gameInfo.getCols();
         rows = gameInfo.getRows();
         colsText.setText(Integer.toString(cols));
         rowsText.setText(Integer.toString(rows));
-        showNumbersCheckBox.setChecked(gameInfo.isNumbersVisible());
+        updateShowNumbers(gameInfo.isNumbersVisible(),false);
 
         switch (gameInfo.getGameMode()){
             default:
