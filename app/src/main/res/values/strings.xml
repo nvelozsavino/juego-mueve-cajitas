@@ -46,6 +46,12 @@
     <string name="time_picker_title">Select Time</string>
     <string name="ok_button_text">Ok</string>
     <string name="cancel_button_text">Cancel</string>
+    <string name="no">no</string>
+    <string name="not_showing_numbers">No numbers</string>
+    <string name="open_image">Open Image</string>
+    <string name="rotate">Rotate</string>
+    <string name="rotateccw">Rotate CCW</string>
+    <string name="rotatecw">Rotate CW</string>
 
 
     <item name="time_error_text" type="id">You have to set a time greater than 0:00</item>

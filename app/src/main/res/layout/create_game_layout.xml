@@ -8,14 +8,63 @@
     android:orientation="vertical"
 
     tools:context="com.pocotopocopo.juego.CreateGameActivity"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    android:measureWithLargestChild="false">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="5dp"
+        android:weightSum="3">
+        <com.google.android.gms.common.SignInButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/signInButton"
+            android:layout_weight="1" />
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_out"
+            android:id="@+id/signOutButton"
+            android:visibility="gone"
+            android:layout_weight="1" />
+
+        <com.pocotopocopo.juego.TitledButton
+            android:id="@+id/backgroundButton"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/picture"
+            titled_button:titleText="Background"
+            titled_button:hasAdditionalText="true"
+            titled_button:additionalText="@string/game_background_fixed_image"
+            />
+
+        <com.pocotopocopo.juego.TitledButton
+            android:id="@+id/showNumbersButton"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/ok_icon32"
+            titled_button:hasAdditionalText="true"
+            titled_button:additionalText="@string/not_showing_numbers"
+            titled_button:titleText="@string/game_numbers_title"
+            />
+    </LinearLayout>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:id="@+id/imageLayout">
 
         <!--cols button-->
         <LinearLayout
@@ -84,104 +133,69 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            android:orientation="horizontal"
-            android:layout_gravity="center">
-
-            <ImageView
-                android:id="@+id/newImageButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:src="@drawable/openicon" />
-                <!--android:src="@drawable/openicon"/>-->
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/rotateCCW"
-                android:src="@drawable/rotateccw" />
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/rotateCW"
-                android:src="@drawable/rotatecw" />
-
-            <!--android:text="@string/new_image_text"/>-->
-
-            <!--android:src="@drawable/ok_icon32"/>-->
-                <!--android:text="@string/crop_text"/>-->
-
-            <!--android:src="@drawable/cancelicon32"/>-->
-                <!--android:text="@string/cancel_text"/>-->
-
-        </LinearLayout>
-
 
     </LinearLayout>
     <!--botones de edicion-->
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="@string/game_mode_title"
-        android:id="@+id/gameModeText"
-        android:layout_gravity="center_horizontal" />
 
-    <RadioGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/gameModeRadioGroup"
-        android:paddingBottom="10dp" >
+        android:layout_gravity="center"
+        android:id="@+id/imageButtonsLayout">
 
-        <RadioButton
+        <com.pocotopocopo.juego.TitledButton
+            android:id="@+id/newImageButton"
             android:layout_width="wrap_content"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/game_mode_traditional"
-            android:id="@+id/gameModeTraditionalRadioButton"
-            android:checked="true" />
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/openicon"
+            titled_button:titleText="@string/open_image"
+            />
 
-        <RadioButton
+            <!--android:src="@drawable/openicon"/>-->
+
+        <com.pocotopocopo.juego.TitledButton
+            android:id="@+id/rotateCCW"
             android:layout_width="wrap_content"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/game_mode_speed"
-            android:id="@+id/gameModeSpeedRadioButton"
-            android:checked="false"
-            android:enabled="true" />
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/rotateccw"
+            titled_button:titleText="@string/rotateccw"
+            />
 
-        <RadioButton
+        <com.pocotopocopo.juego.TitledButton
+            android:id="@+id/rotateCW"
             android:layout_width="wrap_content"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/game_mode_multiplayer"
-            android:id="@+id/gameModeMultiplayerRadioButton"
-            android:checked="false" />
-    </RadioGroup>
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/rotatecw"
+            titled_button:titleText="@string/rotatecw"
+            />
 
-    <!--<CheckBox-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/game_numbers_title"-->
-        <!--android:id="@+id/showNumbersCheckBox"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:checked="true"-->
-        <!--android:enabled="true" />-->
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/showNumbersCheckBox"
-        android:layout_gravity="center_horizontal"/>
+        <!--android:text="@string/new_image_text"/>-->
+
+        <!--android:src="@drawable/ok_icon32"/>-->
+            <!--android:text="@string/crop_text"/>-->
+
+        <!--android:src="@drawable/cancelicon32"/>-->
+            <!--android:text="@string/cancel_text"/>-->
+
+    </LinearLayout>
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:measureWithLargestChild="false"
+        android:baselineAligned="false"
+        android:paddingTop="20dp">
 
         <com.pocotopocopo.juego.TitledButton
             android:id="@+id/traditionalButton"
