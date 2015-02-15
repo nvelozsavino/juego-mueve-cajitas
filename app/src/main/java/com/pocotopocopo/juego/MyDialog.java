@@ -25,7 +25,7 @@ public class MyDialog extends Dialog implements Button.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_time_dialog_widget);
-        okButton = (Button) this.findViewById(R.id.okTimeDialogButton);
+        //okButton = (Button) this.findViewById(R.id.okTimeDialogButton);
         minutesPicker = (NumberPicker) this.findViewById(R.id.minutesPicker);
         secondsPicker = (NumberPicker) this.findViewById(R.id.secondsPicker);
         secondsPicker.setMaxValue(59);

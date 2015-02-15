@@ -172,7 +172,6 @@
         android:text="@string/game_numbers_title"
         android:id="@+id/showNumbersCheckBox"
         android:layout_gravity="center_horizontal"
-        android:checked="true"
         android:enabled="false"/>
 
     <Button

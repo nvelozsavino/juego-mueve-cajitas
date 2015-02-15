@@ -29,7 +29,7 @@
     <string name="multiplayer_check_games">Check Games</string>
     <string name="preference_key_file">com.pocotopocopo.juego.PREFERENCE_FILE_KEY</string>
     <string name="title_activity_bitmap_cropper">Crop Image</string>
-    <string name="hello_world">Hello world!</string>
+
     <string name="start_game">Start Game</string>
     <string name="moves_text">Moves: %1$d</string>
     <string name="time_text_win">Your final time is: %1$s</string>
@@ -42,6 +42,11 @@
     <string name="paused_text">Paused Game</string>
     <string name="retry_button_text">Retry</string>
     <string name="restart_button_text">Restart Game</string>
+
+    <string name="time_picker_title">Select Time</string>
+    <string name="ok_button_text">Ok</string>
+    <string name="cancel_button_text">Cancel</string>
+
 
 
 

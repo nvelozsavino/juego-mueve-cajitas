@@ -18,6 +18,7 @@ public class GameInfo implements Parcelable {
     private boolean numbersVisible =true;
     private byte[] bitmapBytes;
     private String bitmapUrl=null;
+    private long timeForSpeed=-1;
 
     public GameInfo(int rows, int cols, BackgroundMode backgroundMode, GameMode gameMode,boolean numbersVisible, Bitmap bitmap){
         this.rows=rows;
@@ -39,7 +40,13 @@ public class GameInfo implements Parcelable {
         this(rows,cols, backgroundMode,gameMode,true,bitmap);
     }
 
+    public long getTimeForSpeed() {
+        return timeForSpeed;
+    }
 
+    public void setTimeForSpeed(long timeForSpeed) {
+        this.timeForSpeed = timeForSpeed;
+    }
 
     public BackgroundMode getBackgroundMode() {
         return backgroundMode;
@@ -129,6 +136,7 @@ public class GameInfo implements Parcelable {
         numbersVisible =in.readByte()!=0;
         bitmapBytes = in.createByteArray();
         bitmapUrl=in.readString();
+        timeForSpeed=in.readLong();
 
     }
 
@@ -159,5 +167,6 @@ public class GameInfo implements Parcelable {
         dest.writeByte((byte) (numbersVisible ? 1 : 0));
         dest.writeByteArray(bitmapBytes);
         dest.writeString(bitmapUrl);
+        dest.writeLong(timeForSpeed);
     }
 }
