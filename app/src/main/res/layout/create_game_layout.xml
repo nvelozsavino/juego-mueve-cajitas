@@ -21,8 +21,7 @@
         <com.google.android.gms.common.SignInButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/signInButton"
-            android:layout_weight="1" />
+            android:id="@+id/signInButton" />
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
@@ -145,37 +144,37 @@
         android:layout_gravity="center"
         android:id="@+id/imageButtonsLayout">
 
-        <com.pocotopocopo.juego.TitledButton
+        <ImageView
             android:id="@+id/newImageButton"
             android:layout_width="wrap_content"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            titled_button:iconSrc="@drawable/openicon"
-            titled_button:titleText="@string/open_image"
-            />
+            android:src="@drawable/openicon" />
+            <!--titled_button:titleText="@string/open_image"-->
+
 
             <!--android:src="@drawable/openicon"/>-->
 
-        <com.pocotopocopo.juego.TitledButton
+        <ImageView
             android:id="@+id/rotateCCW"
             android:layout_width="wrap_content"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            titled_button:iconSrc="@drawable/rotateccw"
-            titled_button:titleText="@string/rotateccw"
-            />
+            android:src="@drawable/rotateccw"/>
+            <!--titled_button:titleText="@string/rotateccw"-->
 
-        <com.pocotopocopo.juego.TitledButton
+
+        <ImageView
             android:id="@+id/rotateCW"
             android:layout_width="wrap_content"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            titled_button:iconSrc="@drawable/rotatecw"
-            titled_button:titleText="@string/rotatecw"
-            />
+            android:src="@drawable/rotatecw" />
+            <!--titled_button:titleText="@string/rotatecw"-->
+
 
 
         <!--android:text="@string/new_image_text"/>-->

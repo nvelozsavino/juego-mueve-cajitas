@@ -46,12 +46,13 @@ public class CreateGameActivity extends BaseActivity {
     private TextView colsText;
     private TextView rowsText;
 
-    private RadioGroup gameModeRadioGroup;
-    private RadioButton gameModeTraditionalRadioButton;
-    private RadioButton gameModeSpeedRadioButton;
-    private RadioButton gameModeMultiplayerRadioButton;
+//    private RadioGroup gameModeRadioGroup;
+//    private RadioButton gameModeTraditionalRadioButton;
+//    private RadioButton gameModeSpeedRadioButton;
+//    private RadioButton gameModeMultiplayerRadioButton;
 //    private CheckBox showNumbersCheckBox;
-    private ImageView showNumbersCheckBox;
+    private TitledButton showNumbersButton;
+    private TitledButton backgroundModeButton;
 
     private float totalRotation=0;
 
@@ -148,36 +149,90 @@ public class CreateGameActivity extends BaseActivity {
         rotateCW.setImageResource(R.drawable.rotatecw);
         */
 
-        gameModeRadioGroup=(RadioGroup)findViewById(R.id.gameModeRadioGroup);
-        gameModeTraditionalRadioButton=(RadioButton)findViewById(R.id.gameModeTraditionalRadioButton);
-        gameModeSpeedRadioButton=(RadioButton)findViewById(R.id.gameModeSpeedRadioButton);
-        gameModeMultiplayerRadioButton=(RadioButton)findViewById(R.id.gameModeMultiplayerRadioButton);
-        showNumbersCheckBox = (ImageView)findViewById(R.id.showNumbersCheckBox);
+//        gameModeRadioGroup=(RadioGroup)findViewById(R.id.gameModeRadioGroup);
+//        gameModeTraditionalRadioButton=(RadioButton)findViewById(R.id.gameModeTraditionalRadioButton);
+//        gameModeSpeedRadioButton=(RadioButton)findViewById(R.id.gameModeSpeedRadioButton);
+//        gameModeMultiplayerRadioButton=(RadioButton)findViewById(R.id.gameModeMultiplayerRadioButton);
+//        showNumbersCheckBox = (ImageView)findViewById(R.id.showNumbersCheckBox);
 
-        gameModeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        backgroundModeButton=(TitledButton)findViewById(R.id.backgroundButton);
+        showNumbersButton=(TitledButton)findViewById(R.id.showNumbersButton);
+
+        showNumbersButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
+            public void onClick(View v) {
+                gameInfo.setNumbersVisible(!gameInfo.isNumbersVisible());
+                if (gameInfo.isNumbersVisible()){
+                    showNumbersButton.setAdditionalText(getString(R.string.yes_showing_numbers));
+                    showNumbersButton.setIconResource(R.drawable.e);
+                } else {
+                    showNumbersButton.setAdditionalText(getString(R.string.not_showing_numbers));
+                    showNumbersButton.setIconResource(R.drawable.f);
+                }
+
+            }
+        });
+
+        backgroundModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (gameInfo.getBackgroundMode()){
                     default:
-                    case R.id.gameModeTraditionalRadioButton:
-                        gameInfo.setGameMode(GameMode.TRADITIONAL);
+                    case PLAIN:
+                        gameInfo.setBackgroundMode(BackgroundMode.IMAGE);
                         break;
-                    case R.id.gameModeSpeedRadioButton:
-                        gameInfo.setGameMode(GameMode.SPEED);
+                    case IMAGE:
+                        gameInfo.setBackgroundMode(BackgroundMode.VIDEO);
                         break;
-                    case R.id.gameModeMultiplayerRadioButton:
-                        gameInfo.setGameMode(GameMode.MULTIPLAYER);
+                    case VIDEO:
+                        gameInfo.setBackgroundMode(BackgroundMode.PLAIN);
                         break;
+                }
+
+                switch (gameInfo.getBackgroundMode()){
+                    case PLAIN:
+                        backgroundModeButton.setAdditionalText(getString(R.string.game_background_plain));
+                        backgroundModeButton.setIconResource(R.drawable.plain);
+                        break;
+                    case IMAGE:
+                        backgroundModeButton.setAdditionalText(getString(R.string.game_background_fixed_image));
+                        backgroundModeButton.setIconResource(R.drawable.picture);
+                        break;
+                    case VIDEO:
+                        backgroundModeButton.setAdditionalText(getString(R.string.game_background_video));
+                        backgroundModeButton.setIconResource(R.drawable.video);
+                        break;
+
                 }
             }
         });
 
-        showNumbersCheckBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gameInfo.setNumbersVisible(updateShowNumbers(gameInfo.isNumbersVisible(),true));
-            }
-        });
+
+
+//        gameModeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(RadioGroup group, int checkedId) {
+//                switch (checkedId) {
+//                    default:
+//                    case R.id.gameModeTraditionalRadioButton:
+//                        gameInfo.setGameMode(GameMode.TRADITIONAL);
+//                        break;
+//                    case R.id.gameModeSpeedRadioButton:
+//                        gameInfo.setGameMode(GameMode.SPEED);
+//                        break;
+//                    case R.id.gameModeMultiplayerRadioButton:
+//                        gameInfo.setGameMode(GameMode.MULTIPLAYER);
+//                        break;
+//                }
+//            }
+//        });
+//
+//        showNumbersCheckBox.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                gameInfo.setNumbersVisible(updateShowNumbers(gameInfo.isNumbersVisible(),true));
+//            }
+//        });
 //        showNumbersCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 //            @Override
 //            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
