@@ -127,7 +127,7 @@ public class StartScreen extends BaseActivity implements CountDownPickerDialog.C
     private Class<? extends Activity> getActualIntentClass(BackgroundMode backgroundMode, GameActivity activityClass) {
         Class<? extends Activity> actualIntentClass;
         if (backgroundMode.equals(BackgroundMode.IMAGE)) {
-            actualIntentClass = GameActivity.BITMAP_CHOOSER.getActivityClass();
+            actualIntentClass = GameActivity.CREATE_GAME.getActivityClass();
         } else {
             actualIntentClass = activityClass.getActivityClass();
         }

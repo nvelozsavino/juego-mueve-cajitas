@@ -1,6 +1,5 @@
 package com.pocotopocopo.juego;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,7 +16,6 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -26,7 +24,7 @@ import android.widget.TextView;
 import java.io.ByteArrayOutputStream;
 
 
-public class BitmapChooserActivity extends BaseActivity {
+public class CreateGameActivity extends BaseActivity {
     private BitmapCropperView imgView;
 
     public static final String BITMAP_KEY = "BitmapKey";
@@ -36,8 +34,8 @@ public class BitmapChooserActivity extends BaseActivity {
     private static Integer INVALID_POINTER_ID = null;
     private Integer mActivePointerId = INVALID_POINTER_ID;
     private float mLastTouchX,mLastTouchY;
-    private ImageView cropButton;
-    private ImageView cancelButton;
+    private TitledButton cropButton;
+    private TitledButton cancelButton;
     private ImageView newImageButton;
     private ImageView rotateCCW;
     private ImageView rotateCW;
@@ -98,18 +96,18 @@ public class BitmapChooserActivity extends BaseActivity {
     }
 
     public static Intent requestImageCrop (Context context, Bitmap bitmap){
-        Intent intent = new Intent(context,BitmapChooserActivity.class);
+        Intent intent = new Intent(context,CreateGameActivity.class);
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG,50,bs);
 //        Log.d(TAG, "bitmap count nuevo = " + bitmap.getByteCount());
-        intent.putExtra(BitmapChooserActivity.BITMAP_KEY,bs.toByteArray());
+        intent.putExtra(CreateGameActivity.BITMAP_KEY,bs.toByteArray());
 //        Log.d(TAG,"puse el bitmap en el intent");
         return intent;
     }
 
     public static Bitmap getBitmapCropped (Intent data){
 //            Log.d(TAG,"Activity Result Request Image crop");
-            byte[] byteArray = data.getByteArrayExtra(BitmapChooserActivity.BITMAP_KEY);
+            byte[] byteArray = data.getByteArrayExtra(CreateGameActivity.BITMAP_KEY);
 //            Log.d(TAG,"tengo el byte array");
             Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
             return bitmap;
@@ -119,7 +117,7 @@ public class BitmapChooserActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG,"onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bitmap_cropper);
+        setContentView(R.layout.create_game_layout);
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -129,8 +127,8 @@ public class BitmapChooserActivity extends BaseActivity {
 
 
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
-        cropButton = (ImageView)findViewById(R.id.cropButton);
-        cancelButton= (ImageView)findViewById(R.id.cancelButton);
+        cropButton = (TitledButton)findViewById(R.id.traditionalButton);
+        cancelButton= (TitledButton)findViewById(R.id.speedButton);
         newImageButton=(ImageView)findViewById(R.id.newImageButton);
         rotateCCW = (ImageView)findViewById(R.id.rotateCCW);
         rotateCW = (ImageView)findViewById(R.id.rotateCW);

@@ -64,7 +64,7 @@
 
         </activity>
         <activity
-            android:name=".BitmapChooserActivity"
+            android:name=".CreateGameActivity"
             android:parentActivityName=".PuzzleActivity">
             <!--android:label="@string/title_activity_bitmap_cropper" >-->
 
