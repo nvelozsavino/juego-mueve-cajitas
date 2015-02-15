@@ -26,7 +26,7 @@ import android.widget.TextView;
 import java.io.ByteArrayOutputStream;
 
 
-public class BitmapChooserActivity extends Activity {
+public class BitmapChooserActivity extends BaseActivity {
     private BitmapCropperView imgView;
 
     public static final String BITMAP_KEY = "BitmapKey";
