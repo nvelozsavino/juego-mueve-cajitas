@@ -86,34 +86,6 @@ public class StartScreen extends BaseActivity implements CountDownPickerDialog.C
     }
 
 
-
-//
-//    private void startGame(int rows, int cols){
-//        boardSize = new BoardSize(rows,cols);
-//        GameMode gameMode = getGameMode();
-//        BackgroundMode backgroundMode = getBackgroundMode();
-//        GameActivity activityClass = getActivityClass(gameMode);
-//        Class<? extends Activity> actualIntentClass = getActualIntentClass(backgroundMode,activityClass);
-//
-//        boolean showNumbers=showNumbersCheckBox.isChecked();
-//
-//        GameInfo gameInfo = new GameInfo(rows,cols,backgroundMode,gameMode,showNumbers);
-//        gameInfo.setTimeForSpeed(timeForSpeed);
-//        Intent startGame = new Intent(getApplicationContext(), actualIntentClass);
-//        if (backgroundMode.equals(BackgroundMode.IMAGE)){
-//            startGame.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
-//        }
-//        startGame.putExtra(GameConstants.GAME_INFO,gameInfo);
-//        startGame.putExtra(GameConstants.NEXT_ACTIVITY,activityClass);
-//        Log.d(TAG, "Signed In: " + googleApiClient.isConnected());
-//
-//        startActivity(startGame);
-////        if (gameMode.equals(GameMode.SPEED)){
-////            showTimeDialog();
-////        }else {
-////            startGame2(gameInfo, activityClass, backgroundMode, actualIntentClass, timeForSpeed);
-////        }
-//    }
     private GameActivity getActivityClass(GameMode gameMode){
         GameActivity activityClass;
         if (gameMode.equals(GameMode.MULTIPLAYER)) {
@@ -257,7 +229,7 @@ public class StartScreen extends BaseActivity implements CountDownPickerDialog.C
 //        gameInfo.setTimeForSpeed(timeForSpeed);
         Intent startGame = new Intent(getApplicationContext(), actualIntentClass);
         if (gameInfo.getBackgroundMode().equals(BackgroundMode.IMAGE)){
-            startGame.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+            //startGame.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         }
         startGame.putExtra(GameConstants.GAME_INFO,gameInfo);
         startGame.putExtra(GameConstants.NEXT_ACTIVITY,activityClass);
@@ -265,29 +237,6 @@ public class StartScreen extends BaseActivity implements CountDownPickerDialog.C
 
         startActivity(startGame);
 
-
-//
-//        int gameSizeId = gameSizeGroup.getCheckedRadioButtonId();
-//        switch (gameSizeId){
-//            case R.id.gameSize3x3Button:
-//                startGame(3,3);
-//                break;
-//            case R.id.gameSize4x4Button:
-//                startGame(4,4);
-//                break;
-//            case R.id.gameSize5x5Button:
-//                startGame(5,5);
-//                break;
-//            case R.id.gameSize6x6Button:
-//                startGame(6,6);
-//                break;
-//            case R.id.gameSizeCustomButton:
-//                startGame(4,4);
-//                //TODO: create a dialog asking for the size
-//                break;
-//
-//
-//        }
     }
 
     private void initListeners(){

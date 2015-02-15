@@ -14,17 +14,15 @@ import android.util.Log;
 import android.view.Display;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 
 
 public class CreateGameActivity extends BaseActivity {
+    private static final String ORIGINAL_IMAGE = "ORIGINAL_IMAGE";
     private BitmapCropperView imgView;
 
     public static final String BITMAP_KEY = "BitmapKey";
@@ -34,8 +32,7 @@ public class CreateGameActivity extends BaseActivity {
     private static Integer INVALID_POINTER_ID = null;
     private Integer mActivePointerId = INVALID_POINTER_ID;
     private float mLastTouchX,mLastTouchY;
-    private TitledButton cropButton;
-    private TitledButton cancelButton;
+
     private ImageView newImageButton;
     private ImageView rotateCCW;
     private ImageView rotateCW;
@@ -45,6 +42,7 @@ public class CreateGameActivity extends BaseActivity {
     private ImageView rowsMinus;
     private TextView colsText;
     private TextView rowsText;
+    private Bitmap originalBitmap;
 
 //    private RadioGroup gameModeRadioGroup;
 //    private RadioButton gameModeTraditionalRadioButton;
@@ -54,6 +52,13 @@ public class CreateGameActivity extends BaseActivity {
     private TitledButton showNumbersButton;
     private TitledButton backgroundModeButton;
 
+
+    private TitledButton traditionalButton;
+    private TitledButton speedButton;
+    private TitledButton multiplayerButton;
+
+
+    private LinearLayout imageButtonsLayout;
     private float totalRotation=0;
 
     public static final int REQUEST_IMAGE_CROP = 4;
@@ -62,8 +67,8 @@ public class CreateGameActivity extends BaseActivity {
     private GameActivity nextActivity;
     private int screenWidth;
     private int screenHeight;
-    private static final float CCW = 90;
-    private static final float CW = -90;
+    private static final float CCW = -90;
+    private static final float CW = +90;
     private int cols=0;
     private int rows = 0;
     private boolean showNumbers=true;
@@ -129,8 +134,9 @@ public class CreateGameActivity extends BaseActivity {
 
 
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
-        cropButton = (TitledButton)findViewById(R.id.traditionalButton);
-        cancelButton= (TitledButton)findViewById(R.id.speedButton);
+        traditionalButton = (TitledButton)findViewById(R.id.traditionalButton);
+        speedButton= (TitledButton)findViewById(R.id.speedButton);
+        multiplayerButton= (TitledButton)findViewById(R.id.multiplayerButton);
         newImageButton=(ImageView)findViewById(R.id.newImageButton);
         rotateCCW = (ImageView)findViewById(R.id.rotateCCW);
         rotateCW = (ImageView)findViewById(R.id.rotateCW);
@@ -141,19 +147,9 @@ public class CreateGameActivity extends BaseActivity {
         colsText = (TextView)findViewById(R.id.colsText);
         rowsText = (TextView)findViewById(R.id.rowsText);
 
-/*
-        cropButton.setImageResource(R.drawable.ok_icon32);
-        cancelButton.setImageResource(R.drawable.cancelicon32);
-        newImageButton.setImageResource(R.drawable.openicon);
-        rotateCCW.setImageResource(R.drawable.rotateccw);
-        rotateCW.setImageResource(R.drawable.rotatecw);
-        */
+        imageButtonsLayout = (LinearLayout)findViewById(R.id.imageButtonsLayout);
+        initViews();
 
-//        gameModeRadioGroup=(RadioGroup)findViewById(R.id.gameModeRadioGroup);
-//        gameModeTraditionalRadioButton=(RadioButton)findViewById(R.id.gameModeTraditionalRadioButton);
-//        gameModeSpeedRadioButton=(RadioButton)findViewById(R.id.gameModeSpeedRadioButton);
-//        gameModeMultiplayerRadioButton=(RadioButton)findViewById(R.id.gameModeMultiplayerRadioButton);
-//        showNumbersCheckBox = (ImageView)findViewById(R.id.showNumbersCheckBox);
 
         backgroundModeButton=(TitledButton)findViewById(R.id.backgroundButton);
         showNumbersButton=(TitledButton)findViewById(R.id.showNumbersButton);
@@ -162,14 +158,7 @@ public class CreateGameActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 gameInfo.setNumbersVisible(!gameInfo.isNumbersVisible());
-                if (gameInfo.isNumbersVisible()){
-                    showNumbersButton.setAdditionalText(getString(R.string.yes_showing_numbers));
-                    showNumbersButton.setIconResource(R.drawable.e);
-                } else {
-                    showNumbersButton.setAdditionalText(getString(R.string.not_showing_numbers));
-                    showNumbersButton.setIconResource(R.drawable.f);
-                }
-
+                updateShowNumbers();
             }
         });
 
@@ -180,81 +169,57 @@ public class CreateGameActivity extends BaseActivity {
                     default:
                     case PLAIN:
                         gameInfo.setBackgroundMode(BackgroundMode.IMAGE);
+
+                        if (originalBitmap!=null){
+                            setImage(originalBitmap);
+                        } else {
+                            startSelectImage();
+                        }
                         break;
                     case IMAGE:
                         gameInfo.setBackgroundMode(BackgroundMode.VIDEO);
+                        gameInfo.setBitmap(null);
+
                         break;
                     case VIDEO:
                         gameInfo.setBackgroundMode(BackgroundMode.PLAIN);
+
+                        gameInfo.setBitmap(null);
                         break;
                 }
+                updateBackground();
 
-                switch (gameInfo.getBackgroundMode()){
-                    case PLAIN:
-                        backgroundModeButton.setAdditionalText(getString(R.string.game_background_plain));
-                        backgroundModeButton.setIconResource(R.drawable.plain);
-                        break;
-                    case IMAGE:
-                        backgroundModeButton.setAdditionalText(getString(R.string.game_background_fixed_image));
-                        backgroundModeButton.setIconResource(R.drawable.picture);
-                        break;
-                    case VIDEO:
-                        backgroundModeButton.setAdditionalText(getString(R.string.game_background_video));
-                        backgroundModeButton.setIconResource(R.drawable.video);
-                        break;
-
-                }
             }
         });
 
 
 
-//        gameModeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(RadioGroup group, int checkedId) {
-//                switch (checkedId) {
-//                    default:
-//                    case R.id.gameModeTraditionalRadioButton:
-//                        gameInfo.setGameMode(GameMode.TRADITIONAL);
-//                        break;
-//                    case R.id.gameModeSpeedRadioButton:
-//                        gameInfo.setGameMode(GameMode.SPEED);
-//                        break;
-//                    case R.id.gameModeMultiplayerRadioButton:
-//                        gameInfo.setGameMode(GameMode.MULTIPLAYER);
-//                        break;
-//                }
-//            }
-//        });
-//
-//        showNumbersCheckBox.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                gameInfo.setNumbersVisible(updateShowNumbers(gameInfo.isNumbersVisible(),true));
-//            }
-//        });
-//        showNumbersCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                gameInfo.setNumbersVisible(isChecked);
-//            }
-//        });
 
 
 
-
-        cropButton.setOnClickListener(new View.OnClickListener() {
+        traditionalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                gameInfo.setGameMode(GameMode.TRADITIONAL);
                 cropClick();
             }
         });
-        cancelButton.setOnClickListener(new View.OnClickListener() {
+        speedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                gameInfo.setGameMode(GameMode.SPEED);
+                cropClick();
             }
         });
+
+        multiplayerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameInfo.setGameMode(GameMode.MULTIPLAYER);
+                cropClick();
+            }
+        });
+
         newImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -331,9 +296,6 @@ public class CreateGameActivity extends BaseActivity {
             }
         });
 
-        if (savedInstanceState!=null){
-
-        }
         Intent intent = getIntent();
         boolean fromOtherActivity=false;
 
@@ -370,17 +332,13 @@ public class CreateGameActivity extends BaseActivity {
                 if (!fromOtherActivity) {
                     startSelectImage();
                 }
-            } else {
-                Log.e(TAG, "Error, not right background");
-                finish();
-                return;
             }
-
 
 
         } else {
             Log.d(TAG,"saveIntanceState");
             gameInfo=savedInstanceState.getParcelable(GameConstants.GAME_INFO);
+            originalBitmap = savedInstanceState.getParcelable(ORIGINAL_IMAGE);
             imgView.setRectScaleFactor(savedInstanceState.getFloat(GameConstants.RECT_SCALE_FACTOR));
             imgView.setRectLeftNorm(savedInstanceState.getFloat(GameConstants.RECT_LEFT_NORM));
             imgView.setRectTopNorm(savedInstanceState.getFloat(GameConstants.RECT_TOP_NORM));
@@ -391,18 +349,14 @@ public class CreateGameActivity extends BaseActivity {
 
 
     }
-    private boolean updateShowNumbers(boolean showNumbers,boolean change) {
-        if (change){
-            showNumbers = !showNumbers;
-        }
-        if (!showNumbers) {
-
-            showNumbersCheckBox.setImageResource(R.drawable.noshownumbers32);
+    private void updateShowNumbers() {
+        if (gameInfo.isNumbersVisible()){
+            showNumbersButton.setAdditionalText(getString(R.string.yes_showing_numbers));
+            showNumbersButton.setIconResource(R.drawable.shownumbers32);
         } else {
-
-            showNumbersCheckBox.setImageResource(R.drawable.shownumbers32);
+            showNumbersButton.setAdditionalText(getString(R.string.not_showing_numbers));
+            showNumbersButton.setIconResource(R.drawable.noshownumbers32);
         }
-        return showNumbers;
     }
 
     private void setAccordingGameInfo(){
@@ -410,29 +364,42 @@ public class CreateGameActivity extends BaseActivity {
         rows = gameInfo.getRows();
         colsText.setText(Integer.toString(cols));
         rowsText.setText(Integer.toString(rows));
-        updateShowNumbers(gameInfo.isNumbersVisible(),false);
+        updateShowNumbers();
 
-        switch (gameInfo.getGameMode()){
-            default:
-            case TRADITIONAL:
-                gameModeTraditionalRadioButton.setChecked(true);
-                gameModeSpeedRadioButton.setChecked(false);
-                gameModeMultiplayerRadioButton.setChecked(false);
-                break;
-            case SPEED:
-                gameModeTraditionalRadioButton.setChecked(false);
-                gameModeSpeedRadioButton.setChecked(true);
-                gameModeMultiplayerRadioButton.setChecked(false);
-
-                break;
-            case MULTIPLAYER:
-                gameModeTraditionalRadioButton.setChecked(false);
-                gameModeSpeedRadioButton.setChecked(false);
-                gameModeMultiplayerRadioButton.setChecked(true);
-                break;
-        }
+        updateBackground();
         imgView.setCols(gameInfo.getCols());
         imgView.setRows(gameInfo.getRows());
+    }
+
+    private void updateBackground() {
+        switch (gameInfo.getBackgroundMode()){
+            case PLAIN:
+                backgroundModeButton.setAdditionalText(getString(R.string.game_background_plain));
+                backgroundModeButton.setIconResource(R.drawable.plain);
+                imageButtonsLayout.setVisibility(View.GONE);
+                multiplayerButton.setVisibility(View.VISIBLE);
+                clearBitmap();
+                break;
+            case IMAGE:
+                backgroundModeButton.setAdditionalText(getString(R.string.game_background_fixed_image));
+                backgroundModeButton.setIconResource(R.drawable.picture);
+                imageButtonsLayout.setVisibility(View.VISIBLE);
+                multiplayerButton.setVisibility(View.VISIBLE);
+                break;
+            case VIDEO:
+                backgroundModeButton.setAdditionalText(getString(R.string.game_background_video));
+                backgroundModeButton.setIconResource(R.drawable.video);
+                imageButtonsLayout.setVisibility(View.GONE);
+                clearBitmap();
+                multiplayerButton.setVisibility(View.GONE);
+
+                break;
+
+        }
+    }
+
+    private void clearBitmap() {
+        imgView.setImageBitmap(null);
     }
 
     private void rotateImage(float rot, boolean updateTotalRotation){
@@ -495,7 +462,7 @@ public class CreateGameActivity extends BaseActivity {
         outState.putFloat(GameConstants.RECT_LEFT_NORM,imgView.getRectLeftNorm());
         outState.putFloat(GameConstants.RECT_TOP_NORM,imgView.getRectTopNorm());
         outState.putFloat(GameConstants.ROTATION,totalRotation);
-
+        outState.putParcelable(ORIGINAL_IMAGE,originalBitmap);
 
         super.onSaveInstanceState(outState);
 
@@ -503,10 +470,7 @@ public class CreateGameActivity extends BaseActivity {
 
     private void startSelectImage() {
 
-//                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-//                }
+
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -529,9 +493,11 @@ public class CreateGameActivity extends BaseActivity {
             Bitmap bitmap =  compressBitmap(selectedImage, width,height);
             setImage(bitmap);
 
+
         } else {
             if(imgView.getImageBitmap()==null){
-                finish();
+                gameInfo.setBackgroundMode(BackgroundMode.PLAIN);
+                updateBackground();
             }
         }
     }
@@ -540,6 +506,7 @@ public class CreateGameActivity extends BaseActivity {
         if (bitmap!=null) {
             imgView.setImageBitmap(bitmap);
             gameInfo.setBitmap(bitmap);
+            originalBitmap=bitmap;
         }else{
             Log.e(TAG, "Error, no image result");
             finish();

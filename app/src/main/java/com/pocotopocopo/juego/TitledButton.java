@@ -137,4 +137,9 @@ public class TitledButton extends RelativeLayout {
     public void setIconImage(Bitmap bitmap){
         iconImage.setImageBitmap(bitmap);
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+    }
 }
