@@ -5,7 +5,7 @@ import android.app.Activity;
 public enum GameActivity{
     START_SCREEN(StartScreen.class),
     PUZZLE(PuzzleActivity.class),
-    BITMAP_CHOOSER(BitmapChooserActivity.class),
+    CREATE_GAME(CreateGameActivity.class),
     MULTIPLAYER(MultiplayerActivity.class);
 
 

@@ -230,13 +230,15 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
         Log.d(TAG,"onStart "+ this.getClass());
 
         super.onStart();
-        disconnected();
+
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(getString(R.string.preference_key_file), Context.MODE_PRIVATE);
         signedIn = sharedPreferences.getBoolean(SIGNED_IN, false);
         Log.d(TAG,"signedIn (var): " +signedIn);
         if (signedIn) {
             googleApiClient.connect();
 
+        } else {
+            disconnected();
         }
 
     }
@@ -362,6 +364,10 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
     }
 
     public void disconnected(){
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(getString(R.string.preference_key_file), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(SIGNED_IN, googleApiClient.isConnected());
+        editor.commit();
         if (signInButton!=null) {
             signInButton.setVisibility(View.VISIBLE);// Put code here to display the sign-in button
         }
@@ -371,6 +377,10 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
 
     }
     public void connected(){
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(getString(R.string.preference_key_file), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(SIGNED_IN, googleApiClient.isConnected());
+        editor.commit();
         if (signInButton!=null) {
             signInButton.setVisibility(View.GONE);// Put code here to display the sign-in button
         }

@@ -14,7 +14,7 @@
     <string name="game_background_plain">Plain</string>
     <string name="game_background_fixed_image">Fixed Image</string>
     <string name="game_background_video">Video</string>
-    <string name="game_numbers_title">Show Numbers?</string>
+    <string name="game_numbers_title">Numbers?</string>
     <string name="game_size_title">Game Size</string>
     <string name="game_size_3x3">3x3</string>
     <string name="game_size_4x4">4x4</string>
@@ -46,6 +46,13 @@
     <string name="time_picker_title">Select Time</string>
     <string name="ok_button_text">Ok</string>
     <string name="cancel_button_text">Cancel</string>
+    <string name="no">no</string>
+    <string name="not_showing_numbers">No</string>
+    <string name="open_image">Open Image</string>
+    <string name="rotate">Rotate</string>
+    <string name="rotateccw">Rotate CCW</string>
+    <string name="rotatecw">Rotate CW</string>
+    <string name="yes_showing_numbers">Yes</string>
 
 
     <item name="time_error_text" type="id">You have to set a time greater than 0:00</item>

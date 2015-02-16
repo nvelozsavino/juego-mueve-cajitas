@@ -8,7 +8,5 @@
         <attr name="piecePaddingY" format="integer" />
         <attr name="borderPaddingX" format="integer" />
         <attr name="borderPaddingY" format="integer" />
-
-
     </declare-styleable>
 </resources>

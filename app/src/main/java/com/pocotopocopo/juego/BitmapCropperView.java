@@ -251,11 +251,16 @@ public class BitmapCropperView extends View {
     }
 
     public void setImageBitmap(Bitmap imageBitmap) {
-        Log.d(TAG, "setImageBitmap");
         this.imageBitmap = imageBitmap;
-        bitmapHeight= imageBitmap.getHeight();
-        bitmapWidth= imageBitmap.getWidth();
-        Log.d(TAG,"bitmap Width = " + bitmapWidth + " - bitmap Height = " + bitmapHeight);
+        if (imageBitmap!=null) {
+            Log.d(TAG, "setImageBitmap");
+
+            bitmapHeight = imageBitmap.getHeight();
+            bitmapWidth = imageBitmap.getWidth();
+            Log.d(TAG, "bitmap Width = " + bitmapWidth + " - bitmap Height = " + bitmapHeight);
+        } else {
+            bitmapHeight=bitmapWidth=200;
+        }
         requestLayout();
         invalidate();
 
@@ -358,17 +363,19 @@ public class BitmapCropperView extends View {
     }
 
     public void rotateBitmap(float rotation){
-        Matrix matrix = new Matrix();
-        matrix.postRotate(rotation);
+        if (this.getImageBitmap()!=null) {
+            Matrix matrix = new Matrix();
+            matrix.postRotate(rotation);
 //        Log.d(TAG,"Antes: width = " + imageBitmap.getWidth() + " , height = " +imageBitmap.getHeight());
-        imageBitmap = Bitmap.createBitmap(imageBitmap,0,0,imageBitmap.getWidth(),imageBitmap.getHeight(),matrix,true);
+            imageBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
 //        Log.d(TAG,"despues: width = " + imageBitmap.getWidth() + " , height = " +imageBitmap.getHeight());
-        bitmapHeight=imageBitmap.getHeight();
-        bitmapWidth=imageBitmap.getWidth();
-        requestLayout();
-        invalidate();
+            bitmapHeight = imageBitmap.getHeight();
+            bitmapWidth = imageBitmap.getWidth();
+            requestLayout();
+            invalidate();
 //        updateSizes();
 //        updateRect();
+        }
     }
 
     public void update(){
