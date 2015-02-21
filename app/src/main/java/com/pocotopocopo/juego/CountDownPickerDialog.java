@@ -19,6 +19,7 @@ public class CountDownPickerDialog extends DialogFragment {
     public static final String MINUTES_KEY = "MINUTES";
     public static final String SECONDS_KEY= "SECONDS";
     public interface CountDownPickerListener {
+        public void onTimeSaved(int minutes, int seconds);
         public void onTimeSelected(int minutes, int seconds);
     }
 
@@ -84,7 +85,15 @@ public class CountDownPickerDialog extends DialogFragment {
 
         builder.setMessage(R.string.time_picker_title);
         builder.setPositiveButton(R.string.ok_button_text, new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int id) {
+
+            }
+        });
+        builder.setNeutralButton(R.string.save_time,new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
 
             }
         });
@@ -113,6 +122,21 @@ public class CountDownPickerDialog extends DialogFragment {
                     seconds = secondsPicker.getValue();
                     if (minutes > 0 || seconds > 0) {
                         listener.onTimeSelected(minutes, seconds);
+                        dismiss();
+                    } else {
+                        Toast.makeText(getActivity().getApplicationContext(), getString(R.id.time_error_text), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            Button neutralButton = (Button) dialog.getButton(Dialog.BUTTON_NEUTRAL);
+            neutralButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int minutes, seconds;
+                    minutes = minutesPicker.getValue();
+                    seconds = secondsPicker.getValue();
+                    if (minutes > 0 || seconds > 0) {
+                        listener.onTimeSaved(minutes, seconds);
                         dismiss();
                     } else {
                         Toast.makeText(getActivity().getApplicationContext(), getString(R.id.time_error_text), Toast.LENGTH_SHORT).show();

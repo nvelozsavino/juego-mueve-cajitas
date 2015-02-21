@@ -16,7 +16,8 @@ public class GameConstants {
     public static final String RECT_TOP_NORM = "rectTopNormKey";
     public static final String ROTATION = "rotationKey";
     public static final int MAX_MINUTES_SPEED_MODE = 5;
+    public static final long DEFAULT_TIME_SPEED = (MAX_MINUTES_SPEED_MODE*60)-1;
 
 
-
+    public static final String IMAGE_URI = "imageUri";
 }

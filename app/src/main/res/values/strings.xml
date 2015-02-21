@@ -53,6 +53,8 @@
     <string name="rotateccw">Rotate CCW</string>
     <string name="rotatecw">Rotate CW</string>
     <string name="yes_showing_numbers">Yes</string>
+    <string name="quick_game">Quick Game</string>
+    <string name="save_time">Save Time</string>
 
 
     <item name="time_error_text" type="id">You have to set a time greater than 0:00</item>
