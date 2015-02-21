@@ -51,6 +51,7 @@ public class BitmapCropperView extends View {
     private float rectTopNorm;
     private int rows=3;
     private int cols=3;
+    private boolean withNumbers=false;
 
 
     public float getRectScaleFactor() {
@@ -129,6 +130,8 @@ public class BitmapCropperView extends View {
 //  init(attrs, 0);
     }
 
+
+
     public Bitmap getCroppedImage(){
         Log.d(TAG,"getCroppedImage()");
         float x = (rectLeft-mLeft)/bitmapScaleFactor;
@@ -183,10 +186,27 @@ public class BitmapCropperView extends View {
         }
         canvas.drawLine(x0+widthX*(cols-1),y0+widthY*(rows-1),x1,y1,paint);
         canvas.drawLine(x0+widthX*(cols-1),y1,x1,y0+widthY*(rows-1),paint);
+        if (withNumbers) {
+            paint.setTextSize(widthY/2);
+            paint.setTextAlign(Paint.Align.CENTER);
+            for (int i = 0; i < rows * cols -1; i++) {
+                int x = i % cols;
+                int y = i / cols;
+                canvas.drawText(Integer.toString(i+1), x0+(x + 0.5f) * widthX, y0+(y + 0.75f) * widthY, paint);
+            }
+        }
 
 //        Log.d(TAG,"pinte rectangulo e imagen");
         super.onDraw(canvas);
 
+    }
+
+    public boolean isWithNumbers() {
+        return withNumbers;
+    }
+
+    public void setWithNumbers(boolean withNumbers) {
+        this.withNumbers = withNumbers;
     }
 
     @Override

@@ -200,6 +200,8 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             @Override
             public void onClick(View v) {
                 gameInfo.setNumbersVisible(!gameInfo.isNumbersVisible());
+                imgView.setWithNumbers(gameInfo.isNumbersVisible());
+                imgView.invalidate();
                 updateShowNumbers();
             }
         });
@@ -415,10 +417,13 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         updateBackground();
         imgView.setCols(gameInfo.getCols());
         imgView.setRows(gameInfo.getRows());
+        imgView.setWithNumbers(gameInfo.isNumbersVisible());
+
         setSpeedTime();
         if (imageUri!=null) {
             this.new GetImageTask(imageUri).execute();
         }
+        imgView.invalidate();
     }
 
     private void setSpeedTime() {
