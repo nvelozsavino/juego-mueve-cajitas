@@ -233,6 +233,11 @@ public class PuzzleActivity extends BaseActivity{
         int rows= gameInfo.getRows();
         boolean numbersVisible = gameInfo.isNumbersVisible();
         BackgroundMode backgroundMode = gameInfo.getBackgroundMode();
+        GameMode gameMode = gameInfo.getGameMode();
+        if (gameMode.equals(GameMode.SPEED)){
+            chrono.setCountUp(false);
+            chrono.setTime(gameInfo.getTimeForSpeed()*1000);
+        }
 
         puzzle.setSize(cols, rows);
         puzzle.setNumbersVisible(numbersVisible);

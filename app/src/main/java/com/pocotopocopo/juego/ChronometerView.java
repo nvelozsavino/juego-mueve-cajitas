@@ -115,6 +115,7 @@ private CountDownTimer countDownTimer;
 
     public void setTime(long time) {
         this.time = time;
+        updateText();
     }
 
     @Override

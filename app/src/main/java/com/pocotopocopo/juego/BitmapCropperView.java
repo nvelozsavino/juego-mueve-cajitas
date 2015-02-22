@@ -159,9 +159,14 @@ public class BitmapCropperView extends View {
         }
         paint.setColor(Color.BLACK);
         paint.setStrokeWidth(strokeWidth);
-        paint.setStyle(Paint.Style.STROKE);
+        if (imageBitmap==null){
+            paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        } else {
+            paint.setStyle(Paint.Style.STROKE);
+        }
         canvas.drawRect(0,0,getWidth(),getHeight(),paint);
 //        paint.setAlpha(50);
+        paint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(rect,paint);
         Rect rect1 = new Rect(rect);
         rect1.inset(strokeWidth,strokeWidth);

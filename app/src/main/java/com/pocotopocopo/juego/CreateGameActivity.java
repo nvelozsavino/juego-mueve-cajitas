@@ -14,11 +14,18 @@ import android.util.Log;
 import android.view.Display;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListPopupWindow;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class CreateGameActivity extends BaseActivity implements CountDownPickerDialog.CountDownPickerListener {
@@ -199,40 +206,53 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         showNumbersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                gameInfo.setNumbersVisible(!gameInfo.isNumbersVisible());
-                imgView.setWithNumbers(gameInfo.isNumbersVisible());
-                imgView.invalidate();
-                updateShowNumbers();
+                if (!gameInfo.getBackgroundMode().equals(BackgroundMode.PLAIN)) {
+                    gameInfo.setNumbersVisible(!gameInfo.isNumbersVisible());
+                    updateShowNumbers();
+                }
             }
         });
 
-        backgroundModeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (gameInfo.getBackgroundMode()){
-                    default:
-                    case PLAIN:
-                        gameInfo.setBackgroundMode(BackgroundMode.IMAGE);
+        final BackgroundPopUpWindow backgroundPopUpWindow=new BackgroundPopUpWindow(getApplicationContext(),new AdapterView.OnItemClickListener(){
 
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG,"click");
+                BackgroundPopUpWindow.BackgroundOption item = (BackgroundPopUpWindow.BackgroundOption) parent.getAdapter().getItem(position);
+                BackgroundMode backgroundMode = item.getMode();
+                gameInfo.setBackgroundMode(backgroundMode);
+                switch (backgroundMode){
+                    case IMAGE:
+                        gameInfo.setNumbersVisible(false);
                         if (originalBitmap!=null){
                             setImage(originalBitmap);
                         } else {
                             startSelectImage();
                         }
                         break;
-                    case IMAGE:
-                        gameInfo.setBackgroundMode(BackgroundMode.VIDEO);
-                        gameInfo.setBitmap(null);
 
+                    default:
+                    case PLAIN:
+                        gameInfo.setNumbersVisible(true);
                         break;
                     case VIDEO:
-                        gameInfo.setBackgroundMode(BackgroundMode.PLAIN);
-
+                        gameInfo.setNumbersVisible(false);
                         gameInfo.setBitmap(null);
                         break;
                 }
                 updateBackground();
+            }
+        });
 
+
+        backgroundModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                backgroundPopUpWindow.show(v);
+/*
+
+*/
             }
         });
 
@@ -405,6 +425,8 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             showNumbersButton.setAdditionalText(getString(R.string.not_showing_numbers));
             showNumbersButton.setIconResource(R.drawable.noshownumbers32);
         }
+        imgView.setWithNumbers(gameInfo.isNumbersVisible());
+        imgView.invalidate();
     }
 
     private void setAccordingGameInfo(){
@@ -412,15 +434,19 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         rows = gameInfo.getRows();
         colsText.setText(Integer.toString(cols));
         rowsText.setText(Integer.toString(rows));
-        updateShowNumbers();
+
 
         updateBackground();
+        if (gameInfo.getBackgroundMode().equals(BackgroundMode.PLAIN)){
+            gameInfo.setNumbersVisible(true);
+        }
+        updateShowNumbers();
         imgView.setCols(gameInfo.getCols());
         imgView.setRows(gameInfo.getRows());
         imgView.setWithNumbers(gameInfo.isNumbersVisible());
 
         setSpeedTime();
-        if (imageUri!=null) {
+        if (gameInfo.getBackgroundMode().equals(BackgroundMode.IMAGE) && imageUri!=null) {
             this.new GetImageTask(imageUri).execute();
         }
         imgView.invalidate();
@@ -441,6 +467,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 backgroundModeButton.setIconResource(R.drawable.plain);
                 imageButtonsLayout.setVisibility(View.GONE);
                 multiplayerButton.setVisibility(View.VISIBLE);
+                gameInfo.setNumbersVisible(true);
                 clearBitmap();
                 break;
             case IMAGE:
@@ -448,6 +475,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 backgroundModeButton.setIconResource(R.drawable.picture);
                 imageButtonsLayout.setVisibility(View.VISIBLE);
                 multiplayerButton.setVisibility(View.VISIBLE);
+                gameInfo.setNumbersVisible(false);
                 break;
             case VIDEO:
                 backgroundModeButton.setAdditionalText(getString(R.string.game_background_video));
@@ -455,10 +483,10 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 imageButtonsLayout.setVisibility(View.GONE);
                 clearBitmap();
                 multiplayerButton.setVisibility(View.GONE);
-
+                gameInfo.setNumbersVisible(false);
                 break;
-
         }
+        updateShowNumbers();
     }
 
     private void clearBitmap() {
