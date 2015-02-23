@@ -206,15 +206,7 @@ public class PuzzleActivity extends BaseActivity{
 
 //        chrono.setCountUp(false);
 //        chrono.setTime(10000);
-        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
-            @Override
-            public void onFinish() {
-                gameStatus = GameStatus.FINISHED;
-                gameOver();
-                //Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
 
-            }
-        });
         SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
@@ -271,8 +263,6 @@ public class PuzzleActivity extends BaseActivity{
 
 
 
-
-
         if (savedInstanceState!=null){
 
 
@@ -324,14 +314,13 @@ public class PuzzleActivity extends BaseActivity{
         }
     }
 
-    private void initListeners() {
-        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
-            @Override
-            public void onFinish() {
-                Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
+    private void playSound(int sound, float rate){
+        if (soundEnabled && loadedSound){
+            soundPool.play(sound,volume,volume,1,1,rate);
+        }
+    }
 
-            }
-        });
+    private void initListeners() {
 
         puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
             @Override
@@ -365,13 +354,21 @@ public class PuzzleActivity extends BaseActivity{
                 soundButton.invalidate();
             }
         });
+
+        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
+            @Override
+            public void onFinish() {
+                gameStatus = GameStatus.FINISHED;
+                gameOver();
+                //Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
+
+            }
+        });
+
+
+
     }
 
-    private void playSound(int sound, float rate){
-        if (soundEnabled && loadedSound){
-            soundPool.play(sound,volume,volume,1,1,rate);
-        }
-    }
 
     private void gameOver(){
         playSound(buuuu,1f);
