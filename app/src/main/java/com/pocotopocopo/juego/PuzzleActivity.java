@@ -64,6 +64,7 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog countDownDialog;
     private Dialog pauseDialog;
     private Dialog winDialog;
+    private Dialog gameOverDialog;
     private boolean soundEnabled;
 
 
@@ -197,7 +198,9 @@ public class PuzzleActivity extends BaseActivity{
         chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
             @Override
             public void onFinish() {
-                Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
+                gameStatus = GameStatus.FINISHED;
+                gameOver();
+                //Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
 
             }
         });
@@ -334,6 +337,31 @@ public class PuzzleActivity extends BaseActivity{
         }
     }
 
+    private void gameOver(){
+        gameOverDialog = new Dialog(PuzzleActivity.this);
+        gameOverDialog.setCancelable(false);
+        gameOverDialog.setContentView(R.layout.game_over_screen);
+        gameOverDialog.setTitle(R.string.game_over_title);
+        Button exitButton = (Button) gameOverDialog.findViewById(R.id.exitGameOverButton);
+        Button retryButton = (Button) gameOverDialog.findViewById(R.id.retryGameOverButton);
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameOverDialog.cancel();
+                finish();
+            }
+        });
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameOverDialog.cancel();
+                restartGame();
+            }
+        });
+        gameOverDialog.show();
+
+
+    }
     private void showWinDialog(){
         winDialog = new Dialog(PuzzleActivity.this);
         winDialog.setCancelable(false);
@@ -374,8 +402,13 @@ public class PuzzleActivity extends BaseActivity{
     public void restartGame(){
         moveCounter=0;
         moveCounterText.setText(getString(R.string.moves_text,moveCounter));
-
-        chrono.reset();
+        if (gameInfo.getGameMode()==GameMode.SPEED){
+            chrono.setCountUp(false);
+            chrono.setTime(gameInfo.getTimeForSpeed()*1000);
+            Log.d(TAG,"gamemode = speed " + gameInfo.getGameMode().toString());
+            Log.d(TAG,"time = " + chrono.getTime());
+        }
+//        chrono.reset();
         gameStatus = GameStatus.STARTING;
         puzzle.randomizeBoard();
         puzzle.update();

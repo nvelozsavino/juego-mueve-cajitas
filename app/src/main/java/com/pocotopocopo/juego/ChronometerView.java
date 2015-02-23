@@ -92,6 +92,10 @@ private CountDownTimer countDownTimer;
         time=0;
         updateText();
     }
+    public void reset(long time){
+        this.time = time;
+        updateText();
+    }
 
     public void pause(long time){
         if (state.equals(ChronometerState.RUNNING)){

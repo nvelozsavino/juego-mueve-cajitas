@@ -55,6 +55,8 @@
     <string name="yes_showing_numbers">Yes</string>
     <string name="quick_game">Quick Game</string>
     <string name="save_time">Save Time</string>
+    <string name="game_over_title">Time is up!!!</string>
+    <string name="game_over_text">YOU LOOSE MOTHERFUCKER!!!!</string>
 
 
     <item name="time_error_text" type="id">You have to set a time greater than 0:00</item>
