@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.multiplayer.Multiplayer;
@@ -24,6 +26,7 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 
@@ -38,6 +41,8 @@ public class MultiplayerActivity extends BaseActivity {
     private LinearLayout sessionActionsLayout;
     private SignInButton signInButton;
     private Button signOutButton;
+
+    private GameInfo gameInfo;
 
     final static int RC_SELECT_PLAYERS = 10000;
     final static int RC_LOOK_AT_MATCHES = 10001;
@@ -90,10 +95,36 @@ public class MultiplayerActivity extends BaseActivity {
         setContentView(R.layout.activity_multiplayer);
         initViews();
         initListeners();
-        gameOptions=getIntent().getExtras();
-        Intent i;
 
+        Intent intent = getIntent();
 
+        if (intent != null) {
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                Log.d(TAG, "Intent no es Null");
+                if (extras.containsKey(GameConstants.GAME_INFO)) {
+                    gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
+                } else {
+                    Log.e(TAG, "Error, invalid intent");
+                    finish();
+                    return;
+                }
+            } else {
+                Log.e(TAG, "Error, null intent");
+                finish();
+                return;
+            }
+
+        }
+        if (savedInstanceState != null) {
+            gameInfo = savedInstanceState.getParcelable(GameConstants.GAME_INFO);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(GameConstants.GAME_INFO,gameInfo);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -115,7 +146,7 @@ public class MultiplayerActivity extends BaseActivity {
 
     private void startMatchClicked(){
         Intent intent = Games.TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient,
-                1, 1, true);
+                1, 4, true);
         startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
 //
@@ -303,19 +334,19 @@ public class MultiplayerActivity extends BaseActivity {
                     Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
 
             if (minAutoMatchPlayers > 0) {
-                autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
-                        minAutoMatchPlayers, maxAutoMatchPlayers, 0);
+                autoMatchCriteria = RoomConfig.createAutoMatchCriteria(minAutoMatchPlayers, maxAutoMatchPlayers, 0);
             } else {
                 autoMatchCriteria = null;
             }
 
             TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
                     .addInvitedPlayers(invitees)
-                    .setAutoMatchCriteria(autoMatchCriteria).build();
+                    .setAutoMatchCriteria(autoMatchCriteria)
+                    .build();
 
             // Start the match
-            Games.TurnBasedMultiplayer.createMatch(googleApiClient, tbmc).setResultCallback(
-                    new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
+            Games.TurnBasedMultiplayer.createMatch(googleApiClient, tbmc)
+                    .setResultCallback(new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
                         @Override
                         public void onResult(TurnBasedMultiplayer.InitiateMatchResult result) {
 
@@ -329,8 +360,14 @@ public class MultiplayerActivity extends BaseActivity {
     }
 
     private void processResult(TurnBasedMultiplayer.InitiateMatchResult result) {
+        Status status = result.getStatus();
+        if (!status.isSuccess()){
+            Log.d(TAG,"Error");
+            return;
+        }
+
         TurnBasedMatch match = result.getMatch();
-        int statusCode= result.getStatus().getStatusCode();
+
         dismissSpinner();
 
         if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
@@ -344,8 +381,24 @@ public class MultiplayerActivity extends BaseActivity {
             return;
         }
         Log.d(TAG,"TODO: Start Match");
-        //startMatch(match);
+
+
+        startMatch(match);
     }
+
+    private void startMatch(TurnBasedMatch match) {
+
+
+        Log.d(TAG,"startGame");
+        Intent intent = new Intent(getApplicationContext(),GameActivity.PUZZLE.getActivityClass());
+        intent.putExtra(GameConstants.GAME_INFO, gameInfo);
+        intent.putExtra(GameConstants.MULTIPLAYER_MATCH, match);
+        Log.d(TAG, "cree todo el intent y el result");
+        startActivity(intent);
+
+    }
+
+
 
     public void showSpinner() {
         findViewById(R.id.progressLayout).setVisibility(View.VISIBLE);

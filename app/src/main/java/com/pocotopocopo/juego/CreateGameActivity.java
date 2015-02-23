@@ -150,38 +150,12 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
 
     }
-//
-//    public static Intent requestImageCrop (Context context, Bitmap bitmap){
-//        Intent intent = new Intent(context,CreateGameActivity.class);
-//        ByteArrayOutputStream bs = new ByteArrayOutputStream();
-//        bitmap.compress(Bitmap.CompressFormat.JPEG,50,bs);
-////        Log.d(TAG, "bitmap count nuevo = " + bitmap.getByteCount());
-//        intent.putExtra(CreateGameActivity.BITMAP_KEY,bs.toByteArray());
-////        Log.d(TAG,"puse el bitmap en el intent");
-//        return intent;
-//    }
-//
-//    public static Bitmap getBitmapCropped (Intent data){
-////            Log.d(TAG,"Activity Result Request Image crop");
-//            byte[] byteArray = data.getByteArrayExtra(CreateGameActivity.BITMAP_KEY);
-////            Log.d(TAG,"tengo el byte array");
-//            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
-//            return bitmap;
-////            Log.d(TAG,"tengo el bitmap");
-//    }
+
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG,"onCreate");
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_game_layout);
-
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        screenWidth = size.x;
-        screenHeight = size.y;
-
-
+    protected void initViews() {
+        super.initViews();
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
         traditionalButton = (TitledButton)findViewById(R.id.traditionalButton);
         speedButton= (TitledButton)findViewById(R.id.speedButton);
@@ -197,12 +171,16 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         rowsText = (TextView)findViewById(R.id.rowsText);
 
         imageButtonsLayout = (LinearLayout)findViewById(R.id.imageButtonsLayout);
-        initViews();
 
 
         backgroundModeButton=(TitledButton)findViewById(R.id.backgroundButton);
         showNumbersButton=(TitledButton)findViewById(R.id.showNumbersButton);
 
+
+    }
+
+
+    private void initListeners(){
         showNumbersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -250,15 +228,8 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             public void onClick(View v) {
 
                 backgroundPopUpWindow.show(v);
-/*
-
-*/
             }
         });
-
-
-
-
 
 
         traditionalButton.setOnClickListener(new View.OnClickListener() {
@@ -360,6 +331,31 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 rowsText.setText(Integer.toString(rows));
             }
         });
+
+
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG,"onCreate");
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.create_game_layout);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        screenWidth = size.x;
+        screenHeight = size.y;
+
+
+
+        initViews();
+        initListeners();
+
+
+
+
 
         Intent intent = getIntent();
         boolean fromOtherActivity=false;

@@ -26,6 +26,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
+
 import java.io.ByteArrayOutputStream;
 
 
@@ -65,7 +68,7 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog pauseDialog;
     private Dialog winDialog;
     private boolean soundEnabled;
-
+    private TurnBasedMatch match;
 
     private BitmapContainer bitmapContainer;
 
@@ -192,15 +195,10 @@ public class PuzzleActivity extends BaseActivity{
         loadSounds();
 
 
+
 //        chrono.setCountUp(false);
 //        chrono.setTime(10000);
-        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
-            @Override
-            public void onFinish() {
-                Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
 
-            }
-        });
         SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
@@ -212,6 +210,9 @@ public class PuzzleActivity extends BaseActivity{
             Bundle extras = intent.getExtras();
             if (extras.containsKey(GameConstants.GAME_INFO)) {
                 gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
+                if (gameInfo.getGameMode().equals(GameMode.MULTIPLAYER)){
+                    match=extras.getParcelable(GameConstants.MULTIPLAYER_MATCH);
+                }
             } else {
                 Log.e(TAG, "Error, no gameInfo in intent");
                 finish();
@@ -250,46 +251,16 @@ public class PuzzleActivity extends BaseActivity{
         bitmapContainer.setBitmap(gameInfo.getBitmap());
 
 
+        initListeners();
 
-        puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
-            @Override
-            public void onPieceMoved() {
-                moveCounterText.setText(getString(R.string.moves_text, ++moveCounter));
-                if (loadedSound && soundEnabled) {
-                    soundPool.play(clickId, volume, volume, 2, 0, 1f);
-                }
-            }
-
-            @Override
-            public void onPuzzleSolved() {
-                chrono.pause();
-                gameStatus=GameStatus.FINISHED;
-                if (camera!=null){
-                    stopLiveFeed();
-                }
-                showWinDialog();
-            }
-        });
-
-        soundButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (soundEnabled){
-                    soundButton.setImageResource(R.drawable.sound_off);
-                    soundEnabled=false;
-                }else{
-                    soundButton.setImageResource(R.drawable.sound_on);
-                    soundEnabled=true;
-                }
-
-                soundButton.invalidate();
-            }
-        });
 
         if (savedInstanceState!=null){
 
 
             gameInfo = savedInstanceState.getParcelable(GameConstants.GAME_INFO);
+            if (gameInfo.getGameMode().equals(GameMode.MULTIPLAYER)){
+                match=savedInstanceState.getParcelable(GameConstants.MULTIPLAYER_MATCH);
+            }
 
             int[] posArray= gameInfo.getPieceOrder();
 
@@ -332,6 +303,51 @@ public class PuzzleActivity extends BaseActivity{
             gameStatus=GameStatus.STARTING;
             startCountdown();
         }
+    }
+
+    private void initListeners() {
+        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
+            @Override
+            public void onFinish() {
+                Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
+
+            }
+        });
+
+        puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
+            @Override
+            public void onPieceMoved() {
+                moveCounterText.setText(getString(R.string.moves_text, ++moveCounter));
+                if (loadedSound && soundEnabled) {
+                    soundPool.play(clickId, volume, volume, 2, 0, 1f);
+                }
+            }
+
+            @Override
+            public void onPuzzleSolved() {
+                chrono.pause();
+                gameStatus=GameStatus.FINISHED;
+                if (camera!=null){
+                    stopLiveFeed();
+                }
+                showWinDialog();
+            }
+        });
+
+        soundButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (soundEnabled){
+                    soundButton.setImageResource(R.drawable.sound_off);
+                    soundEnabled=false;
+                }else{
+                    soundButton.setImageResource(R.drawable.sound_on);
+                    soundEnabled=true;
+                }
+
+                soundButton.invalidate();
+            }
+        });
     }
 
     private void showWinDialog(){
@@ -526,6 +542,9 @@ public class PuzzleActivity extends BaseActivity{
     protected void onSaveInstanceState(Bundle outState) {
         gameInfo.setPieceOrder(puzzle.getPositions());
         outState.putParcelable(GameConstants.GAME_INFO,gameInfo);
+        if (gameInfo.getGameMode().equals(GameMode.MULTIPLAYER)){
+            outState.putParcelable(GameConstants.MULTIPLAYER_MATCH,match);
+        }
         outState.putInt(MOVES_COUNTER_KEY,moveCounter);
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
         outState.putSerializable(GAME_STATUS_KEY,gameStatus);

@@ -20,4 +20,5 @@ public class GameConstants {
 
 
     public static final String IMAGE_URI = "imageUri";
+    public static final String MULTIPLAYER_MATCH = "multiplayerMatch";
 }

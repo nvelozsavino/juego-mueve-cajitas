@@ -169,4 +169,19 @@ public class GameInfo implements Parcelable {
         dest.writeString(bitmapUrl);
         dest.writeLong(timeForSpeed);
     }
+
+
+    public byte[] pack(){
+        Parcel parcel = Parcel.obtain();
+        this.writeToParcel(parcel, 0);
+        byte[] bytes = parcel.marshall();
+        parcel.recycle();
+        return bytes;
+    }
+    static public GameInfo unpack(byte[] bytes){
+        Parcel parcel = Parcel.obtain();
+        parcel.unmarshall(bytes,0, bytes.length);
+        parcel.setDataPosition(0);
+        return CREATOR.createFromParcel(parcel);
+    }
 }
