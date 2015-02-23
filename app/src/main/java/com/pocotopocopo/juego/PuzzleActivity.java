@@ -67,6 +67,7 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog countDownDialog;
     private Dialog pauseDialog;
     private Dialog winDialog;
+    private Dialog gameOverDialog;
     private boolean soundEnabled;
     private TurnBasedMatch match;
 
@@ -195,10 +196,17 @@ public class PuzzleActivity extends BaseActivity{
         loadSounds();
 
 
-
 //        chrono.setCountUp(false);
 //        chrono.setTime(10000);
+        chrono.setOnFinishListener(new ChronometerView.OnFinishListener() {
+            @Override
+            public void onFinish() {
+                gameStatus = GameStatus.FINISHED;
+                gameOver();
+                //Toast.makeText(getApplicationContext(),"se acabo el tiempo",Toast.LENGTH_LONG).show();
 
+            }
+        });
         SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
@@ -253,6 +261,12 @@ public class PuzzleActivity extends BaseActivity{
 
         initListeners();
 
+        puzzle.setOnMovePieceListener(new Puzzle.OnMovePieceListener() {
+            @Override
+            public void onPieceMoved() {
+                moveCounterText.setText(getString(R.string.moves_text, ++moveCounter));
+                playSound(clickId,1f);
+            }
 
         if (savedInstanceState!=null){
 
@@ -350,7 +364,40 @@ public class PuzzleActivity extends BaseActivity{
         });
     }
 
+    private void playSound(int sound, float rate){
+        if (soundEnabled && loadedSound){
+            soundPool.play(sound,volume,volume,1,1,rate);
+        }
+    }
+
+    private void gameOver(){
+        playSound(buuuu,1f);
+        gameOverDialog = new Dialog(PuzzleActivity.this);
+        gameOverDialog.setCancelable(false);
+        gameOverDialog.setContentView(R.layout.game_over_screen);
+        gameOverDialog.setTitle(R.string.game_over_title);
+        Button exitButton = (Button) gameOverDialog.findViewById(R.id.exitGameOverButton);
+        Button retryButton = (Button) gameOverDialog.findViewById(R.id.retryGameOverButton);
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameOverDialog.cancel();
+                finish();
+            }
+        });
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameOverDialog.cancel();
+                restartGame();
+            }
+        });
+        gameOverDialog.show();
+
+
+    }
     private void showWinDialog(){
+        playSound(applause,1f);
         winDialog = new Dialog(PuzzleActivity.this);
         winDialog.setCancelable(false);
         winDialog.setContentView(R.layout.win_screen_layout);
@@ -390,8 +437,13 @@ public class PuzzleActivity extends BaseActivity{
     public void restartGame(){
         moveCounter=0;
         moveCounterText.setText(getString(R.string.moves_text,moveCounter));
-
-        chrono.reset();
+        if (gameInfo.getGameMode()==GameMode.SPEED){
+            chrono.setCountUp(false);
+            chrono.setTime(gameInfo.getTimeForSpeed()*1000);
+            Log.d(TAG,"gamemode = speed " + gameInfo.getGameMode().toString());
+            Log.d(TAG,"time = " + chrono.getTime());
+        }
+//        chrono.reset();
         gameStatus = GameStatus.STARTING;
         puzzle.randomizeBoard();
         puzzle.update();
@@ -413,9 +465,7 @@ public class PuzzleActivity extends BaseActivity{
                     int time = (int)(millisUntilFinished/1000);
                     countDownText.setText(Integer.toString(time));
                     if (millisUntilFinished%1000>800) {
-                        if (loadedSound && soundEnabled) {
-                            soundPool.play(beepId, volume, volume, 2, 0, 1f);
-                        }
+                        playSound(beepId,1f);
                     }
                 }catch(Exception e){
                     Log.d(TAG,e.getMessage());
@@ -427,9 +477,7 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onFinish() {
                 countDownDialog.dismiss();
-                if (loadedSound && soundEnabled) {
-                    soundPool.play(beepId, volume, volume, 2, 0, 0.25f);
-                }
+                playSound(beepId,0.25f);
                 chrono.start();
                 gameStatus=GameStatus.PLAYING;
             }
