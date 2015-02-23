@@ -6,6 +6,10 @@ import android.os.Parcelable;
 /**
  * Created by nico on 22/02/15.
  */
+
+/**
+ * PlayerScore
+ */
 public class PlayerScore implements Parcelable {
     private int playerId;
     private int movements;
