@@ -55,6 +55,8 @@ public class PuzzleActivity extends BaseActivity{
     private SurfaceTexture dummySurfaceTexture;
     private int clickId;
     private int beepId;
+    private int applause;
+    private int buuuu;
     private boolean startedGame=false;
 
 
@@ -114,6 +116,11 @@ public class PuzzleActivity extends BaseActivity{
         clickId = soundPool.load(getApplicationContext(),R.raw.click,2);
         loadedSound=false;
         beepId = soundPool.load(getApplicationContext(),R.raw.beep,1);
+        loadedSound=false;
+        buuuu = soundPool.load(getApplicationContext(),R.raw.buu,1);
+        loadedSound=false;
+        applause = soundPool.load(getApplicationContext(),R.raw.applause,1);
+
 
 //        loadedSound=false;
 //        musicId = soundPool.load(getApplicationContext(),R.raw.music,2);
@@ -258,9 +265,7 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onPieceMoved() {
                 moveCounterText.setText(getString(R.string.moves_text, ++moveCounter));
-                if (loadedSound && soundEnabled) {
-                    soundPool.play(clickId, volume, volume, 2, 0, 1f);
-                }
+                playSound(clickId,1f);
             }
 
             @Override
@@ -337,7 +342,14 @@ public class PuzzleActivity extends BaseActivity{
         }
     }
 
+    private void playSound(int sound, float rate){
+        if (soundEnabled && loadedSound){
+            soundPool.play(sound,volume,volume,1,1,rate);
+        }
+    }
+
     private void gameOver(){
+        playSound(buuuu,1f);
         gameOverDialog = new Dialog(PuzzleActivity.this);
         gameOverDialog.setCancelable(false);
         gameOverDialog.setContentView(R.layout.game_over_screen);
@@ -363,6 +375,7 @@ public class PuzzleActivity extends BaseActivity{
 
     }
     private void showWinDialog(){
+        playSound(applause,1f);
         winDialog = new Dialog(PuzzleActivity.this);
         winDialog.setCancelable(false);
         winDialog.setContentView(R.layout.win_screen_layout);
@@ -430,9 +443,7 @@ public class PuzzleActivity extends BaseActivity{
                     int time = (int)(millisUntilFinished/1000);
                     countDownText.setText(Integer.toString(time));
                     if (millisUntilFinished%1000>800) {
-                        if (loadedSound && soundEnabled) {
-                            soundPool.play(beepId, volume, volume, 2, 0, 1f);
-                        }
+                        playSound(beepId,1f);
                     }
                 }catch(Exception e){
                     Log.d(TAG,e.getMessage());
@@ -444,9 +455,7 @@ public class PuzzleActivity extends BaseActivity{
             @Override
             public void onFinish() {
                 countDownDialog.dismiss();
-                if (loadedSound && soundEnabled) {
-                    soundPool.play(beepId, volume, volume, 2, 0, 0.25f);
-                }
+                playSound(beepId,0.25f);
                 chrono.start();
                 gameStatus=GameStatus.PLAYING;
             }
