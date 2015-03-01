@@ -1,24 +1,16 @@
 package com.pocotopocopo.juego;
 
 import android.content.Context;
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.pocotopocopo.juego.R;
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -33,7 +25,7 @@ public class BackgroundPopUpWindow {
 
     private AdapterView.OnItemClickListener listener;
 
-    public BackgroundPopUpWindow(Context context, final AdapterView.OnItemClickListener listener){
+    public BackgroundPopUpWindow(Context context, boolean isMultiplayer, final AdapterView.OnItemClickListener listener){
         this.context=context;
 
         popupWindow=new ListPopupWindow(context);
@@ -41,7 +33,9 @@ public class BackgroundPopUpWindow {
         data=new ArrayList<>();
         data.add(new BackgroundOption(context.getString(R.string.game_background_plain), R.drawable.plain,BackgroundMode.PLAIN));
         data.add(new BackgroundOption(context.getString(R.string.game_background_fixed_image), R.drawable.picture,BackgroundMode.IMAGE));
-        data.add(new BackgroundOption(context.getString(R.string.game_background_video), R.drawable.video, BackgroundMode.VIDEO));
+        if (!isMultiplayer) {
+            data.add(new BackgroundOption(context.getString(R.string.game_background_video), R.drawable.video, BackgroundMode.VIDEO));
+        }
 
         BackgroundAdapter adapter = new BackgroundAdapter(context,android.R.layout.simple_list_item_1,data);
 
@@ -140,7 +134,7 @@ public class BackgroundPopUpWindow {
             View v = convertView;
             if (v == null) {
                 LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = inflater.inflate(R.layout.title_button_layout, null);
+                v = inflater.inflate(R.layout.titled_button_widget_layout, null);
             }
             BackgroundOption backgroundOption = items.get(position);
             if (backgroundOption != null) {

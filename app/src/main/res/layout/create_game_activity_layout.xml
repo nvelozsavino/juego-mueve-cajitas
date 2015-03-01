@@ -18,18 +18,28 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="5dp"
         android:weightSum="3">
-        <com.google.android.gms.common.SignInButton
+
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/signInButton" />
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sign_out"
-            android:id="@+id/signOutButton"
-            android:visibility="gone"
-            android:layout_weight="1" />
+            android:id="@+id/signInLayout"
+            android:visibility="gone">
+
+            <com.google.android.gms.common.SignInButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/signInButton" />
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_out"
+                android:id="@+id/signOutButton"
+                android:visibility="gone"
+                android:layout_weight="1" />
+        </LinearLayout>
 
         <com.pocotopocopo.juego.TitledButton
             android:id="@+id/backgroundButton"
@@ -54,6 +64,7 @@
             titled_button:additionalText="@string/not_showing_numbers"
             titled_button:titleText="@string/game_numbers_title"
             />
+
     </LinearLayout>
 
     <LinearLayout
@@ -70,7 +81,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_horizontal"
+            android:gravity="center_horizontal|bottom"
             android:id="@+id/colsButtons">
             <ImageView
                 android:layout_width="wrap_content"
@@ -195,7 +206,8 @@
         android:gravity="center_vertical"
         android:measureWithLargestChild="false"
         android:baselineAligned="false"
-        android:paddingTop="20dp">
+        android:paddingTop="20dp"
+        android:id="@+id/startLayout">
 
         <com.pocotopocopo.juego.TitledButton
             android:id="@+id/traditionalButton"
@@ -218,14 +230,6 @@
             titled_button:hasAdditionalText="true"
             android:layout_weight="1" />
 
-        <com.pocotopocopo.juego.TitledButton
-            android:id="@+id/multiplayerButton"
-            android:layout_width="wrap_content"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            titled_button:iconSrc="@drawable/multiplayer"
-            titled_button:titleText="Multiplayer"/>
     </LinearLayout>
 
 </LinearLayout>

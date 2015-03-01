@@ -3,14 +3,8 @@ package com.pocotopocopo.juego;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.text.Layout;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -49,7 +43,7 @@ public class TitledButton extends RelativeLayout {
         } finally {
             typedArray.recycle();
         }
-        inflate(context, R.layout.title_button_layout, this);
+        inflate(context, R.layout.titled_button_widget_layout, this);
         init();
     }
 

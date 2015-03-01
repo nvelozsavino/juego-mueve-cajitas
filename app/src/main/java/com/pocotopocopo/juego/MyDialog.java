@@ -1,17 +1,11 @@
 package com.pocotopocopo.juego;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.NumberPicker;
-import android.widget.TextView;
 
 /**
  * Created by Ale on 2/10/2015.
@@ -24,7 +18,7 @@ public class MyDialog extends Dialog implements Button.OnClickListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.select_time_dialog_widget);
+        setContentView(R.layout.select_time_widget_layout);
         //okButton = (Button) this.findViewById(R.id.okTimeDialogButton);
         minutesPicker = (NumberPicker) this.findViewById(R.id.minutesPicker);
         secondsPicker = (NumberPicker) this.findViewById(R.id.secondsPicker);

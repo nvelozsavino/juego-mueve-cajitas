@@ -1,10 +1,11 @@
 package com.pocotopocopo.juego;
 
-import android.content.Context;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -17,15 +18,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListPopupWindow;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.games.Game;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 
 public class CreateGameActivity extends BaseActivity implements CountDownPickerDialog.CountDownPickerListener {
@@ -64,7 +66,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
     private TitledButton traditionalButton;
     private TitledButton speedButton;
-    private TitledButton multiplayerButton;
 
 
     private LinearLayout imageButtonsLayout;
@@ -83,6 +84,11 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
     private boolean showNumbers=true;
 
     private long timeForSpeed=GameConstants.DEFAULT_TIME_SPEED;
+    private boolean isMultiplayer=false;
+    private LinearLayout signInLayout;
+
+
+
 
     private void showTimeDialog(){
         CountDownPickerDialog countDownPickerDialog = new CountDownPickerDialog();
@@ -123,8 +129,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
     private void startGame(){
         Log.d(TAG,"startGame");
-        GameActivity nextActivity = GameActivity.getGameActivity(gameInfo.getGameMode());
-        Intent intent = new Intent(getApplicationContext(),nextActivity.getActivityClass());
         if (gameInfo.getBackgroundMode().equals(BackgroundMode.IMAGE)) {
             Bitmap resultBitmap = imgView.getCroppedImage();
             if (resultBitmap != null) {
@@ -141,11 +145,22 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
             }
         }
-        intent.putExtra(GameConstants.GAME_INFO, gameInfo);
 
-        Log.d(TAG, "cree todo el intent y el result");
+        if (isMultiplayer){
+            Intent intentData = new Intent();
+            intentData.putExtra(GameConstants.GAME_INFO,gameInfo);
 
-        startActivity(intent);
+            setResult(Activity.RESULT_OK, intentData);
+            finish();
+        } else {
+            Intent intent = new Intent(getApplicationContext(), GameActivity.PUZZLE.getActivityClass());
+            intent.putExtra(GameConstants.GAME_INFO, gameInfo);
+
+            Log.d(TAG, "cree todo el intent y el result");
+
+            startActivity(intent);
+        }
+
 
 
 
@@ -159,7 +174,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         imgView= (BitmapCropperView) findViewById(R.id.bitmapCropperView);
         traditionalButton = (TitledButton)findViewById(R.id.traditionalButton);
         speedButton= (TitledButton)findViewById(R.id.speedButton);
-        multiplayerButton= (TitledButton)findViewById(R.id.multiplayerButton);
         newImageButton=(ImageView)findViewById(R.id.newImageButton);
         rotateCCW = (ImageView)findViewById(R.id.rotateCCW);
         rotateCW = (ImageView)findViewById(R.id.rotateCW);
@@ -175,7 +189,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
         backgroundModeButton=(TitledButton)findViewById(R.id.backgroundButton);
         showNumbersButton=(TitledButton)findViewById(R.id.showNumbersButton);
-
+        signInLayout = (LinearLayout)findViewById(R.id.signInLayout);
 
     }
 
@@ -191,7 +205,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             }
         });
 
-        final BackgroundPopUpWindow backgroundPopUpWindow=new BackgroundPopUpWindow(getApplicationContext(),new AdapterView.OnItemClickListener(){
+        final BackgroundPopUpWindow backgroundPopUpWindow=new BackgroundPopUpWindow(getApplicationContext(),isMultiplayer,new AdapterView.OnItemClickListener(){
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -235,7 +249,11 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         traditionalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (isMultiplayer){
+                    //TODO: init MultiplayerMatch Data
+                }
                 gameInfo.setGameMode(GameMode.TRADITIONAL);
+
                 startGame();
             }
         });
@@ -248,13 +266,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             }
         });
 
-        multiplayerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gameInfo.setGameMode(GameMode.MULTIPLAYER);
-                startGame();
-            }
-        });
 
         newImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -340,7 +351,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG,"onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_game_layout);
+        setContentView(R.layout.create_game_activity_layout);
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -351,7 +362,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
 
         initViews();
-        initListeners();
+
 
 
 
@@ -371,16 +382,29 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             } else {
                 if (extras != null) {
 
-                    Log.d(TAG, "Intent no es Null");
-                    if (extras.containsKey(GameConstants.GAME_INFO)) {
-                        gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
-
-
-                    } else {
-                        Log.e(TAG, "Error, invalid intent");
-                        finish();
-                        return;
+                    if (extras.containsKey(GameConstants.IS_MULTIPLAYER)){
+                        isMultiplayer=extras.getBoolean(GameConstants.IS_MULTIPLAYER);
                     }
+                    if (!isMultiplayer) {
+                        Log.d(TAG, "Intent no es Null");
+                        if (extras.containsKey(GameConstants.GAME_INFO)) {
+                            gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
+                        } else {
+                            Log.e(TAG, "Error, invalid intent");
+                            finish();
+                            return;
+                        }
+                    } else {
+//                        if (extras.containsKey(GameConstants.MULTIPLAYER_MATCH)){
+//                            match=extras.getParcelable(GameConstants.MULTIPLAYER_MATCH);
+//                        } else {
+//                            Log.e(TAG, "Error, invalid intent, no match");
+//                            finish();
+//                            return;
+//                        }
+                        gameInfo = new GameInfo(4,4,BackgroundMode.PLAIN,GameMode.MULTIPLAYER,true);
+                    }
+
                 } else {
                     Log.e(TAG, "Error, null intent");
                     finish();
@@ -405,10 +429,12 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             imgView.setRectTopNorm(savedInstanceState.getFloat(GameConstants.RECT_TOP_NORM));
             totalRotation = savedInstanceState.getFloat(GameConstants.ROTATION);
             imageUri = savedInstanceState.getParcelable(GameConstants.IMAGE_URI);
+            isMultiplayer = savedInstanceState.getBoolean(GameConstants.IS_MULTIPLAYER);
+            //match = savedInstanceState.getParcelable(GameConstants.MULTIPLAYER_MATCH);
 
 //            rotateImage(totalRotation,false);
         }
-
+        initListeners();
         setAccordingGameInfo();
 
 
@@ -426,6 +452,15 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
     }
 
     private void setAccordingGameInfo(){
+        if (isMultiplayer){
+            signInLayout.setVisibility(View.GONE);
+            speedButton.setVisibility(View.GONE);
+            traditionalButton.setTitleText(getString(R.string.start_game));
+        } else {
+            signInLayout.setVisibility(View.VISIBLE);
+            speedButton.setVisibility(View.VISIBLE);
+            traditionalButton.setTitleText(getString(R.string.game_mode_traditional));
+        }
         cols = gameInfo.getCols();
         rows = gameInfo.getRows();
         colsText.setText(Integer.toString(cols));
@@ -462,7 +497,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 backgroundModeButton.setAdditionalText(getString(R.string.game_background_plain));
                 backgroundModeButton.setIconResource(R.drawable.plain);
                 imageButtonsLayout.setVisibility(View.GONE);
-                multiplayerButton.setVisibility(View.VISIBLE);
                 gameInfo.setNumbersVisible(true);
                 clearBitmap();
                 break;
@@ -470,7 +504,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 backgroundModeButton.setAdditionalText(getString(R.string.game_background_fixed_image));
                 backgroundModeButton.setIconResource(R.drawable.picture);
                 imageButtonsLayout.setVisibility(View.VISIBLE);
-                multiplayerButton.setVisibility(View.VISIBLE);
                 gameInfo.setNumbersVisible(false);
                 break;
             case VIDEO:
@@ -478,7 +511,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
                 backgroundModeButton.setIconResource(R.drawable.video);
                 imageButtonsLayout.setVisibility(View.GONE);
                 clearBitmap();
-                multiplayerButton.setVisibility(View.GONE);
                 gameInfo.setNumbersVisible(false);
                 break;
         }
@@ -509,8 +541,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
         @Override
         protected Void doInBackground(Void... params) {
-
-
 
             bitmap =  compressBitmap(imageUri, width,height);
             return null;
@@ -544,6 +574,9 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         outState.putFloat(GameConstants.ROTATION,totalRotation);
         outState.putParcelable(ORIGINAL_IMAGE,originalBitmap);
         outState.putParcelable(GameConstants.IMAGE_URI, imageUri);
+        //outState.putParcelable(GameConstants.MULTIPLAYER_MATCH, match);
+        outState.putBoolean(GameConstants.IS_MULTIPLAYER, isMultiplayer);
+
 
         super.onSaveInstanceState(outState);
 
@@ -579,10 +612,6 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             if (imageUri!=null) {
                 this.new GetImageTask(imageUri).execute();
             }
-
-
-
-
 
         } else {
             if(imgView.getImageBitmap()==null){
@@ -630,5 +659,36 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             }
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isMultiplayer){
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+            alertDialogBuilder.setMessage("Do you want to cancel the multiplayer match");
+
+            alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("Yes",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                //Games.TurnBasedMultiplayer.cancelMatch(googleApiClient, match.getMatchId());
+                                finish();
+                            }
+                        })
+                .setNegativeButton("No",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+
+            alertDialogBuilder.show();
+        } else {
+            super.onBackPressed();
+        }
     }
 }

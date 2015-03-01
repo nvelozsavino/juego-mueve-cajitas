@@ -46,7 +46,7 @@ public class CountDownPickerDialog extends DialogFragment {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.select_time_dialog_widget, null);
+        View view = inflater.inflate(R.layout.select_time_widget_layout, null);
 
         Bundle bundle = getArguments();
 

@@ -46,7 +46,7 @@ public class TimeMinSecPicker extends FrameLayout {
     public TimeMinSecPicker(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.select_time_dialog_widget,this,true);
+        inflater.inflate(R.layout.select_time_widget_layout,this,true);
         minutesPicker = (NumberPicker)findViewById(R.id.minutesPicker);
         minutesPicker.setMinValue(0);
         minutesPicker.setMaxValue(10);

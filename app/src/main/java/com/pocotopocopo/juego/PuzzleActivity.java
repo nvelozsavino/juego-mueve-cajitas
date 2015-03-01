@@ -1,5 +1,7 @@
 package com.pocotopocopo.juego;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,9 +26,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 
 import java.io.ByteArrayOutputStream;
@@ -71,13 +71,13 @@ public class PuzzleActivity extends BaseActivity{
     private Dialog winDialog;
     private Dialog gameOverDialog;
     private boolean soundEnabled;
-    private TurnBasedMatch match;
 
 
     private BitmapContainer bitmapContainer;
 
 
     private Puzzle puzzle;
+    private boolean isMultiplayer=false;
 
     @Override
     protected void initViews(){
@@ -143,9 +143,10 @@ public class PuzzleActivity extends BaseActivity{
         chrono.pause();
         pauseDialog = new Dialog(PuzzleActivity.this);
 
-        pauseDialog.setContentView(R.layout.pause_screen_layout);
+        pauseDialog.setContentView(R.layout.pause_dialog_layout);
         pauseDialog.setTitle(R.string.paused_text);
         pauseDialog.setCancelable(true);
+
         pauseDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
@@ -166,8 +167,36 @@ public class PuzzleActivity extends BaseActivity{
         exitGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //pauseDialog.cancel();
-                finish();
+
+                if (isMultiplayer){
+                    final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(pauseDialog.getContext());
+
+                    alertDialogBuilder.setMessage("Do you want to leave the multiplayer match");
+
+                    alertDialogBuilder
+                            .setCancelable(false)
+                            .setPositiveButton("Yes",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            pauseDialog.dismiss();
+                                            //Games.TurnBasedMultiplayer.cancelMatch(googleApiClient, match.getMatchId());
+                                            finish();
+                                        }
+                                    })
+                            .setNegativeButton("No",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id) {
+
+                                        }
+                                    });
+
+                    alertDialogBuilder.show();
+                } else {
+                    pauseDialog.dismiss();
+                    finish();
+                }
             }
         });
         retryButton.setOnClickListener(new View.OnClickListener() {
@@ -178,6 +207,9 @@ public class PuzzleActivity extends BaseActivity{
 
             }
         });
+        if (isMultiplayer){
+            retryButton.setVisibility(View.GONE);
+        }
         pauseDialog.show();
     }
     @Override
@@ -188,6 +220,17 @@ public class PuzzleActivity extends BaseActivity{
         }
     }
 
+    private void setGameInfo(Bundle extras){
+        if (extras.containsKey(GameConstants.GAME_INFO)) {
+            gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
+        } else {
+            Log.e(TAG, "Error, no gameInfo in intent");
+            finish();
+            return;
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
@@ -197,7 +240,7 @@ public class PuzzleActivity extends BaseActivity{
 
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.puzzle_activity_layout);
         Log.d(TAG, "setContentView");
 
         initViews();
@@ -215,16 +258,11 @@ public class PuzzleActivity extends BaseActivity{
         Log.d(TAG,"capture intent");
         if (intent!=null && intent.getExtras()!=null) {
             Bundle extras = intent.getExtras();
-            if (extras.containsKey(GameConstants.GAME_INFO)) {
-                gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
-                if (gameInfo.getGameMode().equals(GameMode.MULTIPLAYER)){
-                    match=extras.getParcelable(GameConstants.MULTIPLAYER_MATCH);
-                }
-            } else {
-                Log.e(TAG, "Error, no gameInfo in intent");
-                finish();
-                return;
+            if (extras.containsKey(GameConstants.IS_MULTIPLAYER)) {
+                isMultiplayer = extras.getBoolean(GameConstants.IS_MULTIPLAYER);
             }
+            setGameInfo(extras);
+
         } else {
             Log.e(TAG, "Error, null intent");
             finish();
@@ -265,10 +303,10 @@ public class PuzzleActivity extends BaseActivity{
         if (savedInstanceState!=null){
 
 
+
+            isMultiplayer=savedInstanceState.getBoolean(GameConstants.IS_MULTIPLAYER);
             gameInfo = savedInstanceState.getParcelable(GameConstants.GAME_INFO);
-            if (gameInfo.getGameMode().equals(GameMode.MULTIPLAYER)){
-                match=savedInstanceState.getParcelable(GameConstants.MULTIPLAYER_MATCH);
-            }
+
 
             int[] posArray= gameInfo.getPieceOrder();
 
@@ -311,6 +349,8 @@ public class PuzzleActivity extends BaseActivity{
             gameStatus=GameStatus.STARTING;
             startCountdown();
         }
+
+
     }
 
     private void playSound(int sound, float rate){
@@ -373,7 +413,7 @@ public class PuzzleActivity extends BaseActivity{
         playSound(buuuu,1f);
         gameOverDialog = new Dialog(PuzzleActivity.this);
         gameOverDialog.setCancelable(false);
-        gameOverDialog.setContentView(R.layout.game_over_screen);
+        gameOverDialog.setContentView(R.layout.game_over_dialog_layout);
         gameOverDialog.setTitle(R.string.game_over_title);
         Button exitButton = (Button) gameOverDialog.findViewById(R.id.exitGameOverButton);
         Button retryButton = (Button) gameOverDialog.findViewById(R.id.retryGameOverButton);
@@ -399,7 +439,7 @@ public class PuzzleActivity extends BaseActivity{
         playSound(applause,1f);
         winDialog = new Dialog(PuzzleActivity.this);
         winDialog.setCancelable(false);
-        winDialog.setContentView(R.layout.win_screen_layout);
+        winDialog.setContentView(R.layout.win_dialog_layout);
         winDialog.setTitle(R.string.congratulation_text);
         TextView movesWinText = (TextView) winDialog.findViewById(R.id.movesWinText);
         TextView timeWinText = (TextView) winDialog.findViewById(R.id.timeWinText);
@@ -419,8 +459,17 @@ public class PuzzleActivity extends BaseActivity{
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                winDialog.cancel();
-                finish();
+                if (isMultiplayer){
+                    Intent intentData = new Intent();
+                    intentData.putExtra(GameConstants.WIN_MOVEMENTS,moveCounter);
+                    intentData.putExtra(GameConstants.WIN_TIME,chrono.getTime());
+
+                    setResult(Activity.RESULT_OK,intentData);
+                    finish();
+                } else {
+                    winDialog.cancel();
+                    finish();
+                }
             }
         });
         retryButton.setOnClickListener(new View.OnClickListener() {
@@ -430,6 +479,10 @@ public class PuzzleActivity extends BaseActivity{
                 restartGame();
             }
         });
+        if (isMultiplayer){
+            retryButton.setVisibility(View.GONE);
+        }
+
         winDialog.show();
     }
 
@@ -452,7 +505,7 @@ public class PuzzleActivity extends BaseActivity{
     private void startCountdown(){
         countDownDialog = new Dialog(PuzzleActivity.this);
 
-        countDownDialog.setContentView(R.layout.count_down);
+        countDownDialog.setContentView(R.layout.count_down_widget_layout);
         countDownDialog.setCancelable(false);
         countDownDialog.setTitle(R.string.game_start_in);
         final TextView countDownText = (TextView) countDownDialog.findViewById(R.id.countDownText);
@@ -588,10 +641,8 @@ public class PuzzleActivity extends BaseActivity{
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         gameInfo.setPieceOrder(puzzle.getPositions());
-        outState.putParcelable(GameConstants.GAME_INFO,gameInfo);
-        if (gameInfo.getGameMode().equals(GameMode.MULTIPLAYER)){
-            outState.putParcelable(GameConstants.MULTIPLAYER_MATCH,match);
-        }
+        outState.putParcelable(GameConstants.GAME_INFO, gameInfo);
+        outState.putBoolean(GameConstants.IS_MULTIPLAYER,isMultiplayer);
         outState.putInt(MOVES_COUNTER_KEY,moveCounter);
         outState.putBoolean(LIVEFEED_KEY,liveFeedState);
         outState.putSerializable(GAME_STATUS_KEY,gameStatus);

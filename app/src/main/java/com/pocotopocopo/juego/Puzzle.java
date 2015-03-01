@@ -516,7 +516,7 @@ public class Puzzle extends ViewGroup {
 //        Log.d(TAG,"update()");
 //        Map<Integer,Rect> rectList = new HashMap<>();
         int miniBitmapWidth=0,miniBitmapHeight=0;
-        if (bitmapContainer.getBitmap()!=null){
+        if (bitmapContainer!=null && bitmapContainer.getBitmap()!=null){
 //            Log.d(TAG,"bitmapcontainer.bitmap no es null");
             miniBitmapWidth=bitmapContainer.getBitmap().getWidth()/cols;
             miniBitmapHeight=bitmapContainer.getBitmap().getHeight()/rows;
