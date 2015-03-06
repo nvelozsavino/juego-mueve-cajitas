@@ -1,6 +1,5 @@
-package com.pocotopocopo.juego;
+package com.pocotopocopo.juego.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,13 +18,18 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.games.Game;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
+import com.pocotopocopo.juego.BackgroundMode;
+import com.pocotopocopo.juego.BackgroundPopUpWindow;
+import com.pocotopocopo.juego.BitmapCompressor;
+import com.pocotopocopo.juego.BitmapCropperView;
+import com.pocotopocopo.juego.CountDownPickerDialog;
+import com.pocotopocopo.juego.GameActivity;
+import com.pocotopocopo.juego.GameConstants;
+import com.pocotopocopo.juego.GameInfo;
+import com.pocotopocopo.juego.GameMode;
+import com.pocotopocopo.juego.R;
+import com.pocotopocopo.juego.TitledButton;
 
 import java.io.ByteArrayOutputStream;
 
@@ -83,7 +87,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
     private int rows = 0;
     private boolean showNumbers=true;
 
-    private long timeForSpeed=GameConstants.DEFAULT_TIME_SPEED;
+    private long timeForSpeed= GameConstants.DEFAULT_TIME_SPEED;
     private boolean isMultiplayer=false;
     private LinearLayout signInLayout;
 
@@ -150,7 +154,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
             Intent intentData = new Intent();
             intentData.putExtra(GameConstants.GAME_INFO,gameInfo);
 
-            setResult(Activity.RESULT_OK, intentData);
+            setResult(RESULT_OK, intentData);
             finish();
         } else {
             Intent intent = new Intent(getApplicationContext(), GameActivity.PUZZLE.getActivityClass());
@@ -650,7 +654,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
 
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String imgDecodableString = cursor.getString(columnIndex);
-            Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString,rewWidth,reqHeight);
+            Bitmap bitmap = BitmapCompressor.decodeSampledBitmapFromFile(imgDecodableString, rewWidth, reqHeight);
             Log.d(TAG,"ImageDecodableString: " + imgDecodableString + ". w=" +bitmap.getWidth()+ " h="+bitmap.getHeight());
             return bitmap;
         } finally {

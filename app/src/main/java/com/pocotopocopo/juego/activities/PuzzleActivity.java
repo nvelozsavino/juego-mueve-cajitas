@@ -1,9 +1,7 @@
-package com.pocotopocopo.juego;
+package com.pocotopocopo.juego.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,7 +25,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
+import com.pocotopocopo.juego.BackgroundMode;
+import com.pocotopocopo.juego.BitmapContainer;
+import com.pocotopocopo.juego.ChronometerView;
+import com.pocotopocopo.juego.GameConstants;
+import com.pocotopocopo.juego.GameInfo;
+import com.pocotopocopo.juego.GameMode;
+import com.pocotopocopo.juego.GameStatus;
+import com.pocotopocopo.juego.Puzzle;
+import com.pocotopocopo.juego.R;
 
 import java.io.ByteArrayOutputStream;
 
@@ -249,7 +255,7 @@ public class PuzzleActivity extends BaseActivity{
 
 //        chrono.setCountUp(false);
 //        chrono.setTime(10000);
-        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
         soundEnabled = sharedPreferences.getBoolean(SOUND_ENABLED_KEY,true);
 
 
@@ -464,7 +470,7 @@ public class PuzzleActivity extends BaseActivity{
                     intentData.putExtra(GameConstants.WIN_MOVEMENTS,moveCounter);
                     intentData.putExtra(GameConstants.WIN_TIME,chrono.getTime());
 
-                    setResult(Activity.RESULT_OK,intentData);
+                    setResult(RESULT_OK,intentData);
                     finish();
                 } else {
                     winDialog.cancel();
@@ -630,7 +636,7 @@ public class PuzzleActivity extends BaseActivity{
         liveFeedState=liveFeedEnabled;
         stopLiveFeed();
 
-        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(SOUND_ENABLED_KEY,soundEnabled);
         editor.commit();

@@ -1,6 +1,5 @@
-package com.pocotopocopo.juego;
+package com.pocotopocopo.juego.activities;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +23,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.plus.Plus;
 import com.google.example.games.basegameutils.BaseGameUtils;
+import com.pocotopocopo.juego.AuthToken;
+import com.pocotopocopo.juego.MultiplayerUpdateListener;
+import com.pocotopocopo.juego.R;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -246,6 +248,9 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
     @Override
     protected void onStop() {
         Log.d(TAG,"onStop " + this.getClass());
+        if (googleApiClient!=null && googleApiClient.isConnected()) {
+            Games.TurnBasedMultiplayer.unregisterMatchUpdateListener(googleApiClient);
+        }
         googleApiClient.disconnect();
         super.onStop();
     }
@@ -256,7 +261,7 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
         //mAutoStartSignInFlow=true;
         mEmail =Plus.AccountApi.getAccountName(googleApiClient);
 
-
+        Games.TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient,new MultiplayerUpdateListener(this));
         startTask(mEmail,SCOPE).execute();
         connected();
     }
@@ -357,8 +362,11 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
     protected void signOut(){
         mSignInClicked = false;
         mAutoStartSignInFlow=false;
-
+        if (googleApiClient!=null && googleApiClient.isConnected()) {
+            Games.TurnBasedMultiplayer.unregisterMatchUpdateListener(googleApiClient);
+        }
         Games.signOut(googleApiClient);
+
         googleApiClient.disconnect();
 
     }

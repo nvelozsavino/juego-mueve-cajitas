@@ -7,7 +7,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
 
-    tools:context="com.pocotopocopo.juego.CreateGameActivity"
+    tools:context="com.pocotopocopo.juego.activities.CreateGameActivity"
     android:gravity="center_horizontal"
     android:measureWithLargestChild="false">
 

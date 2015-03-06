@@ -28,7 +28,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".StartScreenActivity"
+            android:name=".activities.StartScreenActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
 
@@ -39,7 +39,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PuzzleActivity"
+            android:name=".activities.PuzzleActivity"
             android:label="@string/app_name"
 
             android:screenOrientation="portrait">
@@ -58,12 +58,12 @@
             <!-- </intent-filter> -->
         </activity>
         <activity
-            android:name=".MultiplayerActivity"
+            android:name=".activities.MultiplayerActivity"
             android:screenOrientation="portrait">
 
         </activity>
         <activity
-            android:name=".CreateGameActivity">
+            android:name=".activities.CreateGameActivity">
             <!--android:label="@string/title_activity_bitmap_cropper" >-->
 
             <intent-filter>

@@ -3,6 +3,8 @@ package com.pocotopocopo.juego;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 /**
  * Created by nico on 22/02/15.
  */
@@ -10,7 +12,7 @@ import android.os.Parcelable;
 /**
  * PlayerScore
  */
-public class PlayerScore implements Parcelable {
+public class PlayerScore implements Parcelable,Serializable {
 //    private String playerId;
     private int movements=-1;
     private long time=-1;

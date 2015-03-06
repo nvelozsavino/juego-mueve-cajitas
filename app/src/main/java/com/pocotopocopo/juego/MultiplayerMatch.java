@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
@@ -19,7 +18,12 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 public class MultiplayerMatch {
     private static String TAG="MultiplayerMatch";
     private Context context;
-    private boolean isDoingTurn;
+
+    private boolean isSpinning = false;
+    //private boolean isDoingTurn;
+
+
+
     public interface MultiplayerListener {
         void showSpinner();
         void dismissSpinner();
@@ -27,18 +31,29 @@ public class MultiplayerMatch {
         void startMatch(TurnBasedMatch match);
         void rematch();
         void updateUI();
+        void showResults();
     }
     private MultiplayerListener multiplayerListener;
 
+    public void showResults(){
+        if (multiplayerListener!=null){
+            multiplayerListener.showResults();
+        }
+    }
+
     public void showSpinner(){
+        isSpinning=true;
         if (multiplayerListener!=null){
             multiplayerListener.showSpinner();
         }
     }
 
     public void dismissSpinner(){
-        if (multiplayerListener!=null){
-            multiplayerListener.dismissSpinner();
+        if (isSpinning) {
+            isSpinning = false;
+            if (multiplayerListener != null) {
+                multiplayerListener.dismissSpinner();
+            }
         }
     }
 
@@ -68,32 +83,7 @@ public class MultiplayerMatch {
         this.multiplayerListener = multiplayerListener;
     }
 
-    public void  processResult(TurnBasedMultiplayer.InitiateMatchResult result) {
-        Status status = result.getStatus();
-        if (!status.isSuccess()){
-            Log.d(TAG,"Error");
-            return;
-        }
 
-        TurnBasedMatch match = result.getMatch();
-
-        multiplayerListener.dismissSpinner();
-
-        if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
-            return;
-        }
-
-        if (match.getData() != null) {
-            // This is a game that has already started, so I'll just start
-            multiplayerListener.updateMatch(match);
-            Log.d(TAG,"TODO: update Match");
-            return;
-        }
-        Log.d(TAG,"TODO: Start Match");
-
-
-        multiplayerListener.startMatch(match);
-    }
 
     public boolean checkStatusCode(TurnBasedMatch match, int statusCode) {
         switch (statusCode) {
@@ -152,53 +142,6 @@ public class MultiplayerMatch {
     }
 
 
-    public void processResult(TurnBasedMultiplayer.CancelMatchResult result) {
-        dismissSpinner();
-
-        if (!checkStatusCode(null, result.getStatus().getStatusCode())) {
-            return;
-        }
-
-        isDoingTurn = false;
-
-        showWarning("Match", "This match is canceled.  All other players will have their game ended.");
-    }
-
-
-
-
-    public void processResult(TurnBasedMultiplayer.LeaveMatchResult result) {
-        TurnBasedMatch match = result.getMatch();
-        dismissSpinner();
-        if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
-            return;
-        }
-        isDoingTurn = false;//(match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
-        showWarning("Left", "You've left this match.");
-    }
-
-
-    public void processResult(TurnBasedMultiplayer.UpdateMatchResult result) {
-        TurnBasedMatch match = result.getMatch();
-        dismissSpinner();
-        if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
-            return;
-        }
-        if (match.canRematch()) {
-            askForRematch();
-        }
-
-        isDoingTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
-
-        if (isDoingTurn) {
-            updateMatch(match);
-            return;
-        }
-        updateUI();
-//        setViewVisibility();
-    }
-
-
     public void askForRematch() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
@@ -210,7 +153,7 @@ public class MultiplayerMatch {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
-                                multiplayerListener.rematch();
+                                rematch();
                             }
                         })
                 .setNegativeButton("No.",
@@ -286,6 +229,190 @@ public class MultiplayerMatch {
         }
         // OK, it's active. Check on turn status.
     }
+
+    /***
+     * CALLBACKS
+     */
+
+    /***
+     * Cancel Match
+     */
+    public ResultCallback<TurnBasedMultiplayer.CancelMatchResult> cancelMatchCallback = new ResultCallback<TurnBasedMultiplayer.CancelMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.CancelMatchResult cancelMatchResult) {
+            processCancelMatchResult(cancelMatchResult);
+        }
+    };
+
+    private void processCancelMatchResult(TurnBasedMultiplayer.CancelMatchResult cancelMatchResult) {
+        dismissSpinner();
+
+        if (!checkStatusCode(null, cancelMatchResult.getStatus().getStatusCode())) {
+            return;
+        }
+        //isDoingTurn = false;
+        showWarning("Match", "This match is canceled.  All other players will have their game ended.");
+    }
+
+    /***
+     * Take Turn
+     */
+    public ResultCallback<TurnBasedMultiplayer.UpdateMatchResult> takeTurnCallback = new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.UpdateMatchResult takeTurnResult) {
+            processTakeTurnResult(takeTurnResult);
+        }
+    };
+
+    public void processTakeTurnResult(TurnBasedMultiplayer.UpdateMatchResult takeTurnResult) {
+        TurnBasedMatch match = takeTurnResult.getMatch();
+        dismissSpinner();
+        if (!checkStatusCode(match, takeTurnResult.getStatus().getStatusCode())) {
+            return;
+        }
+        if (match.canRematch()) {
+            askForRematch();
+        }
+
+        boolean isMyTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
+
+        if (isMyTurn) {
+            //if is my turn => go to the game
+            updateMatch(match);
+        } else {
+            //Call update UI in case of you want to show that is someone turn
+            updateUI();
+        }
+//        setViewVisibility();
+    }
+
+    /***
+     * Leave Match During Turn
+     */
+    public ResultCallback<TurnBasedMultiplayer.LeaveMatchResult> leaveMatchDuringTurnCallback = new ResultCallback<TurnBasedMultiplayer.LeaveMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.LeaveMatchResult leaveMatchDuringTurnResult) {
+            processLeaveMatchDuringTurnResult(leaveMatchDuringTurnResult);
+        }
+    };
+
+    public void processLeaveMatchDuringTurnResult(TurnBasedMultiplayer.LeaveMatchResult leaveMatchDuringTurnResult) {
+        processLeaveMatchResult(leaveMatchDuringTurnResult); //is the same as LeaveMatch
+    }
+
+    /***
+     * Finish Match
+     */
+    public ResultCallback<TurnBasedMultiplayer.UpdateMatchResult> finishMatchCallback= new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.UpdateMatchResult finishMatchResult) {
+            processFinishMatchResult(finishMatchResult);
+        }
+    };
+
+    public void processFinishMatchResult(TurnBasedMultiplayer.UpdateMatchResult finishMatchResult) {
+        dismissSpinner();
+        TurnBasedMatch match = finishMatchResult.getMatch();
+        if (!checkStatusCode(match, finishMatchResult.getStatus().getStatusCode())) {
+            return;
+        }
+        showWarning("Finish", "The game has ended for all the participants");
+        //TODO: call results
+        showResults();
+
+    }
+
+
+    /***
+     * Finish Player Match
+     */
+    public ResultCallback<TurnBasedMultiplayer.UpdateMatchResult> finishPlayerMatchCallback= new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.UpdateMatchResult finishPlayerMatchResult) {
+            processFinishPlayerMatchResult(finishPlayerMatchResult);
+        }
+    };
+
+    public void processFinishPlayerMatchResult(TurnBasedMultiplayer.UpdateMatchResult finishPlayerMatchResult) {
+        dismissSpinner();
+        TurnBasedMatch match = finishPlayerMatchResult.getMatch();
+        if (!checkStatusCode(match, finishPlayerMatchResult.getStatus().getStatusCode())) {
+            return;
+        }
+        showWarning("Finish", "You finish your game");
+
+    }
+
+    /***
+     * Leave Match (no turn)
+     */
+    public ResultCallback<TurnBasedMultiplayer.LeaveMatchResult> leaveMatchCallback = new ResultCallback<TurnBasedMultiplayer.LeaveMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.LeaveMatchResult leaveMatchResult) {
+            processLeaveMatchResult(leaveMatchResult);
+        }
+    };
+
+    private void processLeaveMatchResult(TurnBasedMultiplayer.LeaveMatchResult leaveMatchResult) {
+        dismissSpinner();
+        TurnBasedMatch match = leaveMatchResult.getMatch();
+        if (!checkStatusCode(match, leaveMatchResult.getStatus().getStatusCode())) {
+            return;
+        }
+        //isDoingTurn = false;//(match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
+        showWarning("Left", "You've left this match.");
+    }
+
+
+    /***
+     * Rematch
+     */
+    public ResultCallback<TurnBasedMultiplayer.InitiateMatchResult> rematchCallback = new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.InitiateMatchResult rematchResult) {
+        processRematchResult(rematchResult);
+        }
+    };
+
+    private void processRematchResult(TurnBasedMultiplayer.InitiateMatchResult rematchResult) {
+        processCreateMatch(rematchResult); //Is the same as Create match
+    }
+
+    /***
+     * Create Match
+     */
+
+    public ResultCallback<TurnBasedMultiplayer.InitiateMatchResult> createMatchCallback = new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.InitiateMatchResult createMatchResult) {
+            processCreateMatch(createMatchResult);
+        }
+    };
+
+    public void processCreateMatch(TurnBasedMultiplayer.InitiateMatchResult createMatchResult) {
+        dismissSpinner();
+        Status status = createMatchResult.getStatus();
+        if (!status.isSuccess()){
+            Log.d(TAG,"Error");
+            return;
+        }
+
+        TurnBasedMatch match = createMatchResult.getMatch();
+        if (!checkStatusCode(match, createMatchResult.getStatus().getStatusCode())) {
+            return;
+        }
+
+        if (match.getData() != null) {
+            // This is a game that has already started, so I'll just start
+            updateMatch(match);
+            Log.d(TAG,"TODO: update Match");
+        } else { //I have to start a new match
+            Log.d(TAG, "TODO: Start Match");
+            startMatch(match);
+        }
+    }
+
+   
 
 
 
