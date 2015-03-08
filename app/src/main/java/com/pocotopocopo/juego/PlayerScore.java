@@ -12,8 +12,8 @@ import java.io.Serializable;
 /**
  * PlayerScore
  */
-public class PlayerScore implements Parcelable,Serializable {
-//    private String playerId;
+public class PlayerScore implements Parcelable,Serializable, Comparable<PlayerScore> {
+    private String playerId;
     private int movements=-1;
     private long time=-1;
 //    private boolean played=false;
@@ -28,22 +28,23 @@ public class PlayerScore implements Parcelable,Serializable {
 
 
 
-    public PlayerScore(int movements, long time) {
-//        this.playerId = playerId;
+    public PlayerScore(String playerId,int movements, long time) {
+        this.playerId = playerId;
         this.movements = movements;
         this.time = time;
     }
-    public PlayerScore(String playerId){
-//        this.playerId=playerId;
+    public PlayerScore(String playerId) {
+        this.playerId = playerId;
     }
 
-//    public String getPlayerId() {
-//        return playerId;
-//    }
 
-//    public void setPlayerId(String playerId) {
-//        this.playerId = playerId;
-//    }
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
+    }
 
     public int getMovements() {
         return movements;
@@ -68,15 +69,19 @@ public class PlayerScore implements Parcelable,Serializable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-//        dest.writeString(playerId);
+        dest.writeString(playerId);
         dest.writeInt(movements);
         dest.writeLong(time);
 //        dest.writeInt(played?1:0);
 
     }
 
+    public boolean isValid(){
+        return  (time>0 && movements>0);
+    }
+
     private PlayerScore(Parcel in){
-//        playerId=in.readString();
+        playerId=in.readString();
         movements=in.readInt();
         time=in.readLong();
 //        played=in.readInt()==1?true:false;
@@ -93,4 +98,28 @@ public class PlayerScore implements Parcelable,Serializable {
             return new PlayerScore[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        return (o!=null && o instanceof PlayerScore  && ((PlayerScore)o).playerId.equals(this.playerId));
+    }
+
+    @Override
+    public int compareTo(PlayerScore another) {
+        if (this.movements!=another.movements){
+            return (this.movements -another.movements);
+        } else {
+            return (int)(this.time-another.time);
+        }
+    }
+
+    public boolean update(PlayerScore playerScore){
+        if (equals(playerScore)){
+            this.movements=playerScore.movements;
+            this.time=playerScore.time;
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

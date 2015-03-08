@@ -6,11 +6,17 @@ import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
+import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by nico on 28/02/15.
@@ -29,17 +35,12 @@ public class MultiplayerMatch {
         void dismissSpinner();
         void updateMatch(TurnBasedMatch match);
         void startMatch(TurnBasedMatch match);
-        void rematch();
+        void finishPlayerMatch(TurnBasedMatch match);
+        void finishMatch(TurnBasedMatch match);
+        void rematch(TurnBasedMatch match);
         void updateUI();
-        void showResults();
     }
     private MultiplayerListener multiplayerListener;
-
-    public void showResults(){
-        if (multiplayerListener!=null){
-            multiplayerListener.showResults();
-        }
-    }
 
     public void showSpinner(){
         isSpinning=true;
@@ -64,15 +65,26 @@ public class MultiplayerMatch {
         }
     }
 
-    public void rematch(){
+    public void rematch(TurnBasedMatch match){
         if (multiplayerListener!=null){
-            multiplayerListener.rematch();
+            multiplayerListener.rematch(match);
         }
     }
 
     public void updateUI(){
         if (multiplayerListener!=null){
             multiplayerListener.updateUI();
+        }
+    }
+
+    public void finishPlayerMatch(TurnBasedMatch match){
+        if (multiplayerListener!=null){
+            multiplayerListener.finishPlayerMatch(match);
+        }
+    }
+    public void finishMatch(TurnBasedMatch match){
+        if (multiplayerListener!=null){
+            multiplayerListener.finishMatch(match);
         }
     }
 
@@ -92,10 +104,9 @@ public class MultiplayerMatch {
             case GamesStatusCodes.STATUS_NETWORK_ERROR_OPERATION_DEFERRED:
                 // This is OK; the action is stored by Google Play Services and will
                 // be dealt with later.
-                Toast.makeText(
-                        context,
-                        "Stored action for later.  (Please remove this toast before release.)",
-                        Toast.LENGTH_SHORT).show();
+
+                //TODO: Remove this toast before release
+                Toast.makeText(context,"Stored action for later.  (Please remove this toast before release.)",Toast.LENGTH_SHORT).show();
                 // NOTE: This toast is for informative reasons only; please remove
                 // it from your final application.
                 return true;
@@ -142,7 +153,7 @@ public class MultiplayerMatch {
     }
 
 
-    public void askForRematch() {
+    public void askForRematch(final TurnBasedMatch match) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
         alertDialogBuilder.setMessage("Do you want a rematch?");
@@ -153,7 +164,7 @@ public class MultiplayerMatch {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
-                                rematch();
+                                rematch(match);
                             }
                         })
                 .setNegativeButton("No.",
@@ -270,8 +281,9 @@ public class MultiplayerMatch {
         if (!checkStatusCode(match, takeTurnResult.getStatus().getStatusCode())) {
             return;
         }
-        if (match.canRematch()) {
-            askForRematch();
+        //TODO: this should not be handled here
+        if (match.canRematch()) { //Indicate that the game has finished
+            askForRematch(match);
         }
 
         boolean isMyTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
@@ -292,7 +304,7 @@ public class MultiplayerMatch {
     public ResultCallback<TurnBasedMultiplayer.LeaveMatchResult> leaveMatchDuringTurnCallback = new ResultCallback<TurnBasedMultiplayer.LeaveMatchResult>() {
         @Override
         public void onResult(TurnBasedMultiplayer.LeaveMatchResult leaveMatchDuringTurnResult) {
-            processLeaveMatchDuringTurnResult(leaveMatchDuringTurnResult);
+        processLeaveMatchDuringTurnResult(leaveMatchDuringTurnResult);
         }
     };
 
@@ -318,7 +330,7 @@ public class MultiplayerMatch {
         }
         showWarning("Finish", "The game has ended for all the participants");
         //TODO: call results
-        showResults();
+        finishMatch(match);
 
     }
 
@@ -340,6 +352,7 @@ public class MultiplayerMatch {
             return;
         }
         showWarning("Finish", "You finish your game");
+        finishPlayerMatch(match);
 
     }
 
@@ -412,7 +425,73 @@ public class MultiplayerMatch {
         }
     }
 
-   
+    public static boolean isGameFinish(TurnBasedMatch match){
+        List<String> participants=match.getParticipantIds();
+        for (String pId: participants){
+            int status=match.getParticipantStatus(pId);
+            switch (status){
+                case Participant.STATUS_INVITED:
+                    //There is at least one player invited who's not started playing
+                    Log.d(TAG,"Participant invited");
+                    return false;
+                case Participant.STATUS_JOINED:
+                    //There is at least one player joined who's not finished playing
+                    Log.d(TAG,"Participant joined");
+                    return false;
+                case Participant.STATUS_DECLINED:
+                    //This player decline the invitation: it doesn't count
+                    Log.d(TAG,"Participant declined");
+                    break;
+                case Participant.STATUS_FINISHED:
+                    //This player finished already: continue searching for others to see if they are also finished
+                    Log.d(TAG,"Participant finished");
+                    break;
+                case Participant.STATUS_LEFT:
+                    //This player left the match: it doesn't count, continue searching for others
+                    Log.d(TAG,"Participant left");
+                    break;
+                case Participant.STATUS_NOT_INVITED_YET:
+                    //There is at least one player which its invitation hasn't arrive yet
+                    Log.d(TAG,"Participant not invited yet");
+                    return false;
+                case Participant.STATUS_UNRESPONSIVE:
+                    //This player is unresponisve: ignore it and continue searching for others
+                    Log.d(TAG,"Participant unrseponsive");
+                    break;
+            }
+        }
+        //If it gets here, it means that all the players finished, left, are unresponsive or declined the invitation
+        return true;
+    }
+
+    public static String getNextParticipantId(GoogleApiClient googleApiClient, TurnBasedMatch match) {
+
+        String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
+        String myParticipantId = match.getParticipantId(playerId);
+
+        ArrayList<String> participantIds = match.getParticipantIds();
+
+        int desiredIndex = -1;
+
+        for (int i = 0; i < participantIds.size(); i++) {
+            if (participantIds.get(i).equals(myParticipantId)) {
+                desiredIndex = i + 1;
+            }
+        }
+
+        if (desiredIndex < participantIds.size()) {
+            return participantIds.get(desiredIndex);
+        }
+
+        if (match.getAvailableAutoMatchSlots() <= 0) {
+            // You've run out of automatch slots, so we start over.
+            return participantIds.get(0);
+        } else {
+            // You have not yet fully automatched, so null will find a new
+            // person to play against.
+            return null;
+        }
+    }
 
 
 

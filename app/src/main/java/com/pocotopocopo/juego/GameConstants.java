@@ -20,8 +20,9 @@ public class GameConstants {
 
 
     public static final String IMAGE_URI = "imageUri";
-    public static final String MULTIPLAYER_MATCH = "multiplayerMatch";
+    //public static final String MULTIPLAYER_MATCH = "multiplayerMatch";
     public static final String IS_MULTIPLAYER = "isMultiplayer";
     public static final String WIN_MOVEMENTS = "winMovements";
     public static final String WIN_TIME = "winTime";
+    public static final String MULTIPLAYER_GAME_DATA = "multiplayerGameData";
 }

@@ -5,10 +5,16 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.google.android.gms.games.multiplayer.ParticipantResult;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by nico on 22/02/15.
@@ -17,7 +23,7 @@ public class MultiplayerGameData implements Parcelable{
 
     private static final String TAG = "MultiplayerGameData";
     private GameInfo gameInfo;
-    private HashMap<String,PlayerScore> scoreList=new HashMap<>();
+    private List<PlayerScore> scoreList=new ArrayList<>();
 
 
     @Override
@@ -28,14 +34,14 @@ public class MultiplayerGameData implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeParcelable(gameInfo,flags);
-        dest.writeSerializable(scoreList);
+        dest.writeTypedList(scoreList);
 
     }
 
     private MultiplayerGameData(Parcel in){
         try {
             gameInfo = in.readParcelable(GameInfo.class.getClassLoader());
-            scoreList = (HashMap<String, PlayerScore>) in.readSerializable();
+            in.readTypedList(scoreList,PlayerScore.CREATOR);
         } catch (BadParcelableException e){
             Log.e(TAG, "Error", e);
         }
@@ -53,11 +59,17 @@ public class MultiplayerGameData implements Parcelable{
         return bytes;
     }
 
-    public void setScore(String playerId,PlayerScore score){
-        scoreList.put(playerId,score);
+
+    public void setScore(PlayerScore score){
+        if (scoreList.contains(score)){
+            int index=scoreList.indexOf(score);
+            scoreList.set(index,score);
+        } else {
+            scoreList.add(score);
+        }
     }
 
-    public HashMap<String,PlayerScore> getScoreList(){
+    public List<PlayerScore> getScoreList(){
         return scoreList;
     }
 
@@ -69,7 +81,7 @@ public class MultiplayerGameData implements Parcelable{
 
     public static MultiplayerGameData unpack(byte[] data){
         Parcel parcel = Parcel.obtain();
-        parcel.unmarshall(data,0, data.length);
+        parcel.unmarshall(data, 0, data.length);
         parcel.setDataPosition(0);
         return CREATOR.createFromParcel(parcel);
     }
@@ -87,47 +99,82 @@ public class MultiplayerGameData implements Parcelable{
     };
 
     public PlayerScore getScore(String playerId){
-        if (scoreList.containsKey(playerId)){
-            return scoreList.get(playerId);
+        PlayerScore ps =new PlayerScore(playerId);
+        if (scoreList.contains(ps)){
+            int index = scoreList.indexOf(ps);
+            return scoreList.get(index);
         } else {
             return null;
         }
 
     }
 
-    public Map<String,PlayerScore> getWinner(){
-        int minMovements=-1;
-        Map<String,PlayerScore> winners=new HashMap<>();
-        for (Map.Entry<String,PlayerScore> entry:scoreList.entrySet()){
-            PlayerScore score=entry.getValue();
-            String playerId=entry.getKey();
-            if (minMovements<0 || score.getMovements() <minMovements) {
-                winners.clear();
-                winners.put(playerId, score);
-                minMovements=score.getMovements();
-            } else if (minMovements<0 || score.getMovements() == minMovements){
-                winners.put(playerId, score);
-            }
-        }
 
-        if (scoreList.size()>1){
-            Map<String,PlayerScore> tie=new HashMap<>();
-            long minTime=-1;
-            for (Map.Entry<String,PlayerScore> entry:winners.entrySet()){
-                PlayerScore score = entry.getValue();
-                String playerId=entry.getKey();
-                if (minTime<0|| score.getTime()<minTime){
-                    tie.clear();
-                    tie.put(playerId, score);
-                    minTime=score.getTime();
-                } else if (minTime<0 || score.getTime()==minTime){
-                    tie.put(playerId, score);
+
+    public List<ParticipantResult> getResults(List<String> participantsIds){
+        List<ParticipantResult> participantResults = new ArrayList<>();
+
+        int winner =ParticipantResult.MATCH_RESULT_WIN;
+        Set<PlayerScore> copySet=new HashSet<>(scoreList);
+        int i=0;
+        for (String participant: participantsIds){
+            PlayerScore checkingPlayer = getScore(participant);
+
+            ParticipantResult participantResult;
+
+            if (checkingPlayer==null){
+                //checkingPlayer not even started to play
+                participantResult= new ParticipantResult(participant,ParticipantResult.MATCH_RESULT_NONE,ParticipantResult.PLACING_UNINITIALIZED);
+
+            } else {
+                //checkingPlayer is a participant who played
+                if (!checkingPlayer.isValid()){
+                    //checkingPlayer is a participant who leaved the game
+                    participantResult = new ParticipantResult(participant,ParticipantResult.MATCH_RESULT_DISCONNECT,ParticipantResult.PLACING_UNINITIALIZED);
+                } else {
+                    //checkingPlayer is a participant who completed the game
+                    int result = winner; //Initial state, winner or tie
+                    int pos=1; //initial position
+                    for (PlayerScore otherPlayer: copySet){ //compare checkingPlayer with every other participant
+                        if (otherPlayer.isValid() && !checkingPlayer.equals(otherPlayer)){
+                        //the otherPlayer is valid and is not the same as checkingPlayer
+                            if (checkingPlayer.compareTo(otherPlayer)>0) {
+                                //checkingPlayer loss with otherPlayer
+                                result=ParticipantResult.MATCH_RESULT_LOSS;
+                                pos++;
+
+                            } else if (checkingPlayer.compareTo(otherPlayer)==0){
+                                //checkingPlayer tied with otherPlayer
+                                if (pos==1){
+                                    //if is still the first mark as tie
+                                    result = ParticipantResult.MATCH_RESULT_TIE;
+                                } else {
+                                    //do nothing, is a loser already
+                                }
+
+                            } else {
+                                //do nothing
+                            }
+                        }
+
+                    }
+                    if (result!=ParticipantResult.MATCH_RESULT_LOSS){
+                        /**
+                         * if is not a loser, should be a winner or tied in the first place
+                         * with someone else and the winner variable should set to tie
+                         * otherwise, has no effect
+                         */
+
+                        winner=result;
+                    }
+                    participantResult  = new ParticipantResult(participant,result,pos);
+
                 }
             }
-            return tie;
-        } else {
-            return winners;
+            participantResults.add(participantResult);
         }
+
+        return participantResults;
     }
 
 }

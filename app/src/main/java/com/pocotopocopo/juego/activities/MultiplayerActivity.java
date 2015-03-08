@@ -35,22 +35,23 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
     public static final int RC_CREATE_GAME = 4815;
     public static final int RC_PLAY_GAME = 2342;
     private LinearLayout multiplayerActionsLayout;
+    private LinearLayout sessionActionsLayout;
     private Button multiplayerStartMatchButton;
     private Button multiplayerQuickMatchButton;
     private Button multiplayerCheckGamesMatchButton;
 
-    private LinearLayout sessionActionsLayout;
     private SignInButton signInButton;
     private Button signOutButton;
 
     private MultiplayerMatch multiplayerMatch;
+    private ActivityResult activityResult=null;
+
 
 //    private GameInfo gameInfo;
 
     final static int RC_SELECT_PLAYERS = 10000;
     final static int RC_LOOK_AT_MATCHES = 10001;
 
-    private Bundle gameOptions;
 
     private TurnBasedMatch match;
     private MultiplayerGameData multiplayerGameData;
@@ -108,34 +109,18 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
         multiplayerMatch=new MultiplayerMatch(this,this);
 
-        Intent intent = getIntent();
-
-//        if (intent != null) {
-//            Bundle extras = intent.getExtras();
-//            if (extras != null) {
-//                Log.d(TAG, "Intent no es Null");
-//                if (extras.containsKey(GameConstants.GAME_INFO)) {
-//                    gameInfo = extras.getParcelable(GameConstants.GAME_INFO);
-//                } else {
-//                    Log.e(TAG, "Error, invalid intent");
-//                    finish();
-//                    return;
-//                }
-//            } else {
-//                Log.e(TAG, "Error, null intent");
-//                finish();
-//                return;
-//            }
-//
-//        }
         if (savedInstanceState != null) {
-//            gameInfo = savedInstanceState.getParcelable(GameConstants.GAME_INFO);
+            match=savedInstanceState.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
+            multiplayerGameData=savedInstanceState.getParcelable(GameConstants.MULTIPLAYER_GAME_DATA);
+
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
 //        outState.putParcelable(GameConstants.GAME_INFO, gameInfo);
+        outState.putParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH,match);
+        outState.putParcelable(GameConstants.MULTIPLAYER_GAME_DATA,multiplayerGameData);
         super.onSaveInstanceState(outState);
     }
 
@@ -148,124 +133,10 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
         multiplayerActionsLayout.setVisibility(View.GONE);
     }
 
-   private void processActivityResult(int requestCode, int resultCode, Intent data){
 
 
-           if (requestCode == RC_CREATE_GAME){
-               googleApiClient.connect();
-               if (resultCode != RESULT_OK) {
-                   Log.d(TAG,"CREATE GAME back");
-                   Games.TurnBasedMultiplayer.cancelMatch(googleApiClient, match.getMatchId())
-                           .setResultCallback(multiplayerMatch.cancelMatchCallback);
-                   // user canceled
-                   return;
-               }
-
-               GameInfo gameInfo=data.getParcelableExtra(GameConstants.GAME_INFO);
-
-               multiplayerGameData = new MultiplayerGameData(gameInfo);
 
 
-               String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
-               String myParticipantId = match.getParticipantId(playerId);
-
-               multiplayerMatch.showSpinner();
-
-               Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), myParticipantId)
-                       .setResultCallback(multiplayerMatch.takeTurnCallback);
-
-           } else if (requestCode== RC_PLAY_GAME){
-               if (resultCode != RESULT_OK) {
-                   Log.d(TAG,"PLAY GAME Failed");
-                   if (match.getTurnStatus()==TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-
-                       String nextParticipantId = getNextParticipantId();
-
-                       Games.TurnBasedMultiplayer.leaveMatchDuringTurn(googleApiClient, match.getMatchId(),nextParticipantId)
-                               .setResultCallback(multiplayerMatch.leaveMatchDuringTurnCallback);
-                   } else {
-
-                       //This shouldn't happen ever
-                       Games.TurnBasedMultiplayer.leaveMatch(googleApiClient,match.getMatchId())
-                            .setResultCallback(multiplayerMatch.leaveMatchCallback);
-                   }
-                   // user canceled
-                   return;
-               }
-               String nextParticipantId = getNextParticipantId();
-               // Create the next turn
-
-               String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
-               String myParticipantId = match.getParticipantId(playerId);
-
-               int movements = data.getIntExtra(GameConstants.WIN_MOVEMENTS,-1);
-               long time = data.getLongExtra(GameConstants.WIN_TIME,-1L);
-               multiplayerGameData.setScore(myParticipantId, new PlayerScore(movements,time));
-
-
-               multiplayerMatch.showSpinner();
-
-               //Finish my turn
-               Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId())
-                       .setResultCallback(multiplayerMatch.finishMatchCallback); //Say that I'm finish with the match
-
-
-               if (!isGameFinish(match,multiplayerGameData)) { //TODO: check if the game has finished
-                   //If is another participant left
-                   //send turn
-                   Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), nextParticipantId)
-                           .setResultCallback(multiplayerMatch.takeTurnCallback);
-
-                   multiplayerGameData = null;
-               } else {
-                   //All Participants end their games
-
-                   multiplayerMatch.showSpinner();
-                   //TODO: Create Participant Result List
-                   List<ParticipantResult> results=new ArrayList<>();
-
-                   //I'm the last one who call finish, I have to see who won and finish the game
-                   Games.TurnBasedMultiplayer.finishMatch(googleApiClient, match.getMatchId(), multiplayerGameData.persist(), results)
-                       .setResultCallback(multiplayerMatch.finishMatchCallback); //TODO: check if this callback should be the same as the previous one
-               }
-
-           }
-
-   }
-
-
-    public static boolean isGameFinish(TurnBasedMatch match,MultiplayerGameData multiplayerGameData){
-        List<String> participants=match.getParticipantIds();
-        int activeParticipants=0;
-        boolean areAllPlayerFinished=true;
-        for (String pId: participants){
-            int status=match.getParticipantStatus(pId);
-            switch (status){
-                case Participant.STATUS_INVITED:
-                    Log.d(TAG,"Participant invited");
-                    return false;
-                case Participant.STATUS_JOINED:
-                    Log.d(TAG,"Participant joined");
-                    return false;
-                case Participant.STATUS_DECLINED:
-                    Log.d(TAG,"Participant declined");
-                    break;
-                case Participant.STATUS_FINISHED:
-                    Log.d(TAG,"Participant finished");
-                    break;
-                case Participant.STATUS_LEFT:
-                    Log.d(TAG,"Participant left");
-                    break;
-                case Participant.STATUS_NOT_INVITED_YET:
-                    Log.d(TAG,"Participant not invited yet");
-                    return false;
-                case Participant.STATUS_UNRESPONSIVE:
-                    Log.d(TAG,"Participant unrseponsive");
-                    break;
-            }
-        }
-        return areAllPlayerFinished;
-    }
 
 
     @Override
@@ -300,7 +171,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
         }
     }
 
-    private ActivityResult activityResult=null;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -336,9 +207,10 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                     .setAutoMatchCriteria(autoMatchCriteria)
                     .build();
 
-            // Start the match
+            // Start the match => this will call startMatch function
             Games.TurnBasedMultiplayer.createMatch(googleApiClient, tbmc)
                     .setResultCallback(multiplayerMatch.createMatchCallback);
+
 
             multiplayerMatch.showSpinner();
         } else if (requestCode == RC_LOOK_AT_MATCHES) {
@@ -349,13 +221,20 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                 return;
             }
 
-            TurnBasedMatch match = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
+            TurnBasedMatch matchReturned = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
             //TODO: Open a dialog to ask what to do with that match (Play if Turn, Leave, Cancel)
-            if (match != null) {
-                multiplayerMatch.updateMatch(match);
+            if (matchReturned != null) {
+                /**
+                 * Calling the class MultiplayerMatch tho handle this match. Acording to the match,
+                 * the callbacks functions startMatch, updateMatch or something else should trigger
+                 * this.match should be set in those callbacks
+                 */
+                multiplayerMatch.updateMatch(matchReturned);
+
+                Log.d(TAG, "Match = " + matchReturned);
             }
 
-            Log.d(TAG, "Match = " + match);
+
         } else {
             if (googleApiClient!=null && googleApiClient.isConnected()){
                 processActivityResult(requestCode,resultCode,data);
@@ -367,34 +246,109 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
     }
 
-    public String getNextParticipantId() {
+    private void processActivityResult(int requestCode, int resultCode, Intent data){
 
-        String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
-        String myParticipantId = match.getParticipantId(playerId);
 
-        ArrayList<String> participantIds = match.getParticipantIds();
+        if (requestCode == RC_CREATE_GAME){
 
-        int desiredIndex = -1;
+            /**
+             * Here the match should be set from on create on the savedStateInstance
+             * because it comes from the startMatch callback
+             */
 
-        for (int i = 0; i < participantIds.size(); i++) {
-            if (participantIds.get(i).equals(myParticipantId)) {
-                desiredIndex = i + 1;
+            if (resultCode != RESULT_OK) {
+                Log.d(TAG,"CREATE GAME back");
+                Games.TurnBasedMultiplayer.cancelMatch(googleApiClient, match.getMatchId())
+                        .setResultCallback(multiplayerMatch.cancelMatchCallback);
+                // user canceled
+                multiplayerGameData=null;
+                match=null;
+                return;
             }
+
+            GameInfo gameInfo=data.getParcelableExtra(GameConstants.GAME_INFO);
+
+            multiplayerGameData = new MultiplayerGameData(gameInfo);
+
+
+            String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
+            String myParticipantId = match.getParticipantId(playerId);
+
+            multiplayerMatch.showSpinner();
+
+            /**
+             * I'm creating the game, I'm taking the first turn, this call is to set the initial data
+             * after that call updateMatch callback will be called
+             */
+            Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), myParticipantId)
+                    .setResultCallback(multiplayerMatch.takeTurnCallback);
+
+        } else if (requestCode== RC_PLAY_GAME){
+            /**
+             * Here the match should be set from on create on the savedStateInstance
+             * because it comes from the updateMatch callback
+             */
+            if (resultCode != RESULT_OK) {
+                Log.d(TAG,"Leaving Game");
+                if (match.getTurnStatus()==TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+
+                    String nextParticipantId = MultiplayerMatch.getNextParticipantId(googleApiClient,match);
+
+                    /**
+                     * I'm notifying that I've leaved the game during my turn, it's not going to
+                     * trigger any callback inside this activity, only show a message
+                     */
+                    Games.TurnBasedMultiplayer.leaveMatchDuringTurn(googleApiClient, match.getMatchId(),nextParticipantId)
+                            .setResultCallback(multiplayerMatch.leaveMatchDuringTurnCallback);
+                } else {
+
+                    //This shouldn't happen ever
+                    Games.TurnBasedMultiplayer.leaveMatch(googleApiClient,match.getMatchId())
+                            .setResultCallback(multiplayerMatch.leaveMatchCallback);
+                }
+                // user canceled
+                multiplayerGameData=null;
+                match=null;
+                return;
+            }
+            Log.d(TAG,"Turn finished");
+
+            // Create the next turn
+
+            String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
+            String myParticipantId = match.getParticipantId(playerId);
+
+            int movements = data.getIntExtra(GameConstants.WIN_MOVEMENTS,-1);
+            long time = data.getLongExtra(GameConstants.WIN_TIME,-1L);
+            if (match.getData()==null){
+                Log.e(TAG,"Error, no match data");
+                return;
+
+            }
+            multiplayerGameData = MultiplayerGameData.unpack(match.getData());
+            multiplayerGameData.setScore(new PlayerScore(myParticipantId,movements,time));
+
+
+            multiplayerMatch.showSpinner();
+            //Finish my turn
+            /**
+             * Say that I'm finish with the match, it should trigger a finishPlayerMatch callback
+             */
+            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId())
+                    .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+
+            /**
+             * The rest of the evaluation if the game is finished or not,
+             * is evaluated at the callback function finishPlayerMatch
+             */
+            //TODO: is really necesary?
+
+
+
         }
 
-        if (desiredIndex < participantIds.size()) {
-            return participantIds.get(desiredIndex);
-        }
-
-        if (match.getAvailableAutoMatchSlots() <= 0) {
-            // You've run out of automatch slots, so we start over.
-            return participantIds.get(0);
-        } else {
-            // You have not yet fully automatched, so null will find a new
-            // person to play against.
-            return null;
-        }
     }
+
 
 
     @Override
@@ -409,31 +363,39 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
     @Override
     public void updateMatch(TurnBasedMatch match) {
-        MultiplayerActivity.this.match=match;
-        int status = match.getStatus();
+        // Arrive a match, with valid data
         int turnStatus = match.getTurnStatus();
 
         switch (turnStatus) {
             case TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN:
                 if (match.getData()==null){
+                    //This should never happen, only for debug malformed games
                     Log.d(TAG,"No multiplayerGameData, cancelling");
-                    multiplayerMatch.showWarning("Invalid game!","The game was invalid");
+                    multiplayerMatch.showWarning("Invalid game!","The game was invalid, no data");
                     Games.TurnBasedMultiplayer.cancelMatch(googleApiClient,match.getMatchId())
                             .setResultCallback(multiplayerMatch.cancelMatchCallback);
+                    this.match=null;
+                    multiplayerGameData=null;
                     return;
                 }
 
                 multiplayerGameData = MultiplayerGameData.unpack(match.getData());
+                GameInfo gameInfo= multiplayerGameData.getGameInfo();
 
-                if (multiplayerGameData.getGameInfo()==null){
+                if (gameInfo==null){
+                    //This should never happen, only for debug malformed games where gameInfo is invalid
                     Log.d(TAG,"No multiplayerGameData, cancelling");
-                    multiplayerMatch.showWarning("Invalid game!","The game was invalid");
+                    multiplayerMatch.showWarning("Invalid game!","The game was invalid, no game info");
                     Games.TurnBasedMultiplayer.cancelMatch(googleApiClient,match.getMatchId())
                             .setResultCallback(multiplayerMatch.cancelMatchCallback);
+                    this.match=null;
+                    multiplayerGameData=null;
                     return;
                 }
-
-                GameInfo gameInfo= multiplayerGameData.getGameInfo();
+                this.match=match;
+                String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
+                String myParticipantId = match.getParticipantId(playerId);
+                multiplayerGameData.setScore(new PlayerScore(myParticipantId));
                 Intent intent = new Intent(getApplicationContext(), GameActivity.PUZZLE.getActivityClass());
                 intent.putExtra(GameConstants.IS_MULTIPLAYER,true);
                 intent.putExtra(GameConstants.GAME_INFO, gameInfo);
@@ -441,15 +403,22 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                 startActivityForResult(intent, RC_PLAY_GAME);
                 return;
             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
-                // Should return results.
+                //TODO: what is this?
+                // Should return results. -> ??? is from the google's example
                 multiplayerMatch.showWarning("Alas...", "It's not your turn.");
                 break;
             case TurnBasedMatch.MATCH_TURN_STATUS_INVITED:
-                multiplayerMatch.showWarning("Good inititative!",
-                        "Still waiting for invitations.\n\nBe patient!");
+                //TODO: what is this?
+                //I think this is when you invited people, and are waiting?
+                multiplayerMatch.showWarning("Good inititative!", "Still waiting for invitations.\n\nBe patient!");
+                break;
         }
+        /**
+         * if gets here, it wasn't your turn or your status is invited?
+         */
+        this.match=null;
+        multiplayerGameData=null;
 
-        multiplayerGameData = null;
 
 
 
@@ -458,22 +427,64 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
     @Override
     public void startMatch(TurnBasedMatch match) {
-        MultiplayerActivity.this.match=match;
+        this.match=match;
         Log.d(TAG,"startGame");
         Intent intent = new Intent(getApplicationContext(),GameActivity.CREATE_GAME.getActivityClass());
         intent.putExtra(GameConstants.IS_MULTIPLAYER,true);
-//        intent.putExtra(GameConstants.GAME_INFO, gameInfo);
-        //intent.putExtra(GameConstants.MULTIPLAYER_MATCH, match);
         Log.d(TAG, "cree todo el intent y el result");
         startActivityForResult(intent, RC_CREATE_GAME);
     }
 
     @Override
-    public void rematch() {
-        showSpinner();
+    public void finishPlayerMatch(TurnBasedMatch match) {
+        /**
+         * This should come from a call from finishPlayer after a puzzle is completed, here the
+         * multiplayerGameData should contain the score of the player.
+         * The spinner should prevent user doing something else
+         */
+
+
+        if (!MultiplayerMatch.isGameFinish(match)) {
+            //If is another participant left
+            //send turn
+            multiplayerMatch.showSpinner();
+            String nextParticipantId = MultiplayerMatch.getNextParticipantId(googleApiClient,match);
+            Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), nextParticipantId)
+                    .setResultCallback(multiplayerMatch.takeTurnCallback);
+
+
+        } else {
+            //All Participants end their games
+
+            multiplayerMatch.showSpinner();
+            List<ParticipantResult> results=multiplayerGameData.getResults(match.getParticipantIds());
+            //I'm the last one who call finish, I have to see who won and finish the game
+            Games.TurnBasedMultiplayer.finishMatch(googleApiClient, match.getMatchId(), multiplayerGameData.persist(), results)
+                    .setResultCallback(multiplayerMatch.finishMatchCallback);
+        }
+        multiplayerGameData = null;
+        this.match=null;
+    }
+
+    @Override
+    public void finishMatch(TurnBasedMatch match) {
+        /**
+         * If gets here, is because you call finishMatch and all the results should be available
+         * multiplayerGameData and match should be null
+         */
+        //TODO: Implement
+
+
+
+
+    }
+
+    @Override
+    public void rematch(TurnBasedMatch match) {
+        multiplayerMatch.showSpinner();
         Games.TurnBasedMultiplayer.rematch(googleApiClient, match.getMatchId())
                 .setResultCallback(multiplayerMatch.rematchCallback);
-        match = null;
+        this.match=null; //is going to be a new game
     }
 
     @Override
@@ -481,10 +492,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
     }
 
-    @Override
-    public void showResults() {
 
-    }
 
 
 }
