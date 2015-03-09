@@ -101,7 +101,12 @@ public class PlayerScore implements Parcelable,Serializable, Comparable<PlayerSc
 
     @Override
     public boolean equals(Object o) {
-        return (o!=null && o instanceof PlayerScore  && ((PlayerScore)o).playerId.equals(this.playerId));
+        if (o!=null && o instanceof PlayerScore){
+            String otherPlayerId = ((PlayerScore)o).playerId;
+            return (otherPlayerId!=null && this.playerId!=null && otherPlayerId.equals(this.playerId));
+        }
+        return false;
+
     }
 
     @Override

@@ -281,10 +281,7 @@ public class MultiplayerMatch {
         if (!checkStatusCode(match, takeTurnResult.getStatus().getStatusCode())) {
             return;
         }
-        //TODO: this should not be handled here
-        if (match.canRematch()) { //Indicate that the game has finished
-            askForRematch(match);
-        }
+
 
         boolean isMyTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
 
@@ -329,7 +326,7 @@ public class MultiplayerMatch {
             return;
         }
         showWarning("Finish", "The game has ended for all the participants");
-        //TODO: call results
+
         finishMatch(match);
 
     }

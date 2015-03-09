@@ -334,14 +334,16 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
             /**
              * Say that I'm finish with the match, it should trigger a finishPlayerMatch callback
              */
-            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId())
-                    .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+            Log.d(TAG,"MatchId "+ match.getMatchId() + " googleApi is connected? " + googleApiClient.isConnected());
+            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId());
+                    //.setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
 
             /**
              * The rest of the evaluation if the game is finished or not,
              * is evaluated at the callback function finishPlayerMatch
              */
             //TODO: is really necesary?
+            finishPlayerMatch(match);
 
 
 
@@ -442,7 +444,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
          * multiplayerGameData should contain the score of the player.
          * The spinner should prevent user doing something else
          */
-
+//
 
         if (!MultiplayerMatch.isGameFinish(match)) {
             //If is another participant left
@@ -464,6 +466,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
         }
         multiplayerGameData = null;
         this.match=null;
+        Log.d(TAG,"Match finished for this player");
     }
 
     @Override
@@ -472,7 +475,46 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
          * If gets here, is because you call finishMatch and all the results should be available
          * multiplayerGameData and match should be null
          */
-        //TODO: Implement
+        List<String> participantIds =match.getParticipantIds();
+        String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
+        String myParticipantId = match.getParticipantId(playerId);
+        if (match.getData()==null){
+            Log.e(TAG, "Error, no data in match");
+            return;
+        }
+        multiplayerGameData=MultiplayerGameData.unpack(match.getData());
+        List<PlayerScore> scoreList=multiplayerGameData.getScoreList();
+        PlayerScore myScore=multiplayerGameData.getScore(myParticipantId);
+        multiplayerMatch.showWarning("Result", "You did " + myScore.getMovements() + " movements in " + myScore.getTime() + " time" );
+        for (String participantId: participantIds){
+
+            ParticipantResult participantResult = match.getParticipant(participantId).getResult();
+            if (participantId==myParticipantId){
+                //this is my result
+                switch (participantResult.getResult()) {
+                    case ParticipantResult.MATCH_RESULT_WIN:
+                        Log.d(TAG, "You win");
+                        multiplayerMatch.showWarning("Result", "You Win");
+                        break;
+                    case ParticipantResult.MATCH_RESULT_TIE:
+                        Log.d(TAG, "You Tied");
+                        multiplayerMatch.showWarning("Result", "You Tied");
+                        break;
+                    case ParticipantResult.MATCH_RESULT_LOSS:
+                        Log.d(TAG, "You Loose");
+                        multiplayerMatch.showWarning("Result", "You Loose");
+                        break;
+                    default:
+                        Log.d(TAG, "Otra cosa");
+                        multiplayerMatch.showWarning("Result", "Don't know???");
+                        break;
+                }
+            }
+        }
+
+        if (match.canRematch()) { //Indicate that the game has finished
+            multiplayerMatch.askForRematch(match);
+        }
 
 
 
