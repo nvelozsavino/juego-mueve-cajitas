@@ -39,6 +39,7 @@ public class MultiplayerMatch {
         void finishMatch(TurnBasedMatch match);
         void rematch(TurnBasedMatch match);
         void updateUI();
+        void finishAndTakeTurn(TurnBasedMatch match);
     }
     private MultiplayerListener multiplayerListener;
 
@@ -93,6 +94,13 @@ public class MultiplayerMatch {
     public MultiplayerMatch(Context context, MultiplayerListener multiplayerListener){
         this.context=context;
         this.multiplayerListener = multiplayerListener;
+    }
+
+
+    private void finishAndTakeTurn(TurnBasedMatch match) {
+        if (multiplayerListener!=null){
+            multiplayerListener.finishAndTakeTurn(match);
+        }
     }
 
 
@@ -295,6 +303,25 @@ public class MultiplayerMatch {
 //        setViewVisibility();
     }
 
+    public ResultCallback<TurnBasedMultiplayer.UpdateMatchResult> finishAndTakeTurnCallback = new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+        @Override
+        public void onResult(TurnBasedMultiplayer.UpdateMatchResult finishAndTakeTurnResult) {
+            processFinishAndTakeTurnResult(finishAndTakeTurnResult);
+        }
+    };
+
+    public void processFinishAndTakeTurnResult(TurnBasedMultiplayer.UpdateMatchResult finishAndTakeTurnResult) {
+        TurnBasedMatch match = finishAndTakeTurnResult.getMatch();
+        dismissSpinner();
+        if (!checkStatusCode(match, finishAndTakeTurnResult.getStatus().getStatusCode())) {
+            return;
+        }
+        finishAndTakeTurn(match);
+
+    }
+
+
+
     /***
      * Leave Match During Turn
      */
@@ -422,19 +449,22 @@ public class MultiplayerMatch {
         }
     }
 
-    public static boolean isGameFinish(TurnBasedMatch match){
+    public static List<String> getActivePlayers(TurnBasedMatch match){
         List<String> participants=match.getParticipantIds();
+        List<String> activePlayers = new ArrayList<>();
         for (String pId: participants){
             int status=match.getParticipantStatus(pId);
             switch (status){
                 case Participant.STATUS_INVITED:
                     //There is at least one player invited who's not started playing
                     Log.d(TAG,"Participant invited");
-                    return false;
+                    activePlayers.add(pId);
+                    break;
                 case Participant.STATUS_JOINED:
                     //There is at least one player joined who's not finished playing
                     Log.d(TAG,"Participant joined");
-                    return false;
+                    activePlayers.add(pId);
+                    break;
                 case Participant.STATUS_DECLINED:
                     //This player decline the invitation: it doesn't count
                     Log.d(TAG,"Participant declined");
@@ -442,6 +472,7 @@ public class MultiplayerMatch {
                 case Participant.STATUS_FINISHED:
                     //This player finished already: continue searching for others to see if they are also finished
                     Log.d(TAG,"Participant finished");
+                    activePlayers.add(pId);
                     break;
                 case Participant.STATUS_LEFT:
                     //This player left the match: it doesn't count, continue searching for others
@@ -450,15 +481,21 @@ public class MultiplayerMatch {
                 case Participant.STATUS_NOT_INVITED_YET:
                     //There is at least one player which its invitation hasn't arrive yet
                     Log.d(TAG,"Participant not invited yet");
-                    return false;
+                    activePlayers.add(pId);
+                    break;
                 case Participant.STATUS_UNRESPONSIVE:
                     //This player is unresponisve: ignore it and continue searching for others
                     Log.d(TAG,"Participant unrseponsive");
                     break;
+                default:
+                    Log.d(TAG,"Unkown participant status");
+                    break;
             }
+
+
         }
         //If it gets here, it means that all the players finished, left, are unresponsive or declined the invitation
-        return true;
+        return activePlayers;
     }
 
     public static String getNextParticipantId(GoogleApiClient googleApiClient, TurnBasedMatch match) {

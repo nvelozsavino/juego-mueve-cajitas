@@ -334,16 +334,38 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
             /**
              * Say that I'm finish with the match, it should trigger a finishPlayerMatch callback
              */
-            Log.d(TAG,"MatchId "+ match.getMatchId() + " googleApi is connected? " + googleApiClient.isConnected());
-            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId());
-                    //.setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
 
-            /**
-             * The rest of the evaluation if the game is finished or not,
-             * is evaluated at the callback function finishPlayerMatch
-             */
-            //TODO: is really necesary?
-            finishPlayerMatch(match);
+
+
+            if (!multiplayerGameData.isGameFinished(MultiplayerMatch.getActivePlayers(match))) {
+                //If is another participant left
+                //send turn
+                multiplayerMatch.showSpinner();
+                String nextParticipantId = MultiplayerMatch.getNextParticipantId(googleApiClient,match);
+                Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), nextParticipantId)
+                        .setResultCallback(multiplayerMatch.takeTurnCallback);
+
+
+            } else {
+                //All Participants end their games
+
+                multiplayerMatch.showSpinner();
+                List<ParticipantResult> results=multiplayerGameData.getResults(match.getParticipantIds());
+                //I'm the last one who call finish, I have to see who won and finish the game
+                Games.TurnBasedMultiplayer.finishMatch(googleApiClient, match.getMatchId(), multiplayerGameData.persist(), results)
+                        .setResultCallback(multiplayerMatch.finishMatchCallback);
+            }
+
+//            Log.d(TAG,"MatchId "+ match.getMatchId() + " googleApi is connected? " + googleApiClient.isConnected());
+//            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId());
+//                    //.setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+//
+//            /**
+//             * The rest of the evaluation if the game is finished or not,
+//             * is evaluated at the callback function finishPlayerMatch
+//             */
+//            //TODO: is really necesary?
+//            finishPlayerMatch(match);
 
 
 
@@ -446,24 +468,24 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
          */
 //
 
-        if (!MultiplayerMatch.isGameFinish(match)) {
-            //If is another participant left
-            //send turn
-            multiplayerMatch.showSpinner();
-            String nextParticipantId = MultiplayerMatch.getNextParticipantId(googleApiClient,match);
-            Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), nextParticipantId)
-                    .setResultCallback(multiplayerMatch.takeTurnCallback);
-
-
-        } else {
-            //All Participants end their games
-
-            multiplayerMatch.showSpinner();
-            List<ParticipantResult> results=multiplayerGameData.getResults(match.getParticipantIds());
-            //I'm the last one who call finish, I have to see who won and finish the game
-            Games.TurnBasedMultiplayer.finishMatch(googleApiClient, match.getMatchId(), multiplayerGameData.persist(), results)
-                    .setResultCallback(multiplayerMatch.finishMatchCallback);
-        }
+//        if (!MultiplayerMatch.isGameFinish(match)) {
+//            //If is another participant left
+//            //send turn
+//            multiplayerMatch.showSpinner();
+//            String nextParticipantId = MultiplayerMatch.getNextParticipantId(googleApiClient,match);
+//            Games.TurnBasedMultiplayer.takeTurn(googleApiClient, match.getMatchId(),multiplayerGameData.persist(), nextParticipantId)
+//                    .setResultCallback(multiplayerMatch.takeTurnCallback);
+//
+//
+//        } else {
+//            //All Participants end their games
+//
+//            multiplayerMatch.showSpinner();
+//            List<ParticipantResult> results=multiplayerGameData.getResults(match.getParticipantIds());
+//            //I'm the last one who call finish, I have to see who won and finish the game
+//            Games.TurnBasedMultiplayer.finishMatch(googleApiClient, match.getMatchId(), multiplayerGameData.persist(), results)
+//                    .setResultCallback(multiplayerMatch.finishMatchCallback);
+//        }
         multiplayerGameData = null;
         this.match=null;
         Log.d(TAG,"Match finished for this player");
@@ -534,7 +556,11 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
     }
 
-
+    @Override
+    public void finishAndTakeTurn(TurnBasedMatch match) {
+            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId())
+                    .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+    }
 
 
 }

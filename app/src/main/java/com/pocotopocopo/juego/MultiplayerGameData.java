@@ -177,4 +177,15 @@ public class MultiplayerGameData implements Parcelable{
         return participantResults;
     }
 
+
+    public boolean isGameFinished(List<String> activePlayers){
+        for (String pId: activePlayers){
+            PlayerScore ps =new PlayerScore(pId);
+            if (!scoreList.contains(ps)){
+                return false;
+            }
+        }
+        return true;
+
+    }
 }
