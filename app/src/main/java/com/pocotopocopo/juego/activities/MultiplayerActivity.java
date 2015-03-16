@@ -1,13 +1,16 @@
 package com.pocotopocopo.juego.activities;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.multiplayer.Multiplayer;
@@ -176,6 +179,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         activityResult=null;
+
         if (requestCode == RC_SELECT_PLAYERS) {
             // Returned from 'Select players to Invite' dialog
 
@@ -349,15 +353,97 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                 return;
             }
 
-            TurnBasedMatch matchReturned = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
-            //TODO: Open a dialog to ask what to do with that match (Play if Turn, Leave, Cancel)
+
+            final TurnBasedMatch matchReturned = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
+
+            //TODO: The dialog is created but it is horrible
             if (matchReturned != null) {
                 /**
                  * Calling the class MultiplayerMatch tho handle this match. Acording to the match,
                  * the callbacks functions startMatch, updateMatch or something else should trigger
                  * this.match should be set in those callbacks
                  */
+
+                final Dialog playLeaveCancelDialog = new Dialog(MultiplayerActivity.this);
+                playLeaveCancelDialog.setContentView(R.layout.play_leave_cancel_dialog);
+                playLeaveCancelDialog.setCancelable(true);
+                Button playIfTurnButton = (Button) playLeaveCancelDialog.findViewById(R.id.playIfTurnButton);
+                Button leaveButton = (Button) playLeaveCancelDialog.findViewById(R.id.leaveButton);
+                Button cancelButton = (Button) playLeaveCancelDialog.findViewById(R.id.cancelButton);
+                TextView whatToShowText = (TextView) playLeaveCancelDialog.findViewById(R.id.whatToShow);
+                cancelButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        playLeaveCancelDialog.cancel();
+
+                    }
+                });
+
                 switch (matchReturned.getStatus()) {
+                    case TurnBasedMatch.MATCH_STATUS_ACTIVE:
+                    case TurnBasedMatch.MATCH_STATUS_AUTO_MATCHING:
+                        int turnStatus = matchReturned.getTurnStatus();
+                        switch (turnStatus) {
+                            case TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN:
+                                playIfTurnButton.setVisibility(View.VISIBLE);
+                                playIfTurnButton.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        multiplayerMatch.updateMatch(matchReturned);
+                                    }
+                                });
+                                leaveButton.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Games.TurnBasedMultiplayer.leaveMatchDuringTurn(googleApiClient, matchReturned.getMatchId(), matchReturned.getPendingParticipantId())
+                                                .setResultCallback(multiplayerMatch.leaveMatchDuringTurnCallback);
+                                    }
+                                });
+
+                                //mostrar boton de play
+                                break;
+                            case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
+                                playIfTurnButton.setVisibility(View.GONE);
+                                leaveButton.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Games.TurnBasedMultiplayer.leaveMatch(googleApiClient, matchReturned.getMatchId())
+                                                .setResultCallback(multiplayerMatch.leaveMatchCallback);
+                                    }
+                                });
+                                //ocultar boton de play
+                                break;
+                        }
+                        playLeaveCancelDialog.show();
+                        break;
+                    case TurnBasedMatch.MATCH_STATUS_COMPLETE:
+
+                        StringBuilder stringBuilder = new StringBuilder();
+                        MultiplayerGameData gameData = MultiplayerGameData.unpack(matchReturned.getData());
+                        List<ParticipantResult> results = gameData.getResults(matchReturned.getParticipantIds());
+                        for (ParticipantResult participantResult : results) {
+                            String participantName = matchReturned.getParticipant(participantResult.getParticipantId()).getDisplayName();
+                            stringBuilder.append(participantResult.getPlacing() + "\t" + participantName + "\n");
+                        }
+                        whatToShowText.setText(stringBuilder.toString());
+                        leaveButton.setText("Ok");
+                        leaveButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Games.TurnBasedMultiplayer.finishMatch(googleApiClient, matchReturned.getMatchId())
+                                        .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+                                playLeaveCancelDialog.cancel();
+                            }
+                        });
+                        playLeaveCancelDialog.show();
+
+                        break;
+
+                }
+
+
+            }
+                /*switch (matchReturned.getStatus()) {
                     case TurnBasedMatch.MATCH_STATUS_ACTIVE: //	Constant returned by getStatus() indicating that the match has started.
                     case TurnBasedMatch.MATCH_STATUS_AUTO_MATCHING: // Constant returned by getStatus() indicating that one or more slots are waiting to be filled by auto-matching.
                         multiplayerMatch.updateMatch(matchReturned);
@@ -375,10 +461,11 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                         multiplayerMatch.showWarning("Match Expired", "The game has expired");
                         break;
                 }
+                */
 
 
-                Log.d(TAG, "Match = " + matchReturned);
-            }
+            Log.d(TAG, "Match = " + matchReturned);
+
         }
 
     }
