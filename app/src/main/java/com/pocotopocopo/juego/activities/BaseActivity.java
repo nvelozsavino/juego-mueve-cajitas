@@ -275,7 +275,7 @@ public abstract class BaseActivity extends FragmentActivity implements GoogleApi
                 try {
                     token = GoogleAuthUtil.getToken(getApplicationContext(), accountName, scope);
                     //Log.d(TAG,"Token: " + token);
-                    //TODO: connect to backend server
+                    //TODO: connect to backend server, not yet
                     String uri="https://www.googleapis.com/oauth2/v1/tokeninfo?id_token=" + token;
 
                     AndroidHttpClient androidHttpClient = AndroidHttpClient.newInstance("");

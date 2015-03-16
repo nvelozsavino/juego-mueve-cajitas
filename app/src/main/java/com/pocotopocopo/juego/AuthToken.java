@@ -44,7 +44,7 @@ public class AuthToken {
                 try {
                     token = GoogleAuthUtil.getToken(context, accountName, scope);
                     result=true;
-                    //TODO: connect to backend server
+                    //TODO: not using yet the backend server: connect to backend server
                 } catch (Exception e) {
                     exception=e;
                     result=false;

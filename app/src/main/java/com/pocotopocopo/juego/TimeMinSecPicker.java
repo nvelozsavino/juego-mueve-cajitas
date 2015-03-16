@@ -30,7 +30,7 @@ public class TimeMinSecPicker extends FrameLayout {
 
                 @Override
                 public String format(int value) {
-                    // TODO Auto-generated method stub
+                    // TODO: what to do with this?: Auto-generated method stub
                     return String.format("%02d", value);
                 }
             };

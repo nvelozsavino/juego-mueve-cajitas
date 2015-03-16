@@ -239,10 +239,11 @@ public class PuzzleActivity extends BaseActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //TODO cuando vuelve a crear la imagen hay que chequear si ya gano y si no reaunudar el tiempo
+        //TODO: is this still valid?: when the image is recreated, the code should check if the game is over, if not, resume the time
 
-        //TODO mejorar imagen de todo
-        //TODO mandar el comando y el tiempo para que vaya en reversa
+
+
+        //TODO: improve UI
 
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Contacts: ********************************************* STARTING **********************************");

@@ -213,27 +213,6 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
 
             multiplayerMatch.showSpinner();
-        } else if (requestCode == RC_LOOK_AT_MATCHES) {
-            // Returning from the 'Select Match' dialog
-
-            if (resultCode != RESULT_OK) {
-                // user canceled
-                return;
-            }
-
-            TurnBasedMatch matchReturned = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
-            //TODO: Open a dialog to ask what to do with that match (Play if Turn, Leave, Cancel)
-            if (matchReturned != null) {
-                /**
-                 * Calling the class MultiplayerMatch tho handle this match. Acording to the match,
-                 * the callbacks functions startMatch, updateMatch or something else should trigger
-                 * this.match should be set in those callbacks
-                 */
-                multiplayerMatch.updateMatch(matchReturned);
-
-                Log.d(TAG, "Match = " + matchReturned);
-            }
-
 
         } else {
             if (googleApiClient!=null && googleApiClient.isConnected()){
@@ -330,11 +309,14 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
 
             multiplayerMatch.showSpinner();
-            //Finish my turn
             /**
              * Say that I'm finish with the match, it should trigger a finishPlayerMatch callback
              */
 
+            /**
+             * Check if all other players have finished their turn, if not, then send your result
+             * and gave the turn to other player, Finish the game otherwise
+             */
 
 
             if (!multiplayerGameData.isGameFinished(MultiplayerMatch.getActivePlayers(match))) {
@@ -356,19 +338,47 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                         .setResultCallback(multiplayerMatch.finishMatchCallback);
             }
 
-//            Log.d(TAG,"MatchId "+ match.getMatchId() + " googleApi is connected? " + googleApiClient.isConnected());
-//            Games.TurnBasedMultiplayer.finishMatch(googleApiClient,match.getMatchId());
-//                    //.setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
-//
-//            /**
-//             * The rest of the evaluation if the game is finished or not,
-//             * is evaluated at the callback function finishPlayerMatch
-//             */
-//            //TODO: is really necesary?
-//            finishPlayerMatch(match);
 
 
 
+        } else if (requestCode == RC_LOOK_AT_MATCHES) {
+            // Returning from the 'Select Match' dialog
+
+            if (resultCode != RESULT_OK) {
+                // user canceled
+                return;
+            }
+
+            TurnBasedMatch matchReturned = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
+            //TODO: Open a dialog to ask what to do with that match (Play if Turn, Leave, Cancel)
+            if (matchReturned != null) {
+                /**
+                 * Calling the class MultiplayerMatch tho handle this match. Acording to the match,
+                 * the callbacks functions startMatch, updateMatch or something else should trigger
+                 * this.match should be set in those callbacks
+                 */
+                switch (matchReturned.getStatus()) {
+                    case TurnBasedMatch.MATCH_STATUS_ACTIVE: //	Constant returned by getStatus() indicating that the match has started.
+                    case TurnBasedMatch.MATCH_STATUS_AUTO_MATCHING: // Constant returned by getStatus() indicating that one or more slots are waiting to be filled by auto-matching.
+                        multiplayerMatch.updateMatch(matchReturned);
+                        break;
+                    case TurnBasedMatch.MATCH_STATUS_CANCELED: // Constant returned by getStatus() indicating that the match was canceled by one of the participants.
+                        Log.d(TAG, "Match Canceled");
+                        multiplayerMatch.showWarning("Match Canceled", "The game has been canceled");
+                    case TurnBasedMatch.MATCH_STATUS_COMPLETE: //Constant returned by getStatus() indicating that the match has finished.
+                        Log.d(TAG, "Match Results");
+                        Games.TurnBasedMultiplayer.finishMatch(googleApiClient, matchReturned.getMatchId())
+                                .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+                        break;
+                    case TurnBasedMatch.MATCH_STATUS_EXPIRED: //Constant returned by getStatus() indicating that the match expired.
+                        Log.d(TAG, "Match Expired");
+                        multiplayerMatch.showWarning("Match Expired", "The game has expired");
+                        break;
+                }
+
+
+                Log.d(TAG, "Match = " + matchReturned);
+            }
         }
 
     }
@@ -427,12 +437,22 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                 startActivityForResult(intent, RC_PLAY_GAME);
                 return;
             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
-                //TODO: what is this?
+                //TODO: Create a better message for this
+                /**
+                 * If it is not your turn the code shouldn't allow user to get here if a dialog
+                 * asking what to do with the game is made, however it could be the case
+                 */
                 // Should return results. -> ??? is from the google's example
                 multiplayerMatch.showWarning("Alas...", "It's not your turn.");
                 break;
             case TurnBasedMatch.MATCH_TURN_STATUS_INVITED:
-                //TODO: what is this?
+                //TODO: Create a better message for this
+                /**
+                 * This is where the match is waiting for someone to accept the invitation.
+                 * if a dialog asking what to do with the game is made the code shouldn't allow
+                 * users to get here.
+                 */
+
                 //I think this is when you invited people, and are waiting?
                 multiplayerMatch.showWarning("Good inititative!", "Still waiting for invitations.\n\nBe patient!");
                 break;
@@ -486,6 +506,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 //            Games.TurnBasedMultiplayer.finishMatch(googleApiClient, match.getMatchId(), multiplayerGameData.persist(), results)
 //                    .setResultCallback(multiplayerMatch.finishMatchCallback);
 //        }
+        showResults(match);
         multiplayerGameData = null;
         this.match=null;
         Log.d(TAG,"Match finished for this player");
@@ -497,6 +518,21 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
          * If gets here, is because you call finishMatch and all the results should be available
          * multiplayerGameData and match should be null
          */
+
+        showResults(match);
+        multiplayerGameData = null;
+        this.match=null;
+        Log.d(TAG,"Match finished for all player");
+
+
+
+
+    }
+
+    private void showResults(TurnBasedMatch match){
+
+        //TODO: Create a Dialog with all the results, the messages and buttons
+
         List<String> participantIds =match.getParticipantIds();
         String playerId = Games.Players.getCurrentPlayerId(googleApiClient);
         String myParticipantId = match.getParticipantId(playerId);
@@ -504,14 +540,16 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
             Log.e(TAG, "Error, no data in match");
             return;
         }
-        multiplayerGameData=MultiplayerGameData.unpack(match.getData());
-        List<PlayerScore> scoreList=multiplayerGameData.getScoreList();
-        PlayerScore myScore=multiplayerGameData.getScore(myParticipantId);
-        multiplayerMatch.showWarning("Result", "You did " + myScore.getMovements() + " movements in " + myScore.getTime() + " time" );
+        MultiplayerGameData gameData=MultiplayerGameData.unpack(match.getData());
+
+        PlayerScore myScore=gameData.getScore(myParticipantId);
+        if (myScore!=null) {
+            multiplayerMatch.showWarning("Result", "You did " + myScore.getMovements() + " movements in " + myScore.getTime() + " time");
+        }
         for (String participantId: participantIds){
 
             ParticipantResult participantResult = match.getParticipant(participantId).getResult();
-            if (participantId==myParticipantId){
+            if (participantResult!=null && participantId==myParticipantId){
                 //this is my result
                 switch (participantResult.getResult()) {
                     case ParticipantResult.MATCH_RESULT_WIN:
@@ -527,7 +565,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                         multiplayerMatch.showWarning("Result", "You Loose");
                         break;
                     default:
-                        Log.d(TAG, "Otra cosa");
+                        Log.d(TAG, "Don't know the results.");
                         multiplayerMatch.showWarning("Result", "Don't know???");
                         break;
                 }
@@ -535,12 +573,9 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
         }
 
         if (match.canRematch()) { //Indicate that the game has finished
+            //TODO: check if the rematch is working properly
             multiplayerMatch.askForRematch(match);
         }
-
-
-
-
     }
 
     @Override

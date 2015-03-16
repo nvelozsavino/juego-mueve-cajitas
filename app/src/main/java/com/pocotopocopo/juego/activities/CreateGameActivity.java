@@ -253,11 +253,7 @@ public class CreateGameActivity extends BaseActivity implements CountDownPickerD
         traditionalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isMultiplayer){
-                    //TODO: init MultiplayerMatch Data
-                }
                 gameInfo.setGameMode(GameMode.TRADITIONAL);
-
                 startGame();
             }
         });

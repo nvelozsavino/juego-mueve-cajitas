@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.turnbased.LoadMatchesResponse;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
@@ -101,12 +102,25 @@ public class StartScreenActivity extends BaseActivity{
         setContentView(R.layout.start_screen_activity_layout);
         initViews();
         initListeners();
+        /*
+         * trying to get the match
+         */
+        //TODO: figure it out if the Google Notification send the match
+        Intent data = getIntent();
+        if (data!=null) {
+            TurnBasedMatch matchReturned = data.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH); //not working
+            if (matchReturned != null) {
+                Toast.makeText(this, "Hay Juego", Toast.LENGTH_SHORT);
+            } else {
+                Toast.makeText(this, "NO Juego", Toast.LENGTH_SHORT);
+            }
+        }
     }
 
 
     @Override
     public void connected() {
-
+        //TODO: Update multiplayer button with this information
         int[] statusFlags={TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN,TurnBasedMatch.MATCH_TURN_STATUS_INVITED,TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE,TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN};
         Games.TurnBasedMultiplayer.loadMatchesByStatus(googleApiClient,statusFlags).setResultCallback(new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
             @Override
