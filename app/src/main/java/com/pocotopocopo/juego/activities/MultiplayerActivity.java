@@ -385,11 +385,13 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                         int turnStatus = matchReturned.getTurnStatus();
                         switch (turnStatus) {
                             case TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN:
+                                playLeaveCancelDialog.setTitle("It's your turn");
                                 playIfTurnButton.setVisibility(View.VISIBLE);
                                 playIfTurnButton.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
                                         multiplayerMatch.updateMatch(matchReturned);
+                                        playLeaveCancelDialog.cancel();
                                     }
                                 });
                                 leaveButton.setOnClickListener(new View.OnClickListener() {
@@ -397,6 +399,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                                     public void onClick(View v) {
                                         Games.TurnBasedMultiplayer.leaveMatchDuringTurn(googleApiClient, matchReturned.getMatchId(), matchReturned.getPendingParticipantId())
                                                 .setResultCallback(multiplayerMatch.leaveMatchDuringTurnCallback);
+                                        playLeaveCancelDialog.cancel();
                                     }
                                 });
 
@@ -404,11 +407,13 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                                 break;
                             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
                                 playIfTurnButton.setVisibility(View.GONE);
+                                playLeaveCancelDialog.setTitle("It's not your turn");
                                 leaveButton.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
                                         Games.TurnBasedMultiplayer.leaveMatch(googleApiClient, matchReturned.getMatchId())
                                                 .setResultCallback(multiplayerMatch.leaveMatchCallback);
+                                        playLeaveCancelDialog.cancel();
                                     }
                                 });
                                 //ocultar boton de play
@@ -417,7 +422,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                         playLeaveCancelDialog.show();
                         break;
                     case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-
+                        playLeaveCancelDialog.setTitle("The Game is completed");
                         StringBuilder stringBuilder = new StringBuilder();
                         MultiplayerGameData gameData = MultiplayerGameData.unpack(matchReturned.getData());
                         List<ParticipantResult> results = gameData.getResults(matchReturned.getParticipantIds());
