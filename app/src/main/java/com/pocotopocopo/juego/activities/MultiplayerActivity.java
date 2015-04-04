@@ -7,28 +7,28 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.multiplayer.Multiplayer;
-import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.ParticipantResult;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.pocotopocopo.juego.GameActivity;
 import com.pocotopocopo.juego.GameConstants;
 import com.pocotopocopo.juego.GameInfo;
 import com.pocotopocopo.juego.MultiplayerGameData;
 import com.pocotopocopo.juego.MultiplayerMatch;
+import com.pocotopocopo.juego.PlayerResult;
 import com.pocotopocopo.juego.PlayerScore;
 import com.pocotopocopo.juego.R;
+import com.pocotopocopo.juego.ResultAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -422,25 +422,27 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
                         playLeaveCancelDialog.show();
                         break;
                     case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-                        playLeaveCancelDialog.setTitle("The Game is completed");
-                        StringBuilder stringBuilder = new StringBuilder();
-                        MultiplayerGameData gameData = MultiplayerGameData.unpack(matchReturned.getData());
-                        List<ParticipantResult> results = gameData.getResults(matchReturned.getParticipantIds());
-                        for (ParticipantResult participantResult : results) {
-                            String participantName = matchReturned.getParticipant(participantResult.getParticipantId()).getDisplayName();
-                            stringBuilder.append(participantResult.getPlacing() + "\t" + participantName + "\n");
-                        }
-                        whatToShowText.setText(stringBuilder.toString());
-                        leaveButton.setText("Ok");
-                        leaveButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Games.TurnBasedMultiplayer.finishMatch(googleApiClient, matchReturned.getMatchId())
-                                        .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
-                                playLeaveCancelDialog.cancel();
-                            }
-                        });
-                        playLeaveCancelDialog.show();
+
+                        showResults(matchReturned);
+//                        playLeaveCancelDialog.setTitle("The Game is completed");
+//                        StringBuilder stringBuilder = new StringBuilder();
+//                        MultiplayerGameData gameData = MultiplayerGameData.unpack(matchReturned.getData());
+//                        List<ParticipantResult> results = gameData.getResults(matchReturned.getParticipantIds());
+//                        for (ParticipantResult participantResult : results) {
+//                            String participantName = matchReturned.getParticipant(participantResult.getParticipantId()).getDisplayName();
+//                            stringBuilder.append(participantResult.getPlacing() + "\t" + participantName + "\n");
+//                        }
+//                        whatToShowText.setText(stringBuilder.toString());
+//                        leaveButton.setText("Ok");
+//                        leaveButton.setOnClickListener(new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                Games.TurnBasedMultiplayer.finishMatch(googleApiClient, matchReturned.getMatchId())
+//                                        .setResultCallback(multiplayerMatch.finishPlayerMatchCallback);
+//                                playLeaveCancelDialog.cancel();
+//                            }
+//                        });
+//                        playLeaveCancelDialog.show();
 
                         break;
 
@@ -621,7 +623,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
     }
 
-    private void showResults(TurnBasedMatch match){
+    private void showResults(final TurnBasedMatch match){
 
         //TODO: Create a Dialog with all the results, the messages and buttons
 
@@ -634,39 +636,82 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
         }
         MultiplayerGameData gameData=MultiplayerGameData.unpack(match.getData());
 
+
         PlayerScore myScore=gameData.getScore(myParticipantId);
         if (myScore!=null) {
-            multiplayerMatch.showWarning("Result", "You did " + myScore.getMovements() + " movements in " + myScore.getTime() + " time");
+            //multiplayerMatch.showWarning("Result", "You did " + myScore.getMovements() + " movements in " + myScore.getTime() + " time");
         }
-        for (String participantId: participantIds){
 
-            ParticipantResult participantResult = match.getParticipant(participantId).getResult();
-            if (participantResult!=null && participantId==myParticipantId){
-                //this is my result
-                switch (participantResult.getResult()) {
-                    case ParticipantResult.MATCH_RESULT_WIN:
-                        Log.d(TAG, "You win");
-                        multiplayerMatch.showWarning("Result", "You Win");
-                        break;
-                    case ParticipantResult.MATCH_RESULT_TIE:
-                        Log.d(TAG, "You Tied");
-                        multiplayerMatch.showWarning("Result", "You Tied");
-                        break;
-                    case ParticipantResult.MATCH_RESULT_LOSS:
-                        Log.d(TAG, "You Loose");
-                        multiplayerMatch.showWarning("Result", "You Loose");
-                        break;
-                    default:
-                        Log.d(TAG, "Don't know the results.");
-                        multiplayerMatch.showWarning("Result", "Don't know???");
-                        break;
-                }
-            }
+        List<PlayerResult> playerResultList = new ArrayList<>();
+        for (String participantId: participantIds) {
+            PlayerResult playerResult = new PlayerResult(match, participantId);
+            playerResultList.add(playerResult);
         }
+        Collections.sort(playerResultList,new PlayerResult.ResultComparator());
+        final Dialog  resultDialog = new Dialog(this);
+        resultDialog.setCancelable(true);
+        resultDialog.setContentView(R.layout.results_layout);
+        resultDialog.setTitle(R.string.result_title);
+        ListView listView = (ListView) resultDialog.findViewById(R.id.lstResults);
+        Button btnRematch = (Button)resultDialog.findViewById(R.id.btnRematch);
+        Button btnExit = (Button)resultDialog.findViewById(R.id.btnExit);
+        ResultAdapter adapter = new ResultAdapter(this,playerResultList);
+        listView.setAdapter(adapter);
+        if (match.canRematch()) {
+            btnRematch.setVisibility(View.VISIBLE);
+            btnRematch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    multiplayerMatch.askForRematch(match);
+                    resultDialog.cancel();
+                }
+            });
+
+        } else {
+            btnRematch.setVisibility(View.GONE);
+        }
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resultDialog.cancel();
+            }
+        });
+
+
+
+        resultDialog.show();
+
+
+//            Participant participant = match.getParticipant(participantId);
+//
+//
+//            ParticipantResult participantResult = match.getParticipant(participantId).getResult();
+//            if (participantResult!=null && participantId==myParticipantId){
+//                //this is my result
+//                switch (participantResult.getResult()) {
+//                    case ParticipantResult.MATCH_RESULT_WIN:
+//                        Log.d(TAG, "You win");
+//                        multiplayerMatch.showWarning("Result", "You Win");
+//                        break;
+//                    case ParticipantResult.MATCH_RESULT_TIE:
+//                        Log.d(TAG, "You Tied");
+//                        multiplayerMatch.showWarning("Result", "You Tied");
+//                        break;
+//                    case ParticipantResult.MATCH_RESULT_LOSS:
+//                        Log.d(TAG, "You Loose");
+//                        multiplayerMatch.showWarning("Result", "You Loose");
+//                        break;
+//                    default:
+//                        Log.d(TAG, "Don't know the results.");
+//                        multiplayerMatch.showWarning("Result", "Don't know???");
+//                        break;
+//                }
+//            }
+//        }
 
         if (match.canRematch()) { //Indicate that the game has finished
             //TODO: check if the rematch is working properly
-            multiplayerMatch.askForRematch(match);
+            //multiplayerMatch.askForRematch(match);
         }
     }
 

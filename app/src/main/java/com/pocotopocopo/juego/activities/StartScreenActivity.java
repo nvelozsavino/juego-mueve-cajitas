@@ -163,7 +163,7 @@ public class StartScreenActivity extends BaseActivity{
                     }
 
 
-                    Toast.makeText(getApplicationContext(),"Invitations: " + invitations + ", Turn: " + turn + ", Completed: " + completed + ", Their turn: " + their_turn,Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(),"Invitations: " + invitations + ", Turn: " + turn + ", Completed: " + completed + ", Their turn: " + their_turn,Toast.LENGTH_SHORT).show();
                     response.release();
                 }
 
