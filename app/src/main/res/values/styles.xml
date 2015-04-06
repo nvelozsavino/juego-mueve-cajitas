@@ -1,8 +1,14 @@
 <resources>
 
+    <color name="shadow_blue">#6199B3</color>
+    <color name="pitch_black">#FF000000</color>
+    <color name="white_opaque">#FFFFFFFF</color>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
+        <!-- <item name="android:background"> @color/shadow_blue</item>
+        <item name="android:windowBackground">@color/shadow_blue</item>
+        <item name="android:colorBackground">@color/shadow_blue</item>
+        Customize your theme here. -->
     </style>
 
 </resources>
