@@ -136,12 +136,6 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
         multiplayerActionsLayout.setVisibility(View.GONE);
     }
 
-
-
-
-
-
-
     @Override
     public void connected() {
         super.connected();
@@ -680,6 +674,7 @@ public class MultiplayerActivity extends BaseActivity implements MultiplayerMatc
 
 
         resultDialog.show();
+
 
 
 //            Participant participant = match.getParticipant(participantId);
