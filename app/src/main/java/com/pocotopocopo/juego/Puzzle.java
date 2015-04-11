@@ -239,7 +239,7 @@ public class Puzzle extends ViewGroup {
 //        Log.d(TAG,"# pieces = " + pieces);
         physics=new Physics(rows,cols);
         //pieceList=new ArrayList<>();
-
+        Piece.resetCount();
         for (int i=0;i<pieces;i++){
             Piece piece=new Piece(getContext(),i+1);
             //pieceList.add(piece);

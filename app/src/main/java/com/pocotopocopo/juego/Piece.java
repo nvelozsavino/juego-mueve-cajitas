@@ -16,6 +16,7 @@ import java.util.List;
  */
 public class Piece extends View {
     private static final String TAG = "Juego.Piece";
+    private static int count;
     private int top, left;
     private int width, height;
     private int number;
@@ -80,6 +81,9 @@ public class Piece extends View {
         this(context,0,0,0,0,border);
 
     }
+    public static void resetCount(){
+        count=0;
+    }
 
     public Piece(Context context, int top, int left, int width, int height,boolean border) {
         super(context);
@@ -113,6 +117,7 @@ public class Piece extends View {
         numerable=true;
         movable=true;
         this.number=number;
+        count++;
 
 
     }
@@ -233,10 +238,14 @@ public class Piece extends View {
         }
 
         if (numerable && numberVisible) {
-            paint.setTextSize(height / 2);
+            int maxNumber = count;
+            int digits = Integer.toString(maxNumber).length();
+            float sizeText = (height*digits/1.5f > width ? width*1.5f/digits : height)*0.75f;
+            paint.setTextSize(sizeText);
             paint.setColor(Color.BLUE);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(Integer.toString(number), left + (width / 2), top + (height / 2) + (paint.getTextSize() / 2), paint);
+            canvas.drawText(Integer.toString(number), left + (width / 2), top + (height / 2) + (sizeText *0.3f), paint);
+            //canvas.drawText(Integer.toString(i+1), x0+(x + 0.5f) * widthX, y0+((y+0.5f) * widthY)+sizeText*0.3f, paint);
 
         }
         if (selected) {

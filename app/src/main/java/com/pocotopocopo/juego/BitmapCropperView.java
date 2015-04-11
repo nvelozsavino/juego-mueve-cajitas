@@ -182,6 +182,9 @@ public class BitmapCropperView extends View {
         float y0= rect.top;
         float y1= rect.bottom;
         float widthY = (y1-y0)/rows;
+        int maxNumber = rows*cols-1;
+        int digits = Integer.toString(maxNumber).length();
+        float sizeText = (widthY*digits/1.5f > widthX ? widthX*1.5f/digits : widthY)*0.75f;
 
         for (int i=1; i <= cols; i++){
             canvas.drawLine(x0+widthX*i,y0,x0+widthX*i,y1,paint);
@@ -192,12 +195,13 @@ public class BitmapCropperView extends View {
         canvas.drawLine(x0+widthX*(cols-1),y0+widthY*(rows-1),x1,y1,paint);
         canvas.drawLine(x0+widthX*(cols-1),y1,x1,y0+widthY*(rows-1),paint);
         if (withNumbers) {
-            paint.setTextSize(widthY/2);
+            paint.setTextSize(sizeText);
             paint.setTextAlign(Paint.Align.CENTER);
             for (int i = 0; i < rows * cols -1; i++) {
                 int x = i % cols;
                 int y = i / cols;
-                canvas.drawText(Integer.toString(i+1), x0+(x + 0.5f) * widthX, y0+(y + 0.75f) * widthY, paint);
+//                canvas.drawText(Integer.toString(i+1), x0+(x + 0.5f) * widthX, y0+(y + 0.75f) * widthY, paint);
+                canvas.drawText(Integer.toString(i+1), x0+(x + 0.5f) * widthX, y0+((y+0.5f) * widthY)+sizeText*0.3f, paint);
             }
         }
 
