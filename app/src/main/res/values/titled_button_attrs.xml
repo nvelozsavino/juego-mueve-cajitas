@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TitledButton">
+        <attr name="titleText" format="string" />
+        <attr name="hasAdditionalText" format="boolean" />
+        <attr name="additionalText" format="string" />
+        <attr name="iconSrc" format="reference" />
+
+    </declare-styleable>
+</resources>

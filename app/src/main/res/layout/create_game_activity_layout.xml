@@ -1,0 +1,235 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:titled_button="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+
+    tools:context="com.pocotopocopo.puzzlide.activities.CreateGameActivity"
+    android:gravity="center_horizontal"
+    android:measureWithLargestChild="false">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="5dp"
+        android:weightSum="3">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/signInLayout"
+            android:visibility="gone">
+
+            <com.google.android.gms.common.SignInButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/signInButton" />
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_out"
+                android:id="@+id/signOutButton"
+                android:visibility="gone"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <com.pocotopocopo.puzzlide.TitledButton
+            android:id="@+id/backgroundButton"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/picture"
+            titled_button:titleText="Background"
+            titled_button:hasAdditionalText="true"
+            titled_button:additionalText="@string/game_background_fixed_image"
+            />
+
+        <com.pocotopocopo.puzzlide.TitledButton
+            android:id="@+id/showNumbersButton"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/ok_icon32"
+            titled_button:hasAdditionalText="true"
+            titled_button:additionalText="@string/not_showing_numbers"
+            titled_button:titleText="@string/game_numbers_title"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:layout_gravity="center"
+        android:id="@+id/imageLayout">
+
+        <!--cols button-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal|bottom"
+            android:id="@+id/colsButtons">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/colsMinus"
+                android:src="@drawable/minus"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/colsText"
+                android:gravity="center"
+                android:layout_gravity="center_vertical"
+                android:text="4"
+                android:ems="2"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/colsPlus"
+                android:src="@drawable/plus"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <!--botones rows-->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/rowsButtons">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rowsPlus"
+                    android:src="@drawable/plus"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4"
+                    android:id="@+id/rowsText"
+                    android:gravity="center"
+                    android:ems="2"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rowsMinus"
+                    android:src="@drawable/minus"/>
+
+            </LinearLayout>
+
+            <com.pocotopocopo.puzzlide.BitmapCropperView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/bitmapCropperView"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+    <!--botones de edicion-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:id="@+id/imageButtonsLayout">
+
+        <ImageView
+            android:id="@+id/newImageButton"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:src="@drawable/openicon" />
+            <!--titled_button:titleText="@string/open_image"-->
+
+
+            <!--android:src="@drawable/openicon"/>-->
+
+        <ImageView
+            android:id="@+id/rotateCCW"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:src="@drawable/rotateccw"/>
+            <!--titled_button:titleText="@string/rotateccw"-->
+
+
+        <ImageView
+            android:id="@+id/rotateCW"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:src="@drawable/rotatecw" />
+            <!--titled_button:titleText="@string/rotatecw"-->
+
+
+
+        <!--android:text="@string/new_image_text"/>-->
+
+        <!--android:src="@drawable/ok_icon32"/>-->
+            <!--android:text="@string/crop_text"/>-->
+
+        <!--android:src="@drawable/cancelicon32"/>-->
+            <!--android:text="@string/cancel_text"/>-->
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:measureWithLargestChild="false"
+        android:baselineAligned="false"
+        android:paddingTop="20dp"
+        android:id="@+id/startLayout">
+
+        <com.pocotopocopo.puzzlide.TitledButton
+            android:id="@+id/traditionalButton"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/ok_icon32"
+            titled_button:titleText="Traditional"
+           />
+
+        <com.pocotopocopo.puzzlide.TitledButton
+            android:id="@+id/speedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            titled_button:iconSrc="@drawable/stop_watch"
+            titled_button:titleText="Speed"
+            titled_button:additionalText="5:00"
+            titled_button:hasAdditionalText="true"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</LinearLayout>
